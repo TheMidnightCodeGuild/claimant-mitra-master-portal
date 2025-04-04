@@ -7,7 +7,6 @@ export default function SendToOmbudsman({ docId, onComplete }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [rejectionReason, setRejectionReason] = useState('');
-    const [documentShort, setDocumentShort] = useState('');
     const [editingField, setEditingField] = useState(null);
     const [showAllMainLogs, setShowAllMainLogs] = useState(false);
     const [showAllInternalLogs, setShowAllInternalLogs] = useState(false);
@@ -33,7 +32,6 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                     const data = docSnap.data();
                     setCaseData(data);
                     setRejectionReason(data.rejectionReason || '');
-                    setDocumentShort(data.documentShort || '');
                     setCaseAcceptanceDate(data.caseAcceptanceDate || '');
                     setIgmsFollowUpDate(data.igmsFollowUpDate || '');
                 } else {
@@ -71,18 +69,17 @@ export default function SendToOmbudsman({ docId, onComplete }) {
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
                 rejectionReason,
-                documentShort,
                 ombudsman: true,
                 ombudsmanDate: new Date().toISOString(),
             });
 
-            alert('Case sent to IGMS successfully');
+            alert('Case sent to Ombudsman successfully');
             if (onComplete) {
                 onComplete();
             }
         } catch (err) {
             console.error('Error updating case:', err);
-            alert('Failed to send case to IGMS');
+            alert('Failed to send case to Ombudsman');
         }
     };
 
@@ -238,7 +235,7 @@ export default function SendToOmbudsman({ docId, onComplete }) {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Send to IGMS</h2>
+            <h2 className="text-2xl font-bold mb-6">Ombudsman</h2>
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Basic Information */}
@@ -269,36 +266,9 @@ export default function SendToOmbudsman({ docId, onComplete }) {
 
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">Case Acceptance Date</label>
-                        <div className="flex items-center">
-                            {editingField === 'caseAcceptanceDate' ? (
-                                <>
-                                    <input
-                                        type="datetime-local"
-                                        value={caseAcceptanceDate}
-                                        onChange={(e) => setCaseAcceptanceDate(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
-                                    <button 
-                                        onClick={() => handleFieldUpdate('caseAcceptanceDate', caseAcceptanceDate)}
-                                        className="ml-2 text-blue-500 hover:text-blue-700"
-                                    >
-                                        ✓
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="mt-1 text-gray-900">
-                                        {caseAcceptanceDate ? new Date(caseAcceptanceDate).toLocaleString() : 'N/A'}
-                                    </span>
-                                    <button 
-                                        onClick={() => setEditingField('caseAcceptanceDate')}
-                                        className="ml-2 text-gray-500 hover:text-gray-700"
-                                    >
-                                        ✎
-                                    </button>
-                                </>
-                            )}
-                        </div>
+                        <p className="mt-1 text-gray-900">
+                            {caseAcceptanceDate ? new Date(caseAcceptanceDate).toLocaleString() : 'N/A'}
+                        </p>
                     </div>
 
                     <div className="space-y-2">
@@ -373,38 +343,6 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                                     <span className="mt-1 text-gray-900">{rejectionReason || 'N/A'}</span>
                                     <button 
                                         onClick={() => setEditingField('rejectionReason')}
-                                        className="ml-2 text-gray-500 hover:text-gray-700"
-                                    >
-                                        ✎
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Document Short</label>
-                        <div className="flex items-center">
-                            {editingField === 'documentShort' ? (
-                                <>
-                                    <input
-                                        type="text"
-                                        value={documentShort}
-                                        onChange={(e) => setDocumentShort(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
-                                    <button 
-                                        onClick={() => handleFieldUpdate('documentShort', documentShort)}
-                                        className="ml-2 text-blue-500 hover:text-blue-700"
-                                    >
-                                        ✓
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="mt-1 text-gray-900">{documentShort || 'N/A'}</span>
-                                    <button 
-                                        onClick={() => setEditingField('documentShort')}
                                         className="ml-2 text-gray-500 hover:text-gray-700"
                                     >
                                         ✎

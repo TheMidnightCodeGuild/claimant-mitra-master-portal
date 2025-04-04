@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import SendToIGMS from './caseStatus/sendToIGMS';
+import SendToOmbudsman from './caseStatus/sendToOmbudsman';
 
 export default function IGMS() {
     const [cases, setCases] = useState([]);
@@ -82,7 +82,7 @@ export default function IGMS() {
                 >
                     ← Back to IGMS Cases
                 </button>
-                <SendToIGMS docId={selectedCaseId} onComplete={handleBackToCases} />
+                <SendToOmbudsman docId={selectedCaseId} onComplete={handleBackToCases} />
             </div>
         );
     }

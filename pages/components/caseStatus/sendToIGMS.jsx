@@ -204,7 +204,7 @@ export default function SendToIGMS({ docId, onComplete }) {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Send to IGMS</h2>
+            <h2 className="text-2xl font-bold mb-6">IGMS</h2>
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Basic Information */}
