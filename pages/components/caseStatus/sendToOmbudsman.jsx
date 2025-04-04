@@ -7,6 +7,7 @@ export default function SendToOmbudsman({ docId, onComplete }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [rejectionReason, setRejectionReason] = useState('');
+    const [igmsRejectionReason, setIgmsRejectionReason] = useState('');
     const [editingField, setEditingField] = useState(null);
     const [showAllMainLogs, setShowAllMainLogs] = useState(false);
     const [showAllInternalLogs, setShowAllInternalLogs] = useState(false);
@@ -32,6 +33,7 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                     const data = docSnap.data();
                     setCaseData(data);
                     setRejectionReason(data.rejectionReason || '');
+                    setIgmsRejectionReason(data.igmsRejectionReason || '');
                     setCaseAcceptanceDate(data.caseAcceptanceDate || '');
                     setIgmsFollowUpDate(data.igmsFollowUpDate || '');
                 } else {
@@ -69,6 +71,7 @@ export default function SendToOmbudsman({ docId, onComplete }) {
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
                 rejectionReason,
+                igmsRejectionReason,
                 ombudsman: true,
                 ombudsmanDate: new Date().toISOString(),
             });
@@ -343,6 +346,38 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                                     <span className="mt-1 text-gray-900">{rejectionReason || 'N/A'}</span>
                                     <button 
                                         onClick={() => setEditingField('rejectionReason')}
+                                        className="ml-2 text-gray-500 hover:text-gray-700"
+                                    >
+                                        ✎
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">IGMS Rejection Reason</label>
+                        <div className="flex items-center">
+                            {editingField === 'igmsRejectionReason' ? (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={igmsRejectionReason}
+                                        onChange={(e) => setIgmsRejectionReason(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <button 
+                                        onClick={() => handleFieldUpdate('igmsRejectionReason', igmsRejectionReason)}
+                                        className="ml-2 text-blue-500 hover:text-blue-700"
+                                    >
+                                        ✓
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="mt-1 text-gray-900">{igmsRejectionReason || 'N/A'}</span>
+                                    <button 
+                                        onClick={() => setEditingField('igmsRejectionReason')}
                                         className="ml-2 text-gray-500 hover:text-gray-700"
                                     >
                                         ✎

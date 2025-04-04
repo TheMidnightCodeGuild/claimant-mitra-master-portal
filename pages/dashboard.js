@@ -46,11 +46,16 @@ const IGMS = dynamic(() => import('./components/igms'), {
   ssr: false,
 });
 
+const Ombudsman = dynamic(() => import('./components/ombudsman'), {
+  ssr: false,
+});
+
 export default function Dashboard() {
   const [showLatestLeads, setShowLatestLeads] = useState(false);
   const [showAllCases, setShowAllCases] = useState(false);
   const [showCasesUnderReview, setShowCasesUnderReview] = useState(false);
   const [showIGMS, setShowIGMS] = useState(false);
+  const [showOmbudsman, setShowOmbudsman] = useState(false);
 
   const dashboardItems = [
     { title: "View Latest Leads", onClick: () => {
@@ -58,6 +63,7 @@ export default function Dashboard() {
       setShowAllCases(false);
       setShowCasesUnderReview(false);
       setShowIGMS(false);
+      setShowOmbudsman(false);
     }, icon: "📊" },
     { title: "New Partner Application", href: "/partner/new", icon: "🤝" },
     { title: "View All Cases", onClick: () => {
@@ -65,6 +71,7 @@ export default function Dashboard() {
       setShowLatestLeads(false);
       setShowCasesUnderReview(false);
       setShowIGMS(false);
+      setShowOmbudsman(false);
     }, icon: "📁" },
     // { title: "Update Case Details", href: "/cases/update", icon: "📝" },
     { title: "View Partner Issues", href: "/partner/issues", icon: "⚠️" },
@@ -73,14 +80,22 @@ export default function Dashboard() {
       setShowAllCases(false);
       setShowLatestLeads(false);
       setShowIGMS(false);
+      setShowOmbudsman(false);
     }, icon: "🔍" },
     { title: "IGMS", onClick: () => {
       setShowIGMS(true);
       setShowCasesUnderReview(false);
       setShowAllCases(false);
       setShowLatestLeads(false);
+      setShowOmbudsman(false);
     }, icon: "📋" },
-    { title: "Ombudsman", href: "/ombudsman", icon: "⚖️" },
+    { title: "Ombudsman", onClick: () => {
+      setShowOmbudsman(true);
+      setShowIGMS(false);
+      setShowCasesUnderReview(false);
+      setShowAllCases(false);
+      setShowLatestLeads(false);
+    }, icon: "⚖️" },
     { title: "Solved Cases", href: "/cases/solved", icon: "✅" },
     { title: "Rejected Cases", href: "/cases/rejected", icon: "❌" },
     { title: "View Partners", href: "/partners", icon: "👥" },
@@ -105,6 +120,8 @@ export default function Dashboard() {
           <CasesUnderReview />
         ) : showIGMS ? (
           <IGMS />
+        ) : showOmbudsman ? (
+          <Ombudsman />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {dashboardItems.map((item, index) => (
