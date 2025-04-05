@@ -8,6 +8,7 @@ export default function SendToReview({ docId, onComplete }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showFullCase, setShowFullCase] = useState(false);
+    const [sendingToReview, setSendingToReview] = useState(false);
 
     useEffect(() => {
         async function fetchCase() {
@@ -41,6 +42,7 @@ export default function SendToReview({ docId, onComplete }) {
         try {
             if (!docId) return;
             
+            setSendingToReview(true);
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
                 takenForReview: true,
@@ -48,24 +50,28 @@ export default function SendToReview({ docId, onComplete }) {
                 reviewDate: new Date().toISOString()
             });
 
-            alert('Case sent for review successfully');
             if (onComplete) {
                 onComplete();
             }
         } catch (err) {
             console.error('Error updating case:', err);
-            alert('Failed to send case for review');
+            setError('Failed to send case for review');
+        } finally {
+            setSendingToReview(false);
         }
     };
 
     if (showFullCase) {
         return (
-            <div>
+            <div className="container mx-auto px-4 ">
                 <button 
                     onClick={() => setShowFullCase(false)}
-                    className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                    className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors duration-200"
                 >
-                    ← Back to Details
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                    Back to Details
                 </button>
                 <FullCase docId={docId} />
             </div>
@@ -74,98 +80,80 @@ export default function SendToReview({ docId, onComplete }) {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-red-500">{error}</div>
+            <div className="h-screen flex items-center justify-center">
+                <div className="bg-red-50 text-red-600 px-6 py-4 rounded-lg shadow-sm border border-red-200">
+                    {error}
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Case Details</h2>
+        <div className="lg:max-w-[1300px] mx-auto px-4 py-2 max-w-5xl">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-3xl font-bold text-gray-800">Case Details</h2>
                 <button
                     onClick={() => setShowFullCase(true)}
-                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
+                    className="px-6 py-2.5 text-sm font-medium text-blue-600 hover:text-white hover:bg-blue-600 border-2 border-blue-600 rounded-lg transition-all duration-200 flex items-center gap-2"
                 >
-                    View Entire Doc
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                    </svg>
+                    View Complete Case
                 </button>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Name</label>
-                        <p className="mt-1 text-gray-900">{caseData?.name || 'N/A'}</p>
-                    </div>
 
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Complaint Date</label>
-                        <p className="mt-1 text-gray-900">
-                            {caseData?.complaintDate?.toLocaleString() || 'N/A'}
-                        </p>
-                    </div>
+            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {[
+                        { label: "Name", value: caseData?.name },
+                        { label: "Complaint Date", value: caseData?.complaintDate?.toLocaleString() },
+                        { label: "Estimated Claim Amount", value: caseData?.estimatedClaimAmount ? `₹${caseData.estimatedClaimAmount}` : null },
+                        { label: "Partner Reference", value: caseData?.partnerRef },
+                        { label: "Mobile", value: caseData?.mobile },
+                        { label: "Email", value: caseData?.email },
+                        { label: "Claim Number", value: caseData?.claimNo },
+                        { label: "Policy Number", value: caseData?.policyNo },
+                        { label: "Company Name", value: caseData?.companyName },
+                        { label: "Documents", value: caseData?.documentShort ? 'Incomplete' : 'Complete' },
+                        { label: "File Bucket", value: caseData?.fileBucket }
+                    ].map((field, index) => (
+                        <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                            <label className="text-sm font-medium text-gray-600">{field.label}</label>
+                            <p className="mt-2 text-lg text-gray-900">{field.value || 'N/A'}</p>
+                        </div>
+                    ))}
+                </div>
 
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Estimated Claim Amount</label>
-                        <p className="mt-1 text-gray-900">₹{caseData?.estimatedClaimAmount || 'N/A'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Partner Reference</label>
-                        <p className="mt-1 text-gray-900">{caseData?.partnerRef || 'N/A'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Mobile</label>
-                        <p className="mt-1 text-gray-900">{caseData?.mobile || 'N/A'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
-                        <p className="mt-1 text-gray-900">{caseData?.email || 'N/A'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Claim Number</label>
-                        <p className="mt-1 text-gray-900">{caseData?.claimNo || 'N/A'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Policy Number</label>
-                        <p className="mt-1 text-gray-900">{caseData?.policyNo || 'N/A'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Company Name</label>
-                        <p className="mt-1 text-gray-900">{caseData?.companyName || 'N/A'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Documents</label>
-                        <p className="mt-1 text-gray-900">{caseData?.documentShort ? 'Incomplete' : 'Complete'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">File Bucket</label>
-                        <p className="mt-1 text-gray-900">{caseData?.fileBucket || 'N/A'}</p>
-                    </div>
-
-                    <div className="col-span-2 mt-6">
-                        <button
-                            onClick={handleSendToReview}
-                            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                        >
-                            Send to Review
-                        </button>
-                    </div>
+                <div className="mt-10">
+                    <button
+                        onClick={handleSendToReview}
+                        disabled={sendingToReview}
+                        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200 text-lg font-medium shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                    >
+                        {sendingToReview ? (
+                            <>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                <span>Sending to Review...</span>
+                            </>
+                        ) : (
+                            <>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                                Send to Review
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
         </div>
