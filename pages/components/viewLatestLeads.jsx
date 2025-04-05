@@ -97,7 +97,17 @@ export default function ViewLatestLeads() {
     return (
         <div className="w-full lg:max-w-[1300px] mx-auto px-3 sm:px-0 py-4 sm:py-0">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-8 mb-6 sm:mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 uppercase underline text-center sm:text-left">Latest Leads</h2>
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={() => window.history.back()}
+                        className="text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 uppercase underline text-center sm:text-left">Latest Leads</h2>
+                </div>
                 <span className="bg-blue-100 text-blue-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-sm sm:text-base text-center">
                     {leads.length} {leads.length === 1 ? 'Lead' : 'Leads'}
                 </span>
