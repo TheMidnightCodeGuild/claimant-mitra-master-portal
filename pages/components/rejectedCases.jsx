@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import InOmbudsman from './caseStatus/inOmbudsman';
+import FullCase from './caseStatus/fullCase';
 
-export default function Ombudsman() {
+export default function RejectedCases() {
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedCaseId, setSelectedCaseId] = useState(null);
 
     useEffect(() => {
-        async function fetchOmbudsmanCases() {
+        async function fetchRejectedCases() {
             try {
                 const usersRef = collection(db, 'users');
                 const q = query(
                     usersRef,
-                    where('ombudsman', '==', true)
+                    where('rejected', '==', true)
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -23,32 +23,29 @@ export default function Ombudsman() {
 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    // Only add non-rejected cases
-                    if (!data.rejected) {
-                        casesData.push({
-                            id: doc.id,
-                            ...data
-                        });
-                    }
+                    casesData.push({
+                        id: doc.id,
+                        ...data
+                    });
                 });
 
-                console.log('Fetched Ombudsman cases:', casesData.length);
+                console.log('Fetched rejected cases:', casesData.length);
                 
-                // Sort by ombudsmanDate in descending order
+                // Sort by rejectionDate in descending order
                 casesData.sort((a, b) => {
-                    return new Date(b.ombudsmanDate) - new Date(a.ombudsmanDate);
+                    return new Date(b.rejectionDate) - new Date(a.rejectionDate);
                 });
 
                 setCases(casesData);
             } catch (err) {
-                console.error('Error fetching Ombudsman cases:', err);
-                setError('Failed to fetch Ombudsman cases: ' + err.message);
+                console.error('Error fetching rejected cases:', err);
+                setError('Failed to fetch rejected cases: ' + err.message);
             } finally {
                 setLoading(false);
             }
         }
 
-        fetchOmbudsmanCases();
+        fetchRejectedCases();
     }, []);
 
     const handleCaseClick = (caseId) => {
@@ -82,9 +79,9 @@ export default function Ombudsman() {
                     onClick={handleBackToCases}
                     className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
                 >
-                    ← Back to Ombudsman Cases
+                    ← Back to Rejected Cases
                 </button>
-                <InOmbudsman docId={selectedCaseId} onComplete={handleBackToCases} />
+                <FullCase docId={selectedCaseId} />
             </div>
         );
     }
@@ -93,7 +90,7 @@ export default function Ombudsman() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-gray-500">
-                    <p>No Ombudsman cases found</p>
+                    <p>No rejected cases found</p>
                 </div>
             </div>
         );
@@ -104,19 +101,15 @@ export default function Ombudsman() {
         return new Date(dateString).toLocaleDateString('en-IN', {
             day: '2-digit',
             month: 'short',
-            year: 'numeric'
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
-    };
-
-    const calculateDaysElapsed = (dateString) => {
-        if (!dateString) return null;
-        const days = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
-        return days;
     };
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Ombudsman Cases ({cases.length})</h2>
+            <h2 className="text-2xl font-bold mb-6">Rejected Cases ({cases.length})</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {cases.map((case_) => (
                     <div 
@@ -134,41 +127,41 @@ export default function Ombudsman() {
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                                <div>
-                                    <p className="text-gray-600">
-                                        <span className="font-medium">Mobile:</span><br />
-                                        {case_.mobile || 'N/A'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-gray-600">
-                                        <span className="font-medium">Claim Amount:</span><br />
-                                        ₹{case_.estimatedClaimAmount || 'N/A'}
-                                    </p>
-                                </div>
+                            <div className="grid grid-cols-1 gap-2 text-sm">
+                                <p className="text-gray-600">
+                                    <span className="font-medium">Claim Amount:</span>{' '}
+                                    ₹{case_.estimatedClaimAmount || 'N/A'}
+                                </p>
+                                
+                                <p className="text-gray-600">
+                                    <span className="font-medium">Company:</span>{' '}
+                                    {case_.companyName || 'N/A'}
+                                </p>
+
+                                <p className="text-gray-600">
+                                    <span className="font-medium">Policy No:</span>{' '}
+                                    {case_.policyNo || 'N/A'}
+                                </p>
+
+                                <p className="text-gray-600">
+                                    <span className="font-medium">Mobile:</span>{' '}
+                                    {case_.mobile || 'N/A'}
+                                </p>
                             </div>
 
                             <div className="border-t pt-2 mt-2">
-                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div>
-                                        <p className="text-gray-600">
-                                            <span className="font-medium">Ombudsman Check:</span><br />
-                                            {formatDate(case_.ombudsmanCheckDate)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-600">
-                                            <span className="font-medium">Ombudsman Date:</span><br />
-                                            {formatDate(case_.ombudsmanDate)}
-                                        </p>
-                                    </div>
-                                </div>
+                                <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Rejected On:</span><br />
+                                    {formatDate(case_.rejectionDate)}
+                                </p>
                             </div>
 
-                            {case_.ombudsmanDate && (
-                                <div className="mt-2 bg-blue-50 p-2 rounded-md text-sm text-blue-700">
-                                    Days in Ombudsman: {calculateDaysElapsed(case_.ombudsmanDate)}
+                            {case_.rejectionReason && (
+                                <div className="mt-2 bg-red-50 p-2 rounded-md">
+                                    <p className="text-sm text-red-700">
+                                        <span className="font-medium">Reason:</span>{' '}
+                                        {case_.rejectionReason}
+                                    </p>
                                 </div>
                             )}
                         </div>

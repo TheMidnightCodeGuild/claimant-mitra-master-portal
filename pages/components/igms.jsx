@@ -16,7 +16,8 @@ export default function IGMS() {
                 const q = query(
                     usersRef,
                     where('igms', '==', true),
-                    where('ombudsman', '==', false)
+                    where('ombudsman', '==', false),
+                    where('solved', '==', false)
                 );
 
                 const querySnapshot = await getDocs(q);

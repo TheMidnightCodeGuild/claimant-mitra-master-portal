@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import FullCase from './fullCase';
 
 export default function SendToOmbudsman({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
@@ -20,6 +21,7 @@ export default function SendToOmbudsman({ docId, onComplete }) {
     const [isAddingIGMSLog, setIsAddingIGMSLog] = useState(false);
     const [caseAcceptanceDate, setCaseAcceptanceDate] = useState('');
     const [igmsFollowUpDate, setIgmsFollowUpDate] = useState('');
+    const [showFullCase, setShowFullCase] = useState(false);
 
     useEffect(() => {
         async function fetchCase() {
@@ -103,6 +105,33 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         } catch (err) {
             console.error('Error rejecting case:', err);
             alert('Failed to reject case');
+        }
+    };
+
+    const handleMarkAsResolved = async () => {
+        try {
+            const docRef = doc(db, 'users', docId);
+            await updateDoc(docRef, {
+                solved: true,
+                solvedDate: new Date().toISOString(),
+                reviewStatus: 'Resolved'
+            });
+            
+            // Update the local state
+            setCaseData(prev => ({
+                ...prev,
+                solved: true,
+                solvedDate: new Date().toISOString(),
+                reviewStatus: 'Resolved'
+            }));
+
+            alert('Case marked as resolved successfully');
+            if (onComplete) {
+                onComplete();
+            }
+        } catch (err) {
+            console.error('Error marking case as resolved:', err);
+            alert('Failed to mark case as resolved');
         }
     };
 
@@ -220,6 +249,20 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         );
     };
 
+    if (showFullCase) {
+        return (
+            <div>
+                <button 
+                    onClick={() => setShowFullCase(false)}
+                    className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                >
+                    ← Back to Details
+                </button>
+                <FullCase docId={docId} />
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -238,7 +281,15 @@ export default function SendToOmbudsman({ docId, onComplete }) {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Ombudsman</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Ombudsman</h2>
+                <button
+                    onClick={() => setShowFullCase(true)}
+                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
+                >
+                    View Entire Doc
+                </button>
+            </div>
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Basic Information */}
@@ -562,6 +613,16 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                             className="flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                         >
                             Reject Case
+                        </button>
+                        <button
+                            onClick={handleMarkAsResolved}
+                            disabled={caseData?.solved}
+                            className={`flex-1 py-2 px-4 rounded-md text-white font-medium 
+                                ${caseData?.solved 
+                                    ? 'bg-green-300 cursor-not-allowed' 
+                                    : 'bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2'}`}
+                        >
+                            {caseData?.solved ? 'Already Resolved' : 'Mark as Resolved'}
                         </button>
                     </div>
                 </div>

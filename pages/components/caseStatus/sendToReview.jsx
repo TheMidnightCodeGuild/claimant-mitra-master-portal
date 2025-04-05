@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import FullCase from './fullCase';
 
 export default function SendToReview({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showFullCase, setShowFullCase] = useState(false);
 
     useEffect(() => {
         async function fetchCase() {
@@ -56,6 +58,20 @@ export default function SendToReview({ docId, onComplete }) {
         }
     };
 
+    if (showFullCase) {
+        return (
+            <div>
+                <button 
+                    onClick={() => setShowFullCase(false)}
+                    className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                >
+                    ← Back to Details
+                </button>
+                <FullCase docId={docId} />
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -74,7 +90,15 @@ export default function SendToReview({ docId, onComplete }) {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Case Details</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Case Details</h2>
+                <button
+                    onClick={() => setShowFullCase(true)}
+                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
+                >
+                    View Entire Doc
+                </button>
+            </div>
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">

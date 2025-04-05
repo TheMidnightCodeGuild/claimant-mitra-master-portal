@@ -51,12 +51,22 @@ const Ombudsman = dynamic(() => import('./components/ombudsman'), {
   ssr: false,
 });
 
+const RejectedCases = dynamic(() => import('./components/rejectedCases'), {
+  ssr: false,
+});
+
+const SolvedCases = dynamic(() => import('./components/solvedCases'), {
+  ssr: false,
+});
+
 export default function Dashboard() {
   const [showLatestLeads, setShowLatestLeads] = useState(false);
   const [showAllCases, setShowAllCases] = useState(false);
   const [showCasesUnderReview, setShowCasesUnderReview] = useState(false);
   const [showIGMS, setShowIGMS] = useState(false);
   const [showOmbudsman, setShowOmbudsman] = useState(false);
+  const [showRejectedCases, setShowRejectedCases] = useState(false);
+  const [showSolvedCases, setShowSolvedCases] = useState(false);
 
   const dashboardItems = [
     {
@@ -67,6 +77,8 @@ export default function Dashboard() {
         setShowCasesUnderReview(false);
         setShowIGMS(false);
         setShowOmbudsman(false);
+        setShowRejectedCases(false);
+        setShowSolvedCases(false);
       },
       icon: "📊"
     },
@@ -83,6 +95,8 @@ export default function Dashboard() {
         setShowCasesUnderReview(false);
         setShowIGMS(false);
         setShowOmbudsman(false);
+        setShowRejectedCases(false);
+        setShowSolvedCases(false);
       },
       icon: "📁"
     },
@@ -99,6 +113,8 @@ export default function Dashboard() {
         setShowLatestLeads(false);
         setShowIGMS(false);
         setShowOmbudsman(false);
+        setShowRejectedCases(false);
+        setShowSolvedCases(false);
       },
       icon: "🔍"
     },
@@ -110,6 +126,8 @@ export default function Dashboard() {
         setShowAllCases(false);
         setShowLatestLeads(false);
         setShowOmbudsman(false);
+        setShowRejectedCases(false);
+        setShowSolvedCases(false);
       },
       icon: "📋"
     },
@@ -121,17 +139,35 @@ export default function Dashboard() {
         setShowCasesUnderReview(false);
         setShowAllCases(false);
         setShowLatestLeads(false);
+        setShowRejectedCases(false);
+        setShowSolvedCases(false);
       },
       icon: "⚖️"
     },
     {
       title: "Solved Cases",
-      href: "/cases/solved",
+      onClick: () => {
+        setShowSolvedCases(true);
+        setShowRejectedCases(false);
+        setShowOmbudsman(false);
+        setShowIGMS(false);
+        setShowCasesUnderReview(false);
+        setShowAllCases(false);
+        setShowLatestLeads(false);
+      },
       icon: "✅"
     },
     {
       title: "Rejected Cases",
-      href: "/cases/rejected",
+      onClick: () => {
+        setShowRejectedCases(true);
+        setShowOmbudsman(false);
+        setShowIGMS(false);
+        setShowCasesUnderReview(false);
+        setShowAllCases(false);
+        setShowLatestLeads(false);
+        setShowSolvedCases(false);
+      },
       icon: "❌"
     },
     {
@@ -148,7 +184,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-10">
             <Image src="/images/logo.png" width={80} height={80} alt="Logo" className="h-16 sm:h-20 w-auto" />
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold uppercase underline text-gray-800">
-              Dashboard
+              Master Portal Dashboard
             </h1>
           </div>
         </div>
@@ -165,6 +201,10 @@ export default function Dashboard() {
           <IGMS />
         ) : showOmbudsman ? (
           <Ombudsman />
+        ) : showRejectedCases ? (
+          <RejectedCases />
+        ) : showSolvedCases ? (
+          <SolvedCases />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
             {dashboardItems.map((item, index) => (
