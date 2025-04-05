@@ -139,8 +139,8 @@ export default function RejectedCases() {
                                 </p>
 
                                 <p className="text-gray-600">
-                                    <span className="font-medium">Policy No:</span>{' '}
-                                    {case_.policyNo || 'N/A'}
+                                    <span className="font-medium">Case Rejection Reason:</span>{' '}
+                                    {case_.caseRejectionReason || 'N/A'}
                                 </p>
 
                                 <p className="text-gray-600">
@@ -152,7 +152,7 @@ export default function RejectedCases() {
                             <div className="border-t pt-2 mt-2">
                                 <p className="text-sm text-gray-600">
                                     <span className="font-medium">Rejected On:</span><br />
-                                    {formatDate(case_.rejectionDate)}
+                                    {formatDate(case_.caseRejectionDate)}
                                 </p>
                             </div>
 
@@ -160,7 +160,7 @@ export default function RejectedCases() {
                                 <div className="mt-2 bg-red-50 p-2 rounded-md">
                                     <p className="text-sm text-red-700">
                                         <span className="font-medium">Reason:</span>{' '}
-                                        {case_.rejectionReason}
+                                        {case_.caseRejectionReason}
                                     </p>
                                 </div>
                             )}

@@ -43,9 +43,9 @@ export default function SendToReview({ docId, onComplete }) {
             
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
-                status: 'under_review',
-                reviewDate: new Date(),
-                reviewStatus: 'Under Review'
+                takenForReview: true,
+                status: 'Under Review',
+                reviewDate: new Date().toISOString()
             });
 
             alert('Case sent for review successfully');
@@ -149,8 +149,8 @@ export default function SendToReview({ docId, onComplete }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Document Short</label>
-                        <p className="mt-1 text-gray-900">{caseData?.documentShort || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-gray-700">Documents</label>
+                        <p className="mt-1 text-gray-900">{caseData?.documentShort ? 'Incomplete' : 'Complete'}</p>
                     </div>
 
                     <div className="space-y-2">

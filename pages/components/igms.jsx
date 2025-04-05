@@ -17,7 +17,8 @@ export default function IGMS() {
                     usersRef,
                     where('igms', '==', true),
                     where('ombudsman', '==', false),
-                    where('solved', '==', false)
+                    where('solved', '==', false),
+                    where('rejected','==',false)
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -106,6 +107,11 @@ export default function IGMS() {
             year: 'numeric'
         });
     };
+    const calculateDaysElapsed = (dateString) => {
+        if (!dateString) return null;
+        const days = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
+        return days;
+    };
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -162,6 +168,12 @@ export default function IGMS() {
                             {case_.igmsFollowUpDate && new Date(case_.igmsFollowUpDate) <= new Date() && (
                                 <div className="mt-2 bg-yellow-50 p-2 rounded-md text-sm text-yellow-700">
                                     Follow-up required
+                                </div>
+                            )}
+
+                            {case_.igmsDate && (
+                                <div className="mt-2 bg-blue-50 p-2 rounded-md text-sm text-blue-700">
+                                    Days in IGMS: {calculateDaysElapsed(case_.igmsDate)}
                                 </div>
                             )}
                         </div>

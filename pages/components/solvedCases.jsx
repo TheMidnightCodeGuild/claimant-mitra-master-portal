@@ -159,22 +159,18 @@ export default function SolvedCases() {
                             </div>
 
                             <div className="border-t pt-2 mt-2">
-                                <p className="text-sm text-gray-600">
-                                    <span className="font-medium">Solved On:</span><br />
-                                    {formatDate(case_.solvedDate)}
-                                </p>
-                            </div>
-
-                            {/* Commission Information */}
-                            <div className="mt-2 bg-green-50 p-2 rounded-md">
-                                <div className="grid grid-cols-2 gap-2 text-sm text-green-700">
-                                    <p>
-                                        <span className="font-medium">Commission:</span>{' '}
-                                        {formatCurrency(case_.commisionReceived)}
+                                <div className="grid grid-cols-1 gap-2 text-sm">
+                                    <p className="text-gray-600">
+                                        <span className="font-medium">Complaint Date:</span><br />
+                                        {formatDate(case_.complaintDate)}
                                     </p>
-                                    <p>
-                                        <span className="font-medium">Partner:</span>{' '}
-                                        {formatCurrency(case_.partnerCommision)}
+                                    <p className="text-gray-600">
+                                        <span className="font-medium">Case Acceptance:</span><br />
+                                        {formatDate(case_.caseAcceptanceDate)}
+                                    </p>
+                                    <p className="text-gray-600">
+                                        <span className="font-medium">Solved On:</span><br />
+                                        {formatDate(case_.solvedDate)}
                                     </p>
                                 </div>
                             </div>

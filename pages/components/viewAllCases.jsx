@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import FullCase from './caseStatus/updateCases';
 
 export default function ViewAllCases() {
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedCaseId, setSelectedCaseId] = useState(null);
 
     useEffect(() => {
         async function fetchAllCases() {
@@ -29,6 +31,14 @@ export default function ViewAllCases() {
 
         fetchAllCases();
     }, []);
+
+    const handleCaseClick = (caseId) => {
+        setSelectedCaseId(caseId);
+    };
+
+    if (selectedCaseId) {
+        return <FullCase docId={selectedCaseId} />;
+    }
 
     if (loading) {
         return (
@@ -73,7 +83,8 @@ export default function ViewAllCases() {
                 {cases.map((case_) => (
                     <div 
                         key={case_.id}
-                        className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md p-4 sm:p-6 border border-gray-800 transition-all duration-200"
+                        className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md p-4 sm:p-6 border border-gray-800 transition-all duration-200 cursor-pointer"
+                        onClick={() => handleCaseClick(case_.id)}
                     >
                         <div className="space-y-2 sm:space-y-3">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">

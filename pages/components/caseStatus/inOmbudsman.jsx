@@ -194,11 +194,9 @@ export default function InOmbudsman({ docId, onComplete }) {
         try {
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
-                status: 'resolved',
-                resolvedDate: new Date().toISOString(),
-                reviewStatus: 'Resolved',
+                status: 'Resolved',
+                solvedDate: new Date().toISOString(),
                 solved: true,
-                solvedDate: new Date().toISOString()
             });
 
             alert('Case marked as resolved');
@@ -215,8 +213,9 @@ export default function InOmbudsman({ docId, onComplete }) {
         try {
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
-                rejected: true,
-                rejectedDate: new Date().toISOString()
+                status: 'Rejected in Ombudsman',
+                caseRejectionDate: new Date().toISOString(),
+                rejected: true
             });
 
             alert('Case marked as rejected');
@@ -349,6 +348,18 @@ export default function InOmbudsman({ docId, onComplete }) {
                         </p>
                     </div>
 
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">Case Acceptance Date</label>
+                        <p className="mt-1 text-gray-900">
+                            {caseData?.caseAcceptanceDate ? new Date(caseData.caseAcceptanceDate).toLocaleString() : 'N/A'}
+                        </p>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">IGMS Rejection Reason</label>
+                        <p className="mt-1 text-gray-900">{caseData?.igmsRejectionReason || 'N/A'}</p>
+                    </div>
+
                     {/* Ombudsman Status Update Section */}
                     <div className="col-span-2 space-y-4 border-t pt-4">
                         <h3 className="text-lg font-medium">Update Ombudsman Status</h3>
@@ -382,7 +393,7 @@ export default function InOmbudsman({ docId, onComplete }) {
                                 />
                             </div>
     <div>
-                                <label className="block text-sm font-medium text-gray-700">6A Form Submitted</label>
+                                <label className="block text-sm font-medium text-gray-700">6A Form Submitted?</label>
                                 <select
                                     value={sixAFormSubmitted}
                                     onChange={(e) => setSixAFormSubmitted(e.target.value === 'true')}
@@ -393,7 +404,7 @@ export default function InOmbudsman({ docId, onComplete }) {
                                 </select>
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700">Rejection Reason</label>
+                                <label className="block text-sm font-medium text-gray-700"> Ombudsman Rejection Reason</label>
                                 <textarea
                                     value={ombudsmanRejectionReason}
                                     onChange={(e) => setOmbudsmanRejectionReason(e.target.value)}

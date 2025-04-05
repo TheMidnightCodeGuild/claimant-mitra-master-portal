@@ -7,8 +7,8 @@ export default function SendToIGMS({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [reviewStatus, setReviewStatus] = useState('');
-    const [rejectionReason, setRejectionReason] = useState('');
+    const [status, setStatus] = useState('');
+    const [caseRejectionReason, setCaseRejectionReason] = useState('');
     const [documentShort, setDocumentShort] = useState('');
     const [editingField, setEditingField] = useState(null);
     const [showAllMainLogs, setShowAllMainLogs] = useState(false);
@@ -30,8 +30,8 @@ export default function SendToIGMS({ docId, onComplete }) {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     setCaseData(data);
-                    setReviewStatus(data.reviewStatus || '');
-                    setRejectionReason(data.rejectionReason || '');
+                    setStatus(data.status || '');
+                    setCaseRejectionReason(data.caseRejectionReason || '');
                     setDocumentShort(data.documentShort || '');
                 } else {
                     setError('Case not found');
@@ -68,11 +68,11 @@ export default function SendToIGMS({ docId, onComplete }) {
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
                 igmsDate: new Date().toISOString(),
-                rejectionReason,
+                caseRejectionReason,
                 documentShort,
                 igms: true,
                 caseAcceptanceDate: new Date().toISOString(),
-                reviewStatus: 'Case Accepted'
+                status: "Case Accepted"
             });
 
             alert('Case sent to IGMS successfully');
@@ -91,8 +91,9 @@ export default function SendToIGMS({ docId, onComplete }) {
             
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
-                reviewStatus: 'Rejected',
-                rejectionDate: new Date().toISOString()
+                status: 'Rejected in Review',
+                caseRejectionDate: new Date().toISOString(),
+                rejected: true
             });
 
             alert('Case rejected successfully');
@@ -221,7 +222,7 @@ export default function SendToIGMS({ docId, onComplete }) {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">IGMS</h2>
+                <h2 className="text-2xl font-bold">Review</h2>
                 <button
                     onClick={() => setShowFullCase(true)}
                     className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
@@ -257,10 +258,10 @@ export default function SendToIGMS({ docId, onComplete }) {
                         <p className="mt-1 text-gray-900">{caseData?.email || 'N/A'}</p>
                     </div>
 
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">Review Status</label>
-                        <p className="mt-1 text-gray-900">{reviewStatus || 'N/A'}</p>
-                    </div>
+                        <p className="mt-1 text-gray-900">{ status || 'N/A'}</p>
+                    </div> */}
 
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">Company Name</label>
@@ -280,16 +281,16 @@ export default function SendToIGMS({ docId, onComplete }) {
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">Rejection Reason</label>
                         <div className="flex items-center">
-                            {editingField === 'rejectionReason' ? (
+                            {editingField === 'caseRejectionReason' ? (
                                 <>
                                     <input
                                         type="text"
-                                        value={rejectionReason}
+                                        value={caseRejectionReason}
                                         onChange={(e) => setRejectionReason(e.target.value)}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     />
                                     <button 
-                                        onClick={() => handleFieldUpdate('rejectionReason', rejectionReason)}
+                                        onClick={() => handleFieldUpdate('rejectionReason', caseRejectionReason)}
                                         className="ml-2 text-blue-500 hover:text-blue-700"
                                     >
                                         ✓
@@ -297,9 +298,9 @@ export default function SendToIGMS({ docId, onComplete }) {
                                 </>
                             ) : (
                                 <>
-                                    <span className="mt-1 text-gray-900">{rejectionReason || 'N/A'}</span>
+                                    <span className="mt-1 text-gray-900">{caseRejectionReason || 'N/A'}</span>
                                     <button 
-                                        onClick={() => setEditingField('rejectionReason')}
+                                        onClick={() => setEditingField('caseRejectionReason')}
                                         className="ml-2 text-gray-500 hover:text-gray-700"
                                     >
                                         ✎
@@ -310,16 +311,18 @@ export default function SendToIGMS({ docId, onComplete }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Document Short</label>
+                        <label className="block text-sm font-medium text-gray-700">Documents?</label>
                         <div className="flex items-center">
                             {editingField === 'documentShort' ? (
                                 <>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={documentShort}
                                         onChange={(e) => setDocumentShort(e.target.value)}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
+                                    >
+                                        <option value={false}>Complete</option>
+                                        <option value={true}>Incomplete</option>
+                                    </select>
                                     <button 
                                         onClick={() => handleFieldUpdate('documentShort', documentShort)}
                                         className="ml-2 text-blue-500 hover:text-blue-700"
@@ -329,7 +332,7 @@ export default function SendToIGMS({ docId, onComplete }) {
                                 </>
                             ) : (
                                 <>
-                                    <span className="mt-1 text-gray-900">{documentShort || 'N/A'}</span>
+                                    <span className="mt-1 text-gray-900">{documentShort ? 'Incomplete' : 'Complete'}</span>
                                     <button 
                                         onClick={() => setEditingField('documentShort')}
                                         className="ml-2 text-gray-500 hover:text-gray-700"

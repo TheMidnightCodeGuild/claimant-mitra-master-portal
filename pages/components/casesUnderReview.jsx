@@ -15,7 +15,9 @@ export default function CasesUnderReview() {
                 const usersRef = collection(db, 'users');
                 const q = query(
                     usersRef,
-                    where('reviewStatus', '==', 'Under Review')
+                    where('takenForReview', '==', true),
+                    where('igms', '==', false),
+                    where('rejected','==',false)
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -54,6 +56,12 @@ export default function CasesUnderReview() {
 
     const handleBackToCases = () => {
         setSelectedCaseId(null);
+    };
+
+    const calculateDaysElapsed = (dateString) => {
+        if (!dateString) return null;
+        const days = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
+        return days;
     };
 
     if (loading) {
@@ -129,6 +137,16 @@ export default function CasesUnderReview() {
                                 <p className="text-gray-600">
                                     <span className="font-medium">Mobile:</span> {case_.mobile}
                                 </p>
+                            )}
+                            {case_.reviewDate && (
+                                <p className="text-gray-600">
+                                    <span className="font-medium">Review Date:</span> {new Date(case_.reviewDate).toLocaleString()}
+                                </p>
+                            )}
+                            {case_.reviewDate && (
+                                <div className="mt-2 bg-blue-50 p-2 rounded-md text-sm text-blue-700">
+                                    Days in Review: {calculateDaysElapsed(case_.reviewDate)}
+                                </div>
                             )}
                         </div>
                     </div>

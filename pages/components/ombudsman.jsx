@@ -15,7 +15,10 @@ export default function Ombudsman() {
                 const usersRef = collection(db, 'users');
                 const q = query(
                     usersRef,
-                    where('ombudsman', '==', true)
+                    where('ombudsman', '==', true),
+                    where('solved', '==', false),
+                    where('rejected','==',false)
+
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -153,7 +156,7 @@ export default function Ombudsman() {
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div>
                                         <p className="text-gray-600">
-                                            <span className="font-medium">Ombudsman Check:</span><br />
+                                            <span className="font-medium">Ombudsman Followup Date:</span><br />
                                             {formatDate(case_.ombudsmanCheckDate)}
                                         </p>
                                     </div>
