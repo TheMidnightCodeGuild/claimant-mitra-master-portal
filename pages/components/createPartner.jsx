@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { auth, createUserWithEmailAndPassword } from '../lib/firebase';
-import { db } from '../lib/firebase';
+import { auth, createUserWithEmailAndPassword } from '../../lib/firebase';
+import { db } from '../../lib/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
 
 function CreateAccount() {
@@ -8,6 +8,7 @@ function CreateAccount() {
     const [password, setPassword] = useState('');
     const [source, setsource] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [name, setName] = useState('');
     const [error, setError] = useState(null);
   
     const handleSubmit = async (e) => {
@@ -21,8 +22,7 @@ function CreateAccount() {
           email: user.email,
           source,
           phoneNumber,
-          earning: 0,
-          casesReferred: 0,
+          name,
           partnerRef: (source.substring(0, 4) + phoneNumber.slice(-4)).toUpperCase(),
           createdAt: new Date().toISOString(),
           userId: user.uid,
@@ -42,6 +42,18 @@ function CreateAccount() {
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm space-y-4">
+              <div>
+                <label htmlFor="name" className="sr-only">Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Name"
+                  required
+                  className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
               <div>
                 <label htmlFor="email" className="sr-only">Email</label>
                 <input
