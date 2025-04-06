@@ -79,6 +79,10 @@ const CreatePartner = dynamic(() => import('./components/createPartner'), {
   ssr: false,
 });
 
+const ViewCustomerEnquiries = dynamic(() => import('./components/viewCustomerEnquiries'), {
+  ssr: false,
+});
+
 export default function Dashboard() {
   const [showLatestLeads, setShowLatestLeads] = useState(false);
   const [showAllCases, setShowAllCases] = useState(false);
@@ -92,6 +96,7 @@ export default function Dashboard() {
   const [showPartnerIssues, setShowPartnerIssues] = useState(false);
   const [showPartnerApplication, setShowPartnerApplication] = useState(false);
   const [showCreatePartner, setShowCreatePartner] = useState(false);
+  const [showCustomerEnquiries, setShowCustomerEnquiries] = useState(false);
 
   const dashboardItems = [
     {
@@ -109,6 +114,7 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "➕"
     },
@@ -127,6 +133,7 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "📊"
     },
@@ -145,6 +152,7 @@ export default function Dashboard() {
         setShowViewPartners(false);
         setShowPartnerIssues(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "🤝"
     },
@@ -163,6 +171,7 @@ export default function Dashboard() {
         setShowCreateCase(false);
         setShowViewPartners(false);
         setShowPartnerIssues(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "👥"
     },
@@ -181,6 +190,7 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "📁"
     },
@@ -199,6 +209,7 @@ export default function Dashboard() {
         setShowViewPartners(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "⚠️"
     },
@@ -217,6 +228,7 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "🔍"
     },
@@ -235,6 +247,7 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "📋"
     },
@@ -253,6 +266,7 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "⚖️"
     },
@@ -271,6 +285,7 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "✅"
     },
@@ -289,6 +304,7 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "❌"
     },
@@ -307,8 +323,28 @@ export default function Dashboard() {
         setShowPartnerIssues(false);
         setShowPartnerApplication(false);
         setShowCreatePartner(false);
+        setShowCustomerEnquiries(false);
       },
       icon: "👥"
+    },
+    {
+      title: "View Customer Enquiries",
+      onClick: () => {
+        setShowCustomerEnquiries(true);
+        setShowViewPartners(false);
+        setShowRejectedCases(false);
+        setShowOmbudsman(false);
+        setShowIGMS(false);
+        setShowCasesUnderReview(false);
+        setShowAllCases(false);
+        setShowLatestLeads(false);
+        setShowSolvedCases(false);
+        setShowCreateCase(false);
+        setShowPartnerIssues(false);
+        setShowPartnerApplication(false);
+        setShowCreatePartner(false);
+      },
+      icon: "📝"
     }
   ];
 
@@ -350,6 +386,8 @@ export default function Dashboard() {
           <PartnerApplication />
         ) : showCreatePartner ? (
           <CreatePartner />
+        ) : showCustomerEnquiries ? (
+          <ViewCustomerEnquiries />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
             {dashboardItems.map((item, index) => (
