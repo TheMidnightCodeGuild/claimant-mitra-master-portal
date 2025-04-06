@@ -21,21 +21,43 @@ export default function ViewLatestLeads() {
                 today.setHours(0, 0, 0, 0);
                 const todayStr = today.toISOString();
 
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                const tomorrowStr = tomorrow.toISOString();
+
                 const usersRef = collection(db, 'users');
-                const q = query(
+                const yesterdayQuery = query(
                     usersRef,
                     where('complaintDate', '>=', yesterdayStr),
                     where('complaintDate', '<', todayStr)
                 );
 
-                const querySnapshot = await getDocs(q);
-                const leadsData = querySnapshot.docs.map(doc => ({
+                const todayQuery = query(
+                    usersRef,
+                    where('complaintDate', '>=', todayStr),
+                    where('complaintDate', '<', tomorrowStr)
+                );
+
+                const [yesterdaySnapshot, todaySnapshot] = await Promise.all([
+                    getDocs(yesterdayQuery),
+                    getDocs(todayQuery)
+                ]);
+
+                const yesterdayLeads = yesterdaySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
 
-                leadsData.sort((a, b) => new Date(b.complaintDate) - new Date(a.complaintDate));
-                setLeads(leadsData);
+                const todayLeads = todaySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                const allLeads = [...yesterdayLeads, ...todayLeads];
+                allLeads.sort((a, b) => new Date(b.complaintDate) - new Date(a.complaintDate));
+                
+                setLeads(allLeads);
             } catch (err) {
                 console.error('Error fetching leads:', err);
                 setError('Failed to fetch latest leads. Please try again.');
@@ -130,6 +152,17 @@ export default function ViewLatestLeads() {
                                         dateStyle: 'medium',
                                         timeStyle: 'short'
                                     })}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className={`px-2 py-1 rounded-full text-xs sm:text-sm font-medium ${
+                                    lead.status === 'Under Review' ? 'bg-yellow-100 text-yellow-800' :
+                                    lead.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                    lead.status === 'Solved' ? 'bg-green-100 text-green-800' :
+                                    'bg-gray-100 text-gray-800'
+                                }`}>
+                                    {lead.status || 'New Lead'}
                                 </span>
                             </div>
 
