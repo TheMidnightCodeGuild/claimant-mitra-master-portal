@@ -37,7 +37,16 @@ function PartnerApplications() {
   return (
     <div className="min-h-screen p-8 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">New Partner Applications</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">New Partner Applications</h1>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2 transition-colors"
+          >
+            <span>←</span>
+            <span>Back to Dashboard</span>
+          </button>
+        </div>
         
         <div className="grid gap-6">
           {applications.map((application) => (

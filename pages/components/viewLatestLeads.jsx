@@ -121,7 +121,7 @@ export default function ViewLatestLeads() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-8 mb-6 sm:mb-8">
                 <div className="flex items-center gap-4">
                     <button 
-                        onClick={() => window.history.back()}
+                        onClick={() => window.location.reload()}
                         className="text-blue-600 hover:text-blue-800 transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

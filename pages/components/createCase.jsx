@@ -143,7 +143,16 @@ export default function CreateCase() {
 
     return (
         <div className="lg:max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            <h2 className="text-3xl font-bold mb-8 text-gray-800 border-b pb-4 border-gray-200">Create New Case</h2>
+            <div className="flex items-center justify-between mb-8 border-b pb-4 border-gray-200">
+                <h2 className="text-3xl font-bold text-gray-800">Create New Case</h2>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2 transition-colors"
+                >
+                    <span>←</span>
+                    <span>Back to Dashboard</span>
+                </button>
+            </div>
             
             {error && (
                 <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-md border border-red-200 animate-fade-in">
