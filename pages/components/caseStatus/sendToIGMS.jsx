@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
+import { sendConsent } from '../../components/consent';
 
 export default function SendToIGMS({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
@@ -161,6 +162,21 @@ export default function SendToIGMS({ docId, onComplete }) {
         } catch (err) {
             console.error('Error adding internal log:', err);
             alert('Failed to add internal log');
+        }
+    };
+
+    const handleSendConsent = async () => {
+        try {
+            if (!caseData?.email || !caseData?.name) {
+                alert('Email or name is missing');
+                return;
+            }
+
+            await sendConsent(caseData.email, caseData.name);
+            alert('Consent document sent successfully');
+        } catch (err) {
+            console.error('Error sending consent:', err);
+            alert('Failed to send consent document');
         }
     };
 
@@ -463,6 +479,12 @@ export default function SendToIGMS({ docId, onComplete }) {
                             className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                         >
                             Send to IGMS
+                        </button>
+                        <button
+                            onClick={handleSendConsent}
+                            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                        >
+                            Send Consent
                         </button>
                         <button
                             onClick={handleRejectCase}
