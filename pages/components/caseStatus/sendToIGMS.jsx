@@ -183,6 +183,7 @@ export default function SendToIGMS({ docId, onComplete }) {
             await sendConsent(
                 caseData.email,
                 caseData.name,
+                docId, // Use docId directly from props/scope instead of caseData
                 caseData.address,
                 caseData.policyHolder,
                 caseData.policyNo,

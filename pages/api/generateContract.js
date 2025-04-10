@@ -16,11 +16,22 @@ export default async function handler(req, res) {
         // Generate document
         const documentBuffer = await createContract(documentData, staticContent);
 
+        const signatureUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/contractDigitalSignature/${documentData.docId}`;
+
+
         // Send email with document
         await sendEmail({
             to: recipientEmail,
             subject: 'Contract - ClaimantMitra',
             text: "Kindly find the attached Contract and digitally sign it.",
+            html: `
+            <p>Dear ${documentData.name},</p>
+            <p>Please find your consent document attached.</p>
+            <p>To complete the process, please provide your digital signature by clicking the link below:</p>
+            <p><a href="${signatureUrl}">Click here to sign the document</a></p>
+            <p>This link is unique to your case and should not be shared with others.</p>
+            <p>Best regards,<br>Your Insurance Team</p>
+        `,
             attachments: [{
                 filename: 'Contract.docx',
                 content: documentBuffer

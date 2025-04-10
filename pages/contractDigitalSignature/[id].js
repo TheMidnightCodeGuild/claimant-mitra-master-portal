@@ -59,9 +59,9 @@ export default function DigitalSignature() {
 
             const docRef = doc(db, 'users', id);
             await updateDoc(docRef, {
-                signature: signatureData,
-                signatureDate: new Date().toISOString(),
-                consentProvided: true
+                contractSignature: signatureData,
+                contractSignatureDate: new Date().toISOString(),
+                contractSigned: true
             });
 
             setSignatureComplete(true);

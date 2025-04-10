@@ -229,7 +229,7 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         try {
             // Check if all required fields exist
             const requiredFields = [
-                'email', 'name', 'address', 'aadharNo'
+                'email', 'name', 'address', 'aadharNo', 'docId'
             ];
             
             const missingFields = requiredFields.filter(field => !caseData?.[field]);
@@ -242,6 +242,7 @@ export default function SendToOmbudsman({ docId, onComplete }) {
             await sendContract(
                 caseData.email,
                 caseData.name, 
+                docId,
                 caseData.address,
                 caseData.aadharNo
             );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export async function sendContract(email, name, address, aadharNo) {
+export async function sendContract(email, name, address, aadharNo, docId) {
     try {
         const response = await fetch('/api/generateContract', {
             method: 'POST',
@@ -12,6 +12,7 @@ export async function sendContract(email, name, address, aadharNo) {
                 documentData: {
                     name,
                     address,
+                    docId,
                     aadharNo,
                     currentDate: new Date().toISOString(),
                 }

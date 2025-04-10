@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export async function sendConsent(email, name, address, policyHolder, policyNo, claimNo, complaintDate, companyName, estimatedClaimAmount) {
+export async function sendConsent(email, name, docId, address, policyHolder, policyNo, claimNo, complaintDate, companyName, estimatedClaimAmount) {
     try {
         const response = await fetch('/api/generateConsent', {
             method: 'POST',
@@ -11,6 +11,7 @@ export async function sendConsent(email, name, address, policyHolder, policyNo, 
                 recipientEmail: email,
                 documentData: {
                     name,
+                    docId,
                     address,
                     policyHolder,
                     policyNo,
