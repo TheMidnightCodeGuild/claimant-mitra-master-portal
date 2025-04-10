@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -84,266 +85,72 @@ const ViewCustomerEnquiries = dynamic(() => import('./components/viewCustomerEnq
 });
 
 export default function Dashboard() {
-  const [showLatestLeads, setShowLatestLeads] = useState(false);
-  const [showAllCases, setShowAllCases] = useState(false);
-  const [showCasesUnderReview, setShowCasesUnderReview] = useState(false);
-  const [showIGMS, setShowIGMS] = useState(false);
-  const [showOmbudsman, setShowOmbudsman] = useState(false);
-  const [showRejectedCases, setShowRejectedCases] = useState(false);
-  const [showSolvedCases, setShowSolvedCases] = useState(false);
-  const [showCreateCase, setShowCreateCase] = useState(false);
-  const [showViewPartners, setShowViewPartners] = useState(false);
-  const [showPartnerIssues, setShowPartnerIssues] = useState(false);
-  const [showPartnerApplication, setShowPartnerApplication] = useState(false);
-  const [showCreatePartner, setShowCreatePartner] = useState(false);
-  const [showCustomerEnquiries, setShowCustomerEnquiries] = useState(false);
+  const router = useRouter();
 
   const dashboardItems = [
     {
       title: "Create Case",
-      onClick: () => {
-        setShowCreateCase(true);
-        setShowLatestLeads(false);
-        setShowAllCases(false);
-        setShowCasesUnderReview(false);
-        setShowIGMS(false);
-        setShowOmbudsman(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=createCase'),
       icon: "➕"
     },
     {
       title: "View Latest Leads",
-      onClick: () => {
-        setShowLatestLeads(true);
-        setShowAllCases(false);
-        setShowCasesUnderReview(false);
-        setShowIGMS(false);
-        setShowOmbudsman(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=latestLeads'),
       icon: "📊"
     },
     {
       title: "New Partner Application",
-      onClick: () => {
-        setShowPartnerApplication(true);
-        setShowLatestLeads(false);
-        setShowAllCases(false);
-        setShowCasesUnderReview(false);
-        setShowIGMS(false);
-        setShowOmbudsman(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=partnerApplications'),
       icon: "🤝"
     },
     {
       title: "Create Partner",
-      onClick: () => {
-        setShowCreatePartner(true);
-        setShowPartnerApplication(false);
-        setShowLatestLeads(false);
-        setShowAllCases(false);
-        setShowCasesUnderReview(false);
-        setShowIGMS(false);
-        setShowOmbudsman(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=createPartner'),
       icon: "👥"
     },
     {
       title: "View All Cases",
-      onClick: () => {
-        setShowAllCases(true);
-        setShowLatestLeads(false);
-        setShowCasesUnderReview(false);
-        setShowIGMS(false);
-        setShowOmbudsman(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=allCases'),
       icon: "📁"
     },
     {
       title: "View Partner Issues",
-      onClick: () => {
-        setShowPartnerIssues(true);
-        setShowAllCases(false);
-        setShowLatestLeads(false);
-        setShowCasesUnderReview(false);
-        setShowIGMS(false);
-        setShowOmbudsman(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=partnerIssues'),
       icon: "⚠️"
     },
     {
       title: "Cases Under Review",
-      onClick: () => {
-        setShowCasesUnderReview(true);
-        setShowAllCases(false);
-        setShowLatestLeads(false);
-        setShowIGMS(false);
-        setShowOmbudsman(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=casesUnderReview'),
       icon: "🔍"
     },
     {
       title: "IGMS",
-      onClick: () => {
-        setShowIGMS(true);
-        setShowCasesUnderReview(false);
-        setShowAllCases(false);
-        setShowLatestLeads(false);
-        setShowOmbudsman(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=igms'),
       icon: "📋"
     },
     {
       title: "Ombudsman",
-      onClick: () => {
-        setShowOmbudsman(true);
-        setShowIGMS(false);
-        setShowCasesUnderReview(false);
-        setShowAllCases(false);
-        setShowLatestLeads(false);
-        setShowRejectedCases(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=ombudsman'),
       icon: "⚖️"
     },
     {
       title: "Solved Cases",
-      onClick: () => {
-        setShowSolvedCases(true);
-        setShowRejectedCases(false);
-        setShowOmbudsman(false);
-        setShowIGMS(false);
-        setShowCasesUnderReview(false);
-        setShowAllCases(false);
-        setShowLatestLeads(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=solvedCases'),
       icon: "✅"
     },
     {
       title: "Rejected Cases",
-      onClick: () => {
-        setShowRejectedCases(true);
-        setShowOmbudsman(false);
-        setShowIGMS(false);
-        setShowCasesUnderReview(false);
-        setShowAllCases(false);
-        setShowLatestLeads(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowViewPartners(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=rejectedCases'),
       icon: "❌"
     },
     {
       title: "View Partners",
-      onClick: () => {
-        setShowViewPartners(true);
-        setShowRejectedCases(false);
-        setShowOmbudsman(false);
-        setShowIGMS(false);
-        setShowCasesUnderReview(false);
-        setShowAllCases(false);
-        setShowLatestLeads(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-        setShowCustomerEnquiries(false);
-      },
+      onClick: () => router.push('/view?type=viewPartners'),
       icon: "👥"
     },
     {
       title: "View Customer Enquiries",
-      onClick: () => {
-        setShowCustomerEnquiries(true);
-        setShowViewPartners(false);
-        setShowRejectedCases(false);
-        setShowOmbudsman(false);
-        setShowIGMS(false);
-        setShowCasesUnderReview(false);
-        setShowAllCases(false);
-        setShowLatestLeads(false);
-        setShowSolvedCases(false);
-        setShowCreateCase(false);
-        setShowPartnerIssues(false);
-        setShowPartnerApplication(false);
-        setShowCreatePartner(false);
-      },
+      onClick: () => router.push('/view?type=customerEnquiries'),
       icon: "📝"
     }
   ];
@@ -362,45 +169,17 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-[95%] lg:max-w-[1300px] mx-auto py-4 sm:py-6 md:py-8 px-3 sm:px-4 md:px-6 lg:px-8">
-        {showLatestLeads ? (
-          <ViewLatestLeads />
-        ) : showAllCases ? (
-          <ViewAllCases />
-        ) : showCasesUnderReview ? (
-          <CasesUnderReview />
-        ) : showIGMS ? (
-          <IGMS />
-        ) : showOmbudsman ? (
-          <Ombudsman />
-        ) : showRejectedCases ? (
-          <RejectedCases />
-        ) : showSolvedCases ? (
-          <SolvedCases />
-        ) : showCreateCase ? (
-          <CreateCase />
-        ) : showViewPartners ? (
-          <ViewPartners />
-        ) : showPartnerIssues ? (
-          <ViewPartnerIssues />
-        ) : showPartnerApplication ? (
-          <PartnerApplication />
-        ) : showCreatePartner ? (
-          <CreatePartner />
-        ) : showCustomerEnquiries ? (
-          <ViewCustomerEnquiries />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
-            {dashboardItems.map((item, index) => (
-              <DashboardCard
-                key={index}
-                title={item.title}
-                onClick={item.onClick}
-                icon={item.icon}
-                className="border-2 border-gray-900 rounded-lg"
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
+          {dashboardItems.map((item, index) => (
+            <DashboardCard
+              key={index}
+              title={item.title}
+              onClick={item.onClick}
+              icon={item.icon}
+              className="border-2 border-gray-900 rounded-lg"
+            />
+          ))}
+        </div>
       </main>
     </div>
   );
