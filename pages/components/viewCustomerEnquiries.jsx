@@ -134,10 +134,10 @@ function ViewCustomerEnquiries() {
                   <h3 className="font-semibold">Insurance Type</h3>
                   <p>{enquiry.insuranceType}</p>
                 </div>
-                <div>
+                {/* <div>
                   <h3 className="font-semibold">Policy Type</h3>
                   <p>{enquiry.policyType}</p>
-                </div>
+                </div> */}
                 <div>
                   <h3 className="font-semibold">Complaint Type</h3>
                   <p>{enquiry.complaintType}</p>
