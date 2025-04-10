@@ -1,4 +1,4 @@
-import { createDocument } from '../../lib/documentGenerator';
+import { createConsent } from '../../lib/consentGenerator';
 import { sendEmail } from '../../lib/mailer';
 import { getStaticContent } from '../../lib/firestore';
 
@@ -14,12 +14,13 @@ export default async function handler(req, res) {
         const staticContent = await getStaticContent();
 
         // Generate document
-        const documentBuffer = await createDocument(documentData, staticContent);
+        const documentBuffer = await createConsent(documentData, staticContent);
 
         // Send email with document
         await sendEmail({
             to: recipientEmail,
             subject: 'Consent Letter - ClaimantMitra',
+            text: "Kindly find the attached Consent Letter and digitally sign it.",
             attachments: [{
                 filename: 'Consent.docx',
                 content: documentBuffer

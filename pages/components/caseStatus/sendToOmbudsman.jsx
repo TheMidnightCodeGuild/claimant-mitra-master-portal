@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
+import { sendContract } from '../contract';
 
 export default function SendToOmbudsman({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
@@ -221,6 +222,33 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         } catch (err) {
             console.error('Error adding IGMS log:', err);
             alert('Failed to add IGMS log');
+        }
+    };
+
+    const handleSendContract = async () => {
+        try {
+            // Check if all required fields exist
+            const requiredFields = [
+                'email', 'name', 'address', 'aadharNo'
+            ];
+            
+            const missingFields = requiredFields.filter(field => !caseData?.[field]);
+            
+            if (missingFields.length > 0) {
+                alert(`Missing required fields: ${missingFields.join(', ')}`);
+                return;
+            }
+
+            await sendContract(
+                caseData.email,
+                caseData.name, 
+                caseData.address,
+                caseData.aadharNo
+            );
+            alert('Contract document sent successfully');
+        } catch (err) {
+            console.error('Error sending contract:', err);
+            alert('Failed to send contract document');
         }
     };
 
@@ -609,6 +637,12 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                             className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                         >
                             Send to Ombudsman
+                        </button>
+                        <button
+                            onClick={handleSendContract}
+                            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                        >
+                            Send Contract
                         </button>
                         <button
                             onClick={handleRejectCase}

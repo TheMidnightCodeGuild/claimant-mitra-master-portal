@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
-import { sendConsent } from '../../components/consent';
+import { sendConsent } from '../consent';
 
 export default function SendToIGMS({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export async function sendConsent(email, name, address, policyHolder, policyNo, claimNo, complaintDate, companyName, estimatedClaimAmount) {
     try {
-        const response = await fetch('/api/generateDocument', {
+        const response = await fetch('/api/generateConsent', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ export async function sendConsent(email, name, address, policyHolder, policyNo, 
         });
 
         if (!response.ok) {
-            throw new Error('Failed to generate document');
+            throw new Error('Failed to generate consent');
         }
 
         return { success: true };

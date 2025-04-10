@@ -143,6 +143,11 @@ export default function FullCase({ docId }) {
                         </div>
 
                         <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">Aadhar Number</label>
+                            <p className="mt-1 text-gray-900">{caseData?.aadharNo || 'N/A'}</p>
+                        </div>
+
+                        <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">Complaint Date</label>
                             <p className="mt-1 text-gray-900">{formatDate(caseData?.complaintDate)}</p>
                         </div>

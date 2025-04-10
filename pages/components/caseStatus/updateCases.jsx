@@ -210,6 +210,7 @@ export default function FullCase({ docId }) {
                         {renderField("Partner Reference", "partnerRef")}
                         {renderField("Mobile", "mobile", "tel")}
                         {renderField("Email", "email", "email")}
+                        {renderField("Aadhar Number", "aadharNo")}
                         {renderField("Complaint Date", "complaintDate", "date")}
                         {renderField("Taken For Review", "takenForReview", "checkbox")}
                         {renderField("Status", "status")}
