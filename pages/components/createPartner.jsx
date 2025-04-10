@@ -23,7 +23,7 @@ function CreateAccount() {
           source,
           phoneNumber,
           name,
-          partnerRef: (source.substring(0, 4) + phoneNumber.slice(-4)).toUpperCase(),
+          partnerRef: (name.substring(0, 4) + phoneNumber.slice(-4)).toUpperCase(),
           createdAt: new Date().toISOString(),
           userId: user.uid,
         });

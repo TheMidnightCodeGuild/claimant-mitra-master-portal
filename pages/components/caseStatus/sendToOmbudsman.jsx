@@ -481,6 +481,13 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                         </p>
                     </div>
 
+                    <div className="col-span-2 space-y-4 mt-6">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-medium">Case Documents</h3>
+                        </div>
+                        <DocumentViewer files={caseData?.fileBucket || []} />
+                    </div>
+
                     {/* Updated Logs sections */}
                     <div className="col-span-2 space-y-2">
                         <div className="flex justify-between items-center">

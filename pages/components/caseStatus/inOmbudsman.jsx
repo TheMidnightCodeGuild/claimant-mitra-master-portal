@@ -360,6 +360,13 @@ export default function InOmbudsman({ docId, onComplete }) {
                         <p className="mt-1 text-gray-900">{caseData?.igmsRejectionReason || 'N/A'}</p>
                     </div>
 
+                    <div className="col-span-2 space-y-4 mt-6">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-medium">Case Documents</h3>
+                        </div>
+                        <DocumentViewer files={caseData?.fileBucket || []} />
+                    </div>
+
                     {/* Ombudsman Status Update Section */}
                     <div className="col-span-2 space-y-4 border-t pt-4">
                         <h3 className="text-lg font-medium">Update Ombudsman Status</h3>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import DocumentViewer from './DocumentViewer';
 
 export default function CreateCase() {
     const initialFormState = {
@@ -56,6 +58,8 @@ export default function CreateCase() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+    const [files, setFiles] = useState([]);
+    const [uploading, setUploading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value, type } = e.target;
@@ -63,6 +67,28 @@ export default function CreateCase() {
             ...prev,
             [name]: type === 'checkbox' ? e.target.checked : value
         }));
+    };
+
+    const handleFileUpload = async (e) => {
+        const uploadedFiles = Array.from(e.target.files);
+        setUploading(true);
+        
+        try {
+            const storage = getStorage();
+            const uploadPromises = uploadedFiles.map(async (file) => {
+                const storageRef = ref(storage, `cases/${Date.now()}_${file.name}`);
+                await uploadBytes(storageRef, file);
+                return getDownloadURL(storageRef);
+            });
+
+            const fileUrls = await Promise.all(uploadPromises);
+            setFiles(prev => [...prev, ...fileUrls]);
+        } catch (err) {
+            console.error('Error uploading files:', err);
+            setError('Failed to upload files');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -74,6 +100,7 @@ export default function CreateCase() {
         try {
             const caseData = {
                 ...formData,
+                fileBucket: files,
                 estimatedClaimAmount: Number(formData.estimatedClaimAmount) || 0,
                 mobile: Number(formData.mobile) || 0,
                 complaintDate: new Date(formData.complaintDate).toISOString(),
@@ -87,6 +114,7 @@ export default function CreateCase() {
             await addDoc(collection(db, 'users'), caseData);
             setSuccess(true);
             setFormData(initialFormState);
+            setFiles([]);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
             setError('Failed to create case: ' + err.message);
@@ -178,6 +206,25 @@ export default function CreateCase() {
                         </div>
                     </div>
                 ))}
+
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-xl font-semibold mb-6 text-gray-700">Documents</h3>
+                    <div className="space-y-4">
+                        <input
+                            type="file"
+                            multiple
+                            onChange={handleFileUpload}
+                            className="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100"
+                        />
+                        {uploading && <div className="text-blue-600">Uploading files...</div>}
+                        {files.length > 0 && <DocumentViewer files={files} />}
+                    </div>
+                </div>
 
                 <div className="flex justify-end pt-6">
                     <button

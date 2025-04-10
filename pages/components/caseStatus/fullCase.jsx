@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import DocumentViewer from '../DocumentViewer';
 
 export default function FullCase({ docId }) {
     const [caseData, setCaseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeTab, setActiveTab] = useState('basic'); // basic, logs, financial
+    const [activeTab, setActiveTab] = useState('basic'); // basic, logs, financial, documents
 
     useEffect(() => {
         async function fetchCase() {
@@ -100,6 +101,12 @@ export default function FullCase({ docId }) {
                         className={`py-2 px-4 ${activeTab === 'financial' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
                     >
                         Financial Details
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('documents')}
+                        className={`py-2 px-4 ${activeTab === 'documents' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
+                    >
+                        Documents
                     </button>
                 </nav>
             </div>
@@ -374,6 +381,13 @@ export default function FullCase({ docId }) {
                             <label className="block text-sm font-medium text-gray-700">Partner Commission</label>
                             <p className="mt-1 text-gray-900">₹{caseData?.partnerCommision || 'N/A'}</p>
                         </div>
+                    </div>
+                )}
+
+                {activeTab === 'documents' && (
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Case Documents</h3>
+                        <DocumentViewer files={caseData?.fileBucket || []} />
                     </div>
                 )}
             </div>

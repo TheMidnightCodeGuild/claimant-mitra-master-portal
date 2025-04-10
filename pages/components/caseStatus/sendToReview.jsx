@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
+import DocumentViewer from '../DocumentViewer';
 
 export default function SendToReview({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
@@ -132,6 +133,13 @@ export default function SendToReview({ docId, onComplete }) {
                             <p className="mt-2 text-lg text-gray-900">{field.value || 'N/A'}</p>
                         </div>
                     ))}
+                </div>
+
+                <div className="col-span-2 space-y-4 mt-6">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-medium">Case Documents</h3>
+                    </div>
+                    <DocumentViewer files={caseData?.fileBucket || []} />
                 </div>
 
                 <div className="mt-10">

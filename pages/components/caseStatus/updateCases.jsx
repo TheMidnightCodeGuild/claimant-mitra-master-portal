@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import DocumentViewer from '../DocumentViewer';
+import { storage } from '../../../lib/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 export default function FullCase({ docId }) {
     const [caseData, setCaseData] = useState(null);
@@ -14,6 +17,7 @@ export default function FullCase({ docId }) {
     const [saving, setSaving] = useState(false);
     const [editingField, setEditingField] = useState(null);
     const [tempValue, setTempValue] = useState('');
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         async function fetchCase() {
@@ -38,6 +42,69 @@ export default function FullCase({ docId }) {
 
         fetchCase();
     }, [docId]);
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setUploading(true);
+            const storageRef = ref(storage, `cases/${docId}/${file.name}`);
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
+
+            const newFile = {
+                name: file.name,
+                url: downloadURL,
+                uploadedAt: new Date().toISOString()
+            };
+
+            const updatedFiles = [...(caseData?.fileBucket || []), newFile];
+
+            const docRef = doc(db, 'users', docId);
+            await updateDoc(docRef, {
+                fileBucket: updatedFiles
+            });
+
+            setCaseData(prev => ({
+                ...prev,
+                fileBucket: updatedFiles
+            }));
+
+            alert('File uploaded successfully');
+        } catch (err) {
+            console.error('Error uploading file:', err);
+            alert('Failed to upload file');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDeleteFile = async (fileName, fileUrl) => {
+        if (!confirm('Are you sure you want to delete this file?')) return;
+
+        try {
+            const storageRef = ref(storage, `cases/${docId}/${fileName}`);
+            await deleteObject(storageRef);
+
+            const updatedFiles = caseData.fileBucket.filter(file => file.url !== fileUrl);
+
+            const docRef = doc(db, 'users', docId);
+            await updateDoc(docRef, {
+                fileBucket: updatedFiles
+            });
+
+            setCaseData(prev => ({
+                ...prev,
+                fileBucket: updatedFiles
+            }));
+
+            alert('File deleted successfully');
+        } catch (err) {
+            console.error('Error deleting file:', err);
+            alert('Failed to delete file');
+        }
+    };
 
     const handleInputChange = async (field, value) => {
         try {
@@ -202,44 +269,71 @@ export default function FullCase({ docId }) {
 
             <div className="bg-white rounded-lg shadow-md p-6">
                 {activeTab === 'basic' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {renderField("Name", "name")}
-                        {renderField("Address", "address")}
-                        {renderField("Policy Holder", "policyHolder")}
-                        {renderField("Estimated Claim Amount", "estimatedClaimAmount", "number", "₹")}
-                        {renderField("Partner Reference", "partnerRef")}
-                        {renderField("Mobile", "mobile", "tel")}
-                        {renderField("Email", "email", "email")}
-                        {renderField("Aadhar Number", "aadharNo")}
-                        {renderField("Complaint Date", "complaintDate", "date")}
-                        {renderField("Taken For Review", "takenForReview", "checkbox")}
-                        {renderField("Status", "status")}
-                        {renderField("Document Short", "documentShort", "checkbox")}
-                        {renderField("Case Rejection Reason", "caseRejectionReason")}
-                        {renderField("Case Rejection Date", "caseRejectionDate", "date")}
-                        {renderField("Case Acceptance Date", "caseAcceptanceDate", "date")}
-                        {renderField("Rejected", "rejected", "checkbox")}
-                        {renderField("Company Name", "companyName")}
-                        {renderField("Claim Number", "claimNo")}
-                        {renderField("Policy Number", "policyNo")}
-                        {renderField("IGMS Status", "igms", "checkbox")}
-                        {renderField("IGMS Date", "igmsDate", "date")}
-                        {renderField("IGMS Follow Up Date", "igmsFollowUpDate", "date")}
-                        {renderField("IGMS Rejection Reason", "igmsRejectionReason")}
-                        {renderField("Ombudsman Status", "ombudsman", "checkbox")}
-                        {renderField("Ombudsman Date", "ombudsmanDate", "date")}
-                        {renderField("Ombudsman Courier Date", "ombudsmanCourierDate", "date")}
-                        {renderField("Ombudsman Follow Up Date", "ombudsmanFollowUpDate", "date")}
-                        {renderField("Ombudsman Complaint Number", "ombudsmanComplaintNumber")}
-                        {renderField("6A Form Submitted", "sixAFormSubmitted", "checkbox")}
-                        {renderField("Ombudsman Mode", "ombudsmanMode")}
-                        {renderField("Ombudsman Rejection Reason", "ombudsmanRejectionReason")}
-                        {renderField("Solved", "solved", "checkbox")}
-                        {renderField("Solved Date", "solvedDate", "date")}
-                        {renderField("Claim Amount", "claim", "number", "₹")}
-                        {renderField("Commission Received", "commisionReceived", "number", "₹")}
-                        {renderField("Partner Commission", "partnerCommision", "number", "₹")}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {renderField("Name", "name")}
+                            {renderField("Address", "address")}
+                            {renderField("Policy Holder", "policyHolder")}
+                            {renderField("Estimated Claim Amount", "estimatedClaimAmount", "number", "₹")}
+                            {renderField("Partner Reference", "partnerRef")}
+                            {renderField("Mobile", "mobile", "tel")}
+                            {renderField("Email", "email", "email")}
+                            {renderField("Aadhar Number", "aadharNo")}
+                            {renderField("Complaint Date", "complaintDate", "date")}
+                            {renderField("Taken For Review", "takenForReview", "checkbox")}
+                            {renderField("Status", "status")}
+                            {renderField("Document Short", "documentShort", "checkbox")}
+                            {renderField("Case Rejection Reason", "caseRejectionReason")}
+                            {renderField("Case Rejection Date", "caseRejectionDate", "date")}
+                            {renderField("Case Acceptance Date", "caseAcceptanceDate", "date")}
+                            {renderField("Rejected", "rejected", "checkbox")}
+                            {renderField("Company Name", "companyName")}
+                            {renderField("Claim Number", "claimNo")}
+                            {renderField("Policy Number", "policyNo")}
+                            {renderField("IGMS Status", "igms", "checkbox")}
+                            {renderField("IGMS Date", "igmsDate", "date")}
+                            {renderField("IGMS Follow Up Date", "igmsFollowUpDate", "date")}
+                            {renderField("IGMS Rejection Reason", "igmsRejectionReason")}
+                            {renderField("Ombudsman Status", "ombudsman", "checkbox")}
+                            {renderField("Ombudsman Date", "ombudsmanDate", "date")}
+                            {renderField("Ombudsman Courier Date", "ombudsmanCourierDate", "date")}
+                            {renderField("Ombudsman Follow Up Date", "ombudsmanFollowUpDate", "date")}
+                            {renderField("Ombudsman Complaint Number", "ombudsmanComplaintNumber")}
+                            {renderField("6A Form Submitted", "sixAFormSubmitted", "checkbox")}
+                            {renderField("Ombudsman Mode", "ombudsmanMode")}
+                            {renderField("Ombudsman Rejection Reason", "ombudsmanRejectionReason")}
+                            {renderField("Solved", "solved", "checkbox")}
+                            {renderField("Solved Date", "solvedDate", "date")}
+                            {renderField("Claim Amount", "claim", "number", "₹")}
+                            {renderField("Commission Received", "commisionReceived", "number", "₹")}
+                            {renderField("Partner Commission", "partnerCommision", "number", "₹")}
+                        </div>
+
+                        <div className="col-span-2 space-y-4 mt-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-medium">Case Documents</h3>
+                                <div className="flex items-center gap-4">
+                                    <input
+                                        type="file"
+                                        onChange={handleFileUpload}
+                                        className="hidden"
+                                        id="fileUpload"
+                                        disabled={uploading}
+                                    />
+                                    <label
+                                        htmlFor="fileUpload"
+                                        className={`cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${uploading ? 'opacity-50' : ''}`}
+                                    >
+                                        {uploading ? 'Uploading...' : 'Upload Document'}
+                                    </label>
+                                </div>
+                            </div>
+                            <DocumentViewer 
+                                files={caseData?.fileBucket || []} 
+                                onDelete={handleDeleteFile}
+                            />
+                        </div>
+                    </>
                 )}
 
                 {activeTab === 'logs' && (
