@@ -18,7 +18,9 @@ export default function IGMS() {
                 const q = query(
                     collection(db, 'users'),
                     where('igms', '==', true),
-                    where('ombudsman', '==', false)
+                    where('ombudsman', '==', false),
+                    where('rejected', '==', false)
+
                 );
                 const querySnapshot = await getDocs(q);
                 const casesData = querySnapshot.docs.map(doc => ({

@@ -8,6 +8,9 @@ export default function ViewPartners() {
     const [error, setError] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editValues, setEditValues] = useState({});
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchField, setSearchField] = useState('name');
+    const [filteredPartners, setFilteredPartners] = useState([]);
 
     useEffect(() => {
         async function fetchPartners() {
@@ -19,6 +22,7 @@ export default function ViewPartners() {
                     ...doc.data()
                 }));
                 setPartners(partnersData);
+                setFilteredPartners(partnersData);
             } catch (err) {
                 console.error('Error fetching partners:', err);
                 setError('Failed to fetch partners');
@@ -29,6 +33,41 @@ export default function ViewPartners() {
 
         fetchPartners();
     }, []);
+
+    useEffect(() => {
+        if (!searchQuery) {
+            setFilteredPartners(partners);
+            return;
+        }
+
+        const query = searchQuery.toLowerCase();
+        const filtered = partners.filter(partner => {
+            switch (searchField) {
+                case 'name':
+                    return partner.name?.toLowerCase().includes(query);
+                case 'email':
+                    return partner.email?.toLowerCase().includes(query);
+                case 'phone':
+                    return partner.phoneNumber?.toString().includes(query);
+                case 'source':
+                    return partner.source?.toLowerCase().includes(query);
+                case 'partnerRef':
+                    return partner.partnerRef?.toLowerCase().includes(query);
+                case 'all':
+                    return (
+                        partner.name?.toLowerCase().includes(query) ||
+                        partner.email?.toLowerCase().includes(query) ||
+                        partner.phoneNumber?.toString().includes(query) ||
+                        partner.source?.toLowerCase().includes(query) ||
+                        partner.partnerRef?.toLowerCase().includes(query)
+                    );
+                default:
+                    return true;
+            }
+        });
+
+        setFilteredPartners(filtered);
+    }, [searchQuery, searchField, partners]);
 
     const handleEdit = (partner) => {
         setEditingId(partner.id);
@@ -84,9 +123,44 @@ export default function ViewPartners() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Partners ({partners.length})</h2>
+            <h2 className="text-2xl font-bold mb-6">Partners ({filteredPartners.length})</h2>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search partners..."
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        />
+                    </div>
+                    
+                    <div className="sm:w-48">
+                        <select
+                            value={searchField}
+                            onChange={(e) => setSearchField(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="all">All Fields</option>
+                            <option value="name">Name</option>
+                            <option value="email">Email</option>
+                            <option value="phone">Phone</option>
+                            <option value="source">Source</option>
+                            <option value="partnerRef">Partner Ref</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="text-sm text-gray-600">
+                    Found {filteredPartners.length} partners
+                    {searchQuery && ` matching "${searchQuery}"`}
+                </div>
+            </div>
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {partners.map((partner) => (
+                {filteredPartners.map((partner) => (
                     <div key={partner.id} className="bg-white rounded-lg shadow-md p-6">
                         {editingId === partner.id ? (
                             <div className="space-y-4">
@@ -183,6 +257,12 @@ export default function ViewPartners() {
                     </div>
                 ))}
             </div>
+
+            {filteredPartners.length === 0 && (
+                <div className="text-center text-gray-500 mt-8">
+                    {searchQuery ? 'No matching partners found' : 'No partners found'}
+                </div>
+            )}
         </div>
     );
 }

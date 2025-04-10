@@ -126,7 +126,7 @@ export default function SendToReview({ docId, onComplete }) {
                         { label: "Policy Number", value: caseData?.policyNo },
                         { label: "Company Name", value: caseData?.companyName },
                         { label: "Documents", value: caseData?.documentShort ? 'Incomplete' : 'Complete' },
-                        { label: "File Bucket", value: caseData?.fileBucket }
+                        // { label: "File Bucket", value: caseData?.fileBucket }
                     ].map((field, index) => (
                         <div key={index} className="bg-gray-50 p-4 rounded-lg">
                             <label className="text-sm font-medium text-gray-600">{field.label}</label>

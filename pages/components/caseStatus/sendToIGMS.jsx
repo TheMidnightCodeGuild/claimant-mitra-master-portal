@@ -379,11 +379,11 @@ export default function SendToIGMS({ docId, onComplete }) {
                             )}
                         </div>
                     </div>
-
+{/* 
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">File Bucket</label>
                         <p className="mt-1 text-gray-900">{caseData?.fileBucket || 'N/A'}</p>
-                    </div>
+                    </div> */}
 
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">Complaint Date</label>

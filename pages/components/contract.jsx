@@ -11,9 +11,10 @@ export async function sendContract(email, name, address, aadharNo, docId) {
                 recipientEmail: email,
                 documentData: {
                     name,
+                    email,
                     address,
-                    docId,
                     aadharNo,
+                    docId,
                     currentDate: new Date().toISOString(),
                 }
             }),

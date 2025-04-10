@@ -8,6 +8,9 @@ export default function RejectedCases() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedCaseId, setSelectedCaseId] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchField, setSearchField] = useState('name');
+    const [filteredCases, setFilteredCases] = useState([]);
 
     useEffect(() => {
         async function fetchRejectedCases() {
@@ -37,6 +40,7 @@ export default function RejectedCases() {
                 });
 
                 setCases(casesData);
+                setFilteredCases(casesData);
             } catch (err) {
                 console.error('Error fetching rejected cases:', err);
                 setError('Failed to fetch rejected cases: ' + err.message);
@@ -47,6 +51,35 @@ export default function RejectedCases() {
 
         fetchRejectedCases();
     }, []);
+
+    useEffect(() => {
+        if (!searchQuery) {
+            setFilteredCases(cases);
+            return;
+        }
+
+        const query = searchQuery.toLowerCase();
+        const filtered = cases.filter(case_ => {
+            switch (searchField) {
+                case 'name':
+                    return case_.name?.toLowerCase().includes(query);
+                case 'email':
+                    return case_.email?.toLowerCase().includes(query);
+                case 'mobile':
+                    return case_.mobile?.toString().includes(query);
+                case 'all':
+                    return (
+                        case_.name?.toLowerCase().includes(query) ||
+                        case_.email?.toLowerCase().includes(query) ||
+                        case_.mobile?.toString().includes(query)
+                    );
+                default:
+                    return true;
+            }
+        });
+
+        setFilteredCases(filtered);
+    }, [searchQuery, searchField, cases]);
 
     const handleCaseClick = (caseId) => {
         setSelectedCaseId(caseId);
@@ -109,9 +142,44 @@ export default function RejectedCases() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Rejected Cases ({cases.length})</h2>
+            <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-4">Rejected Cases</h2>
+                
+                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search cases..."
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+                        
+                        <div className="sm:w-48">
+                            <select
+                                value={searchField}
+                                onChange={(e) => setSearchField(e.target.value)}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="all">All Fields</option>
+                                <option value="name">Name</option>
+                                <option value="email">Email</option>
+                                <option value="mobile">Mobile</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="text-sm text-gray-600">
+                        Found {filteredCases.length} cases
+                        {searchQuery && ` matching "${searchQuery}"`}
+                    </div>
+                </div>
+            </div>
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {cases.map((case_) => (
+                {filteredCases.map((case_) => (
                     <div 
                         key={case_.id} 
                         className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"

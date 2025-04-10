@@ -18,7 +18,8 @@ export default function CasesUnderReview() {
                 const q = query(
                     collection(db, 'users'),
                     where('takenForReview', '==', true),
-                    where('igms', '==', false)
+                    where('igms', '==', false),
+                    where('rejected', '==', false)
                 );
                 const querySnapshot = await getDocs(q);
                 const casesData = querySnapshot.docs.map(doc => ({
