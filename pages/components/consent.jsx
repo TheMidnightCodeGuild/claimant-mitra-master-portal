@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export async function sendConsent(email, name) {
+export async function sendConsent(email, name, address, policyHolder, policyNo, claimNo, complaintDate, companyName, estimatedClaimAmount) {
     try {
         const response = await fetch('/api/generateDocument', {
             method: 'POST',
@@ -10,7 +10,14 @@ export async function sendConsent(email, name) {
             body: JSON.stringify({
                 recipientEmail: email,
                 documentData: {
-                    name: name,
+                    name,
+                    address,
+                    policyHolder,
+                    policyNo,
+                    claimNo,
+                    complaintDate,
+                    companyName,
+                    estimatedClaimAmount
                 }
             }),
         });
@@ -31,7 +38,14 @@ export default function Consent() {
     const [success, setSuccess] = useState(false);
     const [formData, setFormData] = useState({
         recipientEmail: '',
-        name: '',        // ... other fields
+        name: '',
+        address: '',
+        policyHolder: '',
+        policyNo: '',
+        claimNo: '',
+        complaintDate: '',
+        companyName: '',
+        estimatedClaimAmount: ''
     });
 
     const handleSubmit = async (e) => {
@@ -41,29 +55,29 @@ export default function Consent() {
         setSuccess(false);
 
         try {
-            const response = await fetch('/api/generateDocument', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    recipientEmail: formData.recipientEmail,
-                    documentData: {
-                        name: formData.name,
-                        // ... other fields
-                    }
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to generate document');
-            }
+            await sendConsent(
+                formData.recipientEmail,
+                formData.name,
+                formData.address,
+                formData.policyHolder,
+                formData.policyNo,
+                formData.claimNo,
+                formData.complaintDate,
+                formData.companyName,
+                formData.estimatedClaimAmount
+            );
 
             setSuccess(true);
             setFormData({
                 recipientEmail: '',
                 name: '',
-                // ... reset other fields
+                address: '',
+                policyHolder: '',
+                policyNo: '',
+                claimNo: '',
+                complaintDate: '',
+                companyName: '',
+                estimatedClaimAmount: ''
             });
         } catch (err) {
             setError(err.message);
@@ -132,7 +146,103 @@ export default function Consent() {
                             address: e.target.value
                         }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        rows="3"
+                        rows={3}
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        Policy Holder
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.policyHolder}
+                        onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            policyHolder: e.target.value
+                        }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        Policy Number
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.policyNo}
+                        onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            policyNo: e.target.value
+                        }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        Claim Number
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.claimNo}
+                        onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            claimNo: e.target.value
+                        }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        Complaint Date
+                    </label>
+                    <input
+                        type="date"
+                        value={formData.complaintDate}
+                        onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            complaintDate: e.target.value
+                        }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        Company Name
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.companyName}
+                        onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            companyName: e.target.value
+                        }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        Estimated Claim Amount
+                    </label>
+                    <input
+                        type="number"
+                        value={formData.estimatedClaimAmount}
+                        onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            estimatedClaimAmount: e.target.value
+                        }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
                 </div>

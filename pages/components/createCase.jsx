@@ -8,6 +8,8 @@ export default function CreateCase() {
         name: '',
         mobile: '',
         email: '',
+        address: '',
+        policyHolder: '',
         companyName: '',
         claimNo: '',
         policyNo: '',
@@ -134,7 +136,7 @@ export default function CreateCase() {
     };
 
     const fieldGroups = {
-        'Basic Information': ['name', 'mobile', 'email', 'companyName', 'claimNo', 'policyNo', 'estimatedClaimAmount', 'complaintDate', 'partnerRef'],
+        'Basic Information': ['name', 'mobile', 'email', 'address', 'policyHolder', 'companyName', 'claimNo', 'policyNo', 'estimatedClaimAmount', 'complaintDate', 'partnerRef'],
         'Case Status': ['takenForReview', 'status', 'documentShort', 'rejected', 'solved'],
         'Case Details': ['reviewDate', 'caseRejectionDate', 'caseAcceptanceDate', 'caseRejectionReason', 'solvedDate', 'claim', 'commisionReceived', 'partnerCommision'],
         'IGMS Details': ['igms', 'igmsDate', 'igmsFollowUpDate', 'igmsRejectionReason'],

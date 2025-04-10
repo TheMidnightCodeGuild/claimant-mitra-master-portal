@@ -204,6 +204,8 @@ export default function FullCase({ docId }) {
                 {activeTab === 'basic' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {renderField("Name", "name")}
+                        {renderField("Address", "address")}
+                        {renderField("Policy Holder", "policyHolder")}
                         {renderField("Estimated Claim Amount", "estimatedClaimAmount", "number", "₹")}
                         {renderField("Partner Reference", "partnerRef")}
                         {renderField("Mobile", "mobile", "tel")}

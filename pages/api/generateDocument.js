@@ -19,9 +19,9 @@ export default async function handler(req, res) {
         // Send email with document
         await sendEmail({
             to: recipientEmail,
-            subject: 'Your Document',
+            subject: 'Consent Letter - ClaimantMitra',
             attachments: [{
-                filename: 'document.docx',
+                filename: 'Consent.docx',
                 content: documentBuffer
             }]
         });

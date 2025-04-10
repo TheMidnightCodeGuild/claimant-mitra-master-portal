@@ -113,6 +113,16 @@ export default function FullCase({ docId }) {
                         </div>
 
                         <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">Address</label>
+                            <p className="mt-1 text-gray-900">{caseData?.address || 'N/A'}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">Policy Holder</label>
+                            <p className="mt-1 text-gray-900">{caseData?.policyHolder || 'N/A'}</p>
+                        </div>
+
+                        <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">Estimated Claim Amount</label>
                             <p className="mt-1 text-gray-900">₹{caseData?.estimatedClaimAmount || 'N/A'}</p>
                         </div>

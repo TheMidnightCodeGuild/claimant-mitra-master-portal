@@ -167,12 +167,30 @@ export default function SendToIGMS({ docId, onComplete }) {
 
     const handleSendConsent = async () => {
         try {
-            if (!caseData?.email || !caseData?.name) {
-                alert('Email or name is missing');
+            // Check if all required fields exist
+            const requiredFields = [
+                'email', 'name', 'address', 'policyHolder', 'policyNo', 
+                'claimNo', 'complaintDate', 'companyName', 'estimatedClaimAmount'
+            ];
+            
+            const missingFields = requiredFields.filter(field => !caseData?.[field]);
+            
+            if (missingFields.length > 0) {
+                alert(`Missing required fields: ${missingFields.join(', ')}`);
                 return;
             }
 
-            await sendConsent(caseData.email, caseData.name);
+            await sendConsent(
+                caseData.email,
+                caseData.name,
+                caseData.address,
+                caseData.policyHolder,
+                caseData.policyNo,
+                caseData.claimNo,
+                caseData.complaintDate,
+                caseData.companyName,
+                caseData.estimatedClaimAmount
+            );
             alert('Consent document sent successfully');
         } catch (err) {
             console.error('Error sending consent:', err);
