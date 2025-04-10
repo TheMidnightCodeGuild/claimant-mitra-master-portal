@@ -3,6 +3,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
 import { sendContract } from '../contract';
+import DocumentViewer from '../DocumentViewer';
 
 export default function SendToOmbudsman({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
@@ -229,7 +230,7 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         try {
             // Check if all required fields exist
             const requiredFields = [
-                'email', 'name', 'address', 'aadharNo', 'docId'
+                'email', 'name', 'address', 'aadharNo'
             ];
             
             const missingFields = requiredFields.filter(field => !caseData?.[field]);

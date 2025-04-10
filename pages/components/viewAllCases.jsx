@@ -8,29 +8,59 @@ export default function ViewAllCases() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedCaseId, setSelectedCaseId] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchField, setSearchField] = useState('name');
+    const [filteredCases, setFilteredCases] = useState([]);
 
     useEffect(() => {
-        async function fetchAllCases() {
+        async function fetchCases() {
             try {
-                const usersRef = collection(db, 'users');
-                const querySnapshot = await getDocs(usersRef);
+                const querySnapshot = await getDocs(collection(db, 'users'));
                 const casesData = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
-
-                casesData.sort((a, b) => new Date(b.complaintDate) - new Date(a.complaintDate));
                 setCases(casesData);
+                setFilteredCases(casesData);
             } catch (err) {
                 console.error('Error fetching cases:', err);
-                setError('Failed to fetch cases. Please try again.');
+                setError('Failed to fetch cases');
             } finally {
                 setLoading(false);
             }
         }
 
-        fetchAllCases();
+        fetchCases();
     }, []);
+
+    useEffect(() => {
+        if (!searchQuery) {
+            setFilteredCases(cases);
+            return;
+        }
+
+        const query = searchQuery.toLowerCase();
+        const filtered = cases.filter(case_ => {
+            switch (searchField) {
+                case 'name':
+                    return case_.name?.toLowerCase().includes(query);
+                case 'email':
+                    return case_.email?.toLowerCase().includes(query);
+                case 'mobile':
+                    return case_.mobile?.toString().includes(query);
+                case 'all':
+                    return (
+                        case_.name?.toLowerCase().includes(query) ||
+                        case_.email?.toLowerCase().includes(query) ||
+                        case_.mobile?.toString().includes(query)
+                    );
+                default:
+                    return true;
+            }
+        });
+
+        setFilteredCases(filtered);
+    }, [searchQuery, searchField, cases]);
 
     const handleCaseClick = (caseId) => {
         setSelectedCaseId(caseId);
@@ -79,8 +109,42 @@ export default function ViewAllCases() {
                 </span>
             </div>
 
+            <div className="mb-6">
+                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search cases..."
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+                        
+                        <div className="sm:w-48">
+                            <select
+                                value={searchField}
+                                onChange={(e) => setSearchField(e.target.value)}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="all">All Fields</option>
+                                <option value="name">Name</option>
+                                <option value="email">Email</option>
+                                <option value="mobile">Mobile</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="text-sm text-gray-600">
+                        Found {filteredCases.length} cases
+                        {searchQuery && ` matching "${searchQuery}"`}
+                    </div>
+                </div>
+            </div>
+
             <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {cases.map((case_) => (
+                {filteredCases.map((case_) => (
                     <div 
                         key={case_.id}
                         className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md p-4 sm:p-6 border border-gray-800 transition-all duration-200 cursor-pointer"
@@ -135,6 +199,12 @@ export default function ViewAllCases() {
                     </div>
                 ))}
             </div>
+
+            {filteredCases.length === 0 && (
+                <div className="text-center py-8">
+                    <p className="text-gray-500">No cases found matching your search criteria</p>
+                </div>
+            )}
         </div>
     );
 }

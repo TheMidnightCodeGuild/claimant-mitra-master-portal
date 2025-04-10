@@ -89,9 +89,9 @@ export default function Dashboard() {
 
   const dashboardItems = [
     {
-      title: "Create Case",
-      onClick: () => router.push('/view?type=createCase'),
-      icon: "➕"
+      title: "View Customer Enquiries",
+      onClick: () => router.push('/view?type=customerEnquiries'),
+      icon: "📝"
     },
     {
       title: "View Latest Leads",
@@ -99,24 +99,14 @@ export default function Dashboard() {
       icon: "📊"
     },
     {
-      title: "New Partner Application",
-      onClick: () => router.push('/view?type=partnerApplications'),
-      icon: "🤝"
-    },
-    {
-      title: "Create Partner",
-      onClick: () => router.push('/view?type=createPartner'),
-      icon: "👥"
+      title: "Create Case",
+      onClick: () => router.push('/view?type=createCase'),
+      icon: "➕"
     },
     {
       title: "View All Cases",
       onClick: () => router.push('/view?type=allCases'),
       icon: "📁"
-    },
-    {
-      title: "View Partner Issues",
-      onClick: () => router.push('/view?type=partnerIssues'),
-      icon: "⚠️"
     },
     {
       title: "Cases Under Review",
@@ -144,15 +134,28 @@ export default function Dashboard() {
       icon: "❌"
     },
     {
+      title: "New Partner Application",
+      onClick: () => router.push('/view?type=partnerApplications'),
+      icon: "🤝"
+    },
+    {
+      title: "Create Partner",
+      onClick: () => router.push('/view?type=createPartner'),
+      icon: "👥"
+    },
+
+    {
+      title: "View Partner Issues",
+      onClick: () => router.push('/view?type=partnerIssues'),
+      icon: "⚠️"
+    },
+   
+  
+    {
       title: "View Partners",
       onClick: () => router.push('/view?type=viewPartners'),
       icon: "👥"
     },
-    {
-      title: "View Customer Enquiries",
-      onClick: () => router.push('/view?type=customerEnquiries'),
-      icon: "📝"
-    }
   ];
 
   return (
