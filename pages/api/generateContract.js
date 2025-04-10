@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         // Generate document
         const documentBuffer = await createContract(documentData, staticContent);
 
-        const signatureUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/contractDigitalSignature/${documentData.docId}`;
+        const signatureUrl = `https://master.claimantmitra.com/contractDigitalSignature/${documentData.docId}`;
 
 
         // Send email with document
