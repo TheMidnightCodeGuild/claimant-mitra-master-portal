@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import DocumentViewer from '../DocumentViewer';
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 
 export default function FullCase({ docId }) {
     const [caseData, setCaseData] = useState(null);
@@ -9,6 +10,10 @@ export default function FullCase({ docId }) {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('basic'); // basic, logs, financial, documents
     const [isDeleting, setIsDeleting] = useState(false);
+    const [consentFormUrl, setConsentFormUrl] = useState('');
+    const [contractUrl, setContractUrl] = useState('');
+    const [signatureUrl, setSignatureUrl] = useState('');
+    const [contractSignatureUrl, setContractSignatureUrl] = useState('');
 
     useEffect(() => {
         async function fetchCase() {
@@ -19,7 +24,31 @@ export default function FullCase({ docId }) {
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    setCaseData(docSnap.data());
+                    const data = docSnap.data();
+                    setCaseData(data);
+                    
+                    // Fetch document URLs
+                    const storage = getStorage();
+                    if (data.consentForm) {
+                        const consentRef = ref(storage, data.consentForm);
+                        const consentUrl = await getDownloadURL(consentRef);
+                        setConsentFormUrl(consentUrl);
+                    }
+                    if (data.contract) {
+                        const contractRef = ref(storage, data.contract);
+                        const contractUrl = await getDownloadURL(contractRef);
+                        setContractUrl(contractUrl);
+                    }
+                    if (data.signature) {
+                        const signatureRef = ref(storage, data.signature);
+                        const signatureUrl = await getDownloadURL(signatureRef);
+                        setSignatureUrl(signatureUrl);
+                    }
+                    if (data.contractSignature) {
+                        const contractSignatureRef = ref(storage, data.contractSignature);
+                        const contractSignatureUrl = await getDownloadURL(contractSignatureRef);
+                        setContractSignatureUrl(contractSignatureUrl);
+                    }
                 } else {
                     setError('Case not found');
                 }
@@ -425,6 +454,58 @@ export default function FullCase({ docId }) {
                     <div className="space-y-4">
                         <h3 className="text-lg font-medium">Case Documents</h3>
                         <DocumentViewer files={caseData?.fileBucket || []} />
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            {consentFormUrl && (
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Consent Form</label>
+                                    <a 
+                                        href={consentFormUrl} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800"
+                                    >
+                                        Download Consent Form
+                                    </a>
+                                </div>
+                            )}
+                            
+                            {contractUrl && (
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Contract</label>
+                                    <a 
+                                        href={contractUrl} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800"
+                                    >
+                                        Download Contract
+                                    </a>
+                                </div>
+                            )}
+                            
+                            {signatureUrl && (
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Consent Signature</label>
+                                    <img 
+                                        src={signatureUrl} 
+                                        alt="Signature" 
+                                        className="max-w-xs border rounded-md"
+                                    />
+                                </div>
+                            )}
+                            
+                            {contractSignatureUrl && (
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Contract Signature</label>
+                                    <img 
+                                        src={contractSignatureUrl} 
+                                        alt="Contract Signature" 
+                                        className="max-w-xs border rounded-md"
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

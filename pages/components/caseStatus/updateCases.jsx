@@ -18,6 +18,10 @@ export default function FullCase({ docId }) {
     const [editingField, setEditingField] = useState(null);
     const [tempValue, setTempValue] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [consentFormUrl, setConsentFormUrl] = useState('');
+    const [contractUrl, setContractUrl] = useState('');
+    const [signatureUrl, setSignatureUrl] = useState('');
+    const [contractSignatureUrl, setContractSignatureUrl] = useState('');
 
     useEffect(() => {
         async function fetchCase() {
@@ -28,7 +32,30 @@ export default function FullCase({ docId }) {
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    setCaseData(docSnap.data());
+                    const data = docSnap.data();
+                    setCaseData(data);
+
+                    // Fetch document URLs
+                    if (data.consentForm) {
+                        const consentRef = ref(storage, data.consentForm);
+                        const consentUrl = await getDownloadURL(consentRef);
+                        setConsentFormUrl(consentUrl);
+                    }
+                    if (data.contract) {
+                        const contractRef = ref(storage, data.contract);
+                        const contractUrl = await getDownloadURL(contractRef);
+                        setContractUrl(contractUrl);
+                    }
+                    if (data.signature) {
+                        const signatureRef = ref(storage, data.signature);
+                        const signatureUrl = await getDownloadURL(signatureRef);
+                        setSignatureUrl(signatureUrl);
+                    }
+                    if (data.contractSignature) {
+                        const contractSignatureRef = ref(storage, data.contractSignature);
+                        const contractSignatureUrl = await getDownloadURL(contractSignatureRef);
+                        setContractSignatureUrl(contractSignatureUrl);
+                    }
                 } else {
                     setError('Case not found');
                 }
@@ -43,33 +70,56 @@ export default function FullCase({ docId }) {
         fetchCase();
     }, [docId]);
 
-    const handleFileUpload = async (e) => {
+    const handleFileUpload = async (e, fileType) => {
         const file = e.target.files[0];
         if (!file) return;
 
         try {
             setUploading(true);
-            const storageRef = ref(storage, `cases/${docId}/${file.name}`);
+            let filePath;
+            
+            if (fileType === 'consentForm') {
+                filePath = `cases/${docId}/consentForm/${file.name}`;
+            } else if (fileType === 'contract') {
+                filePath = `cases/${docId}/contract/${file.name}`;
+            } else {
+                filePath = `cases/${docId}/${file.name}`;
+            }
+
+            const storageRef = ref(storage, filePath);
             await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(storageRef);
 
-            const newFile = {
-                name: file.name,
-                url: downloadURL,
-                uploadedAt: new Date().toISOString()
-            };
-
-            const updatedFiles = [...(caseData?.fileBucket || []), newFile];
-
             const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                fileBucket: updatedFiles
-            });
 
-            setCaseData(prev => ({
-                ...prev,
-                fileBucket: updatedFiles
-            }));
+            if (fileType === 'consentForm' || fileType === 'contract') {
+                await updateDoc(docRef, {
+                    [fileType]: filePath
+                });
+
+                if (fileType === 'consentForm') {
+                    setConsentFormUrl(downloadURL);
+                } else {
+                    setContractUrl(downloadURL);
+                }
+            } else {
+                const newFile = {
+                    name: file.name,
+                    url: downloadURL,
+                    uploadedAt: new Date().toISOString()
+                };
+
+                const updatedFiles = [...(caseData?.fileBucket || []), newFile];
+
+                await updateDoc(docRef, {
+                    fileBucket: updatedFiles
+                });
+
+                setCaseData(prev => ({
+                    ...prev,
+                    fileBucket: updatedFiles
+                }));
+            }
 
             alert('File uploaded successfully');
         } catch (err) {
@@ -337,7 +387,7 @@ export default function FullCase({ docId }) {
                                 <div className="flex items-center gap-4">
                                     <input
                                         type="file"
-                                        onChange={handleFileUpload}
+                                        onChange={(e) => handleFileUpload(e)}
                                         className="hidden"
                                         id="fileUpload"
                                         disabled={uploading}
@@ -354,6 +404,102 @@ export default function FullCase({ docId }) {
                                 files={caseData?.fileBucket || []} 
                                 onDelete={handleDeleteFile}
                             />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Consent Form</label>
+                                    <input
+                                        type="file"
+                                        onChange={(e) => handleFileUpload(e, 'consentForm')}
+                                        className="hidden"
+                                        id="consentFormUpload"
+                                        disabled={uploading}
+                                    />
+                                    <label
+                                        htmlFor="consentFormUpload"
+                                        className={`cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 block w-fit ${uploading ? 'opacity-50' : ''}`}
+                                    >
+                                        {uploading ? 'Uploading...' : 'Upload Consent Form'}
+                                    </label>
+                                    {consentFormUrl && (
+                                        <a 
+                                            href={consentFormUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:text-blue-800 block mt-2"
+                                        >
+                                            Download Consent Form
+                                        </a>
+                                    )}
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Contract</label>
+                                    <input
+                                        type="file"
+                                        onChange={(e) => handleFileUpload(e, 'contract')}
+                                        className="hidden"
+                                        id="contractUpload"
+                                        disabled={uploading}
+                                    />
+                                    <label
+                                        htmlFor="contractUpload"
+                                        className={`cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 block w-fit ${uploading ? 'opacity-50' : ''}`}
+                                    >
+                                        {uploading ? 'Uploading...' : 'Upload Contract'}
+                                    </label>
+                                    {contractUrl && (
+                                        <a 
+                                            href={contractUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:text-blue-800 block mt-2"
+                                        >
+                                            Download Contract
+                                        </a>
+                                    )}
+                                </div>
+                                
+                                {signatureUrl && (
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700">Consent Signature</label>
+                                        <img 
+                                            src={signatureUrl} 
+                                            alt="Signature" 
+                                            className="max-w-xs border rounded-md"
+                                        />
+                                        <a 
+                                            href={signatureUrl}
+                                            download="consent_signature"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:text-blue-800 block mt-2"
+                                        >
+                                            Download Signature
+                                        </a>
+                                    </div>
+                                )}
+                                
+                                {contractSignatureUrl && (
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700">Contract Signature</label>
+                                        <img 
+                                            src={contractSignatureUrl} 
+                                            alt="Contract Signature" 
+                                            className="max-w-xs border rounded-md"
+                                        />
+                                        <a
+                                            href={contractSignatureUrl}
+                                            download="contract_signature" 
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:text-blue-800 block mt-2"
+                                        >
+                                            Download Signature
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </>
                 )}
