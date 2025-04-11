@@ -91,10 +91,7 @@ export default function DigitalSignature() {
                 }
 
                 // Structure the signature data for typed signature
-                signatureData = {
-                    type: 'text',
-                    content: typedSignature.trim()
-                };
+                signatureData = typedSignature.trim();
             }
 
             // Update Firestore document
