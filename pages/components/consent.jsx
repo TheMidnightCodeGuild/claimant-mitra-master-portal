@@ -18,7 +18,9 @@ export async function sendConsent(email, name, docId, address, policyHolder, pol
                     claimNo,
                     complaintDate,
                     companyName,
-                    estimatedClaimAmount
+                    estimatedClaimAmount,
+                    processingFee: "NIL/-",
+                    commission: "20",
                 }
             }),
         });
@@ -46,7 +48,9 @@ export default function Consent() {
         claimNo: '',
         complaintDate: '',
         companyName: '',
-        estimatedClaimAmount: ''
+        estimatedClaimAmount: '',
+        processingFee: '',
+        commission: ''
     });
 
     const handleSubmit = async (e) => {
@@ -77,7 +81,9 @@ export default function Consent() {
                 formData.claimNo,
                 formData.complaintDate,
                 formData.companyName,
-                formData.estimatedClaimAmount
+                formData.estimatedClaimAmount,
+                formData.processingFee,
+                formData.commission
             );
 
             setSuccess(true);
@@ -90,7 +96,9 @@ export default function Consent() {
                 claimNo: '',
                 complaintDate: '',
                 companyName: '',
-                estimatedClaimAmount: ''
+                estimatedClaimAmount: '',
+                processingFee: '',
+                commission: ''
             });
         } catch (err) {
             setError(err.message);
@@ -210,6 +218,28 @@ export default function Consent() {
                         type="number"
                         value={formData.estimatedClaimAmount}
                         onChange={(e) => setFormData(prev => ({ ...prev, estimatedClaimAmount: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Processing Fee</label>
+                    <input
+                        type="text"
+                        value={formData.processingFee}
+                        onChange={(e) => setFormData(prev => ({ ...prev, processingFee: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Commission (%)</label>
+                    <input
+                        type="number"
+                        value={formData.commission}
+                        onChange={(e) => setFormData(prev => ({ ...prev, commission: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
