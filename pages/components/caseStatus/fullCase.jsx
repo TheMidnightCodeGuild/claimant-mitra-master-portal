@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import DocumentViewer from '../DocumentViewer';
 
@@ -8,6 +8,7 @@ export default function FullCase({ docId }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('basic'); // basic, logs, financial, documents
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         async function fetchCase() {
@@ -32,6 +33,26 @@ export default function FullCase({ docId }) {
 
         fetchCase();
     }, [docId]);
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const docRef = doc(db, 'users', docId);
+            await deleteDoc(docRef);
+            alert('Case deleted successfully');
+            // Redirect or handle post-deletion as needed
+            window.location.href = '/'; // Or your desired redirect path
+        } catch (err) {
+            console.error('Error deleting case:', err);
+            alert('Failed to delete case');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     const formatDate = (dateString) => {
         if (!dateString) return 'Not set';
@@ -79,7 +100,23 @@ export default function FullCase({ docId }) {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Full Case Details</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Full Case Details</h2>
+                <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
+                >
+                    {isDeleting ? (
+                        <>
+                            <span className="animate-spin mr-2">⌛</span>
+                            Deleting...
+                        </>
+                    ) : (
+                        'Delete Case'
+                    )}
+                </button>
+            </div>
 
             {/* Tab Navigation */}
             <div className="mb-6 border-b">

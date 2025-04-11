@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
 import DocumentViewer from '../DocumentViewer';
@@ -10,6 +10,7 @@ export default function SendToReview({ docId, onComplete }) {
     const [error, setError] = useState(null);
     const [showFullCase, setShowFullCase] = useState(false);
     const [sendingToReview, setSendingToReview] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         async function fetchCase() {
@@ -62,6 +63,26 @@ export default function SendToReview({ docId, onComplete }) {
         }
     };
 
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            setDeleting(true);
+            const docRef = doc(db, 'users', docId);
+            await deleteDoc(docRef);
+            if (onComplete) {
+                onComplete();
+            }
+        } catch (err) {
+            console.error('Error deleting case:', err);
+            setError('Failed to delete case');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
     if (showFullCase) {
         return (
             <div className="container mx-auto px-4 ">
@@ -101,16 +122,37 @@ export default function SendToReview({ docId, onComplete }) {
         <div className="lg:max-w-[1300px] mx-auto px-4 py-2 max-w-5xl">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-bold text-gray-800">Case Details</h2>
-                <button
-                    onClick={() => setShowFullCase(true)}
-                    className="px-6 py-2.5 text-sm font-medium text-blue-600 hover:text-white hover:bg-blue-600 border-2 border-blue-600 rounded-lg transition-all duration-200 flex items-center gap-2"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                        <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
-                    </svg>
-                    View Complete Case
-                </button>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => setShowFullCase(true)}
+                        className="px-6 py-2.5 text-sm font-medium text-blue-600 hover:text-white hover:bg-blue-600 border-2 border-blue-600 rounded-lg transition-all duration-200 flex items-center gap-2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                            <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                        </svg>
+                        View Complete Case
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        disabled={deleting}
+                        className="px-6 py-2.5 text-sm font-medium text-red-600 hover:text-white hover:bg-red-600 border-2 border-red-600 rounded-lg transition-all duration-200 flex items-center gap-2"
+                    >
+                        {deleting ? (
+                            <>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                                <span>Deleting...</span>
+                            </>
+                        ) : (
+                            <>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                                Delete Case
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">

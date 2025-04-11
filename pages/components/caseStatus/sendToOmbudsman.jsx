@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
 import { sendContract } from '../contract';
@@ -136,6 +136,24 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         } catch (err) {
             console.error('Error marking case as resolved:', err);
             alert('Failed to mark case as resolved');
+        }
+    };
+
+    const handleDeleteCase = async () => {
+        try {
+            if (!docId) return;
+
+            if (window.confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
+                const docRef = doc(db, 'users', docId);
+                await deleteDoc(docRef);
+                alert('Case deleted successfully');
+                if (onComplete) {
+                    onComplete();
+                }
+            }
+        } catch (err) {
+            console.error('Error deleting case:', err);
+            alert('Failed to delete case');
         }
     };
 
@@ -315,12 +333,20 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">IGMS</h2>
-                <button
-                    onClick={() => setShowFullCase(true)}
-                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
-                >
-                    View Entire Doc
-                </button>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => setShowFullCase(true)}
+                        className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
+                    >
+                        View Entire Doc
+                    </button>
+                    <button
+                        onClick={handleDeleteCase}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                    >
+                        Delete Case
+                    </button>
+                </div>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -469,11 +495,6 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                             )}
                         </div>
                     </div>
-{/* 
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">File Bucket</label>
-                        <p className="mt-1 text-gray-900">{caseData?.fileBucket || 'N/A'}</p>
-                    </div> */}
 
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">Complaint Date</label>

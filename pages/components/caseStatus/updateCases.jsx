@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import DocumentViewer from '../DocumentViewer';
 import { storage } from '../../../lib/firebase';
@@ -103,6 +103,20 @@ export default function FullCase({ docId }) {
         } catch (err) {
             console.error('Error deleting file:', err);
             alert('Failed to delete file');
+        }
+    };
+
+    const handleDeleteCase = async () => {
+        if (!confirm('Are you sure you want to delete this case? This action cannot be undone.')) return;
+
+        try {
+            const docRef = doc(db, 'users', docId);
+            await deleteDoc(docRef);
+            alert('Case deleted successfully');
+            window.location.href = '/'; // Redirect to home page after deletion
+        } catch (err) {
+            console.error('Error deleting case:', err);
+            alert('Failed to delete case');
         }
     };
 
@@ -240,7 +254,15 @@ export default function FullCase({ docId }) {
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Full Case Details</h2>
-                {saving && <span className="text-blue-500">Saving...</span>}
+                <div className="flex items-center gap-4">
+                    {saving && <span className="text-blue-500">Saving...</span>}
+                    <button
+                        onClick={handleDeleteCase}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    >
+                        Delete Case
+                    </button>
+                </div>
             </div>
 
             {/* Tab Navigation */}

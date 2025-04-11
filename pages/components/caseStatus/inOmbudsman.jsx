@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
 import DocumentViewer from '../DocumentViewer';
@@ -229,6 +229,22 @@ export default function InOmbudsman({ docId, onComplete }) {
         }
     };
 
+    const handleDeleteCase = async () => {
+        if (window.confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
+            try {
+                const docRef = doc(db, 'users', docId);
+                await deleteDoc(docRef);
+                alert('Case deleted successfully');
+                if (onComplete) {
+                    onComplete();
+                }
+            } catch (err) {
+                console.error('Error deleting case:', err);
+                alert('Failed to delete case');
+            }
+        }
+    };
+
     const renderLogs = (logs, isMainLog = true, isIgmsLog = false, isOmbudsmanLog = false) => {
         if (!logs || logs.length === 0) return 'No logs available';
 
@@ -292,12 +308,20 @@ export default function InOmbudsman({ docId, onComplete }) {
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Ombudsman Case Details</h2>
-                <button
-                    onClick={() => setShowFullCase(true)}
-                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
-                >
-                    View Entire Doc
-                </button>
+                <div className="flex space-x-4">
+                    <button
+                        onClick={() => setShowFullCase(true)}
+                        className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
+                    >
+                        View Entire Doc
+                    </button>
+                    <button
+                        onClick={handleDeleteCase}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                    >
+                        Delete Case
+                    </button>
+                </div>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
