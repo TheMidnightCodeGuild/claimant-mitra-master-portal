@@ -114,9 +114,19 @@ export default function Dashboard() {
       icon: "🔍"
     },
     {
+      title: "Send Consent",
+      onClick: () => router.push('/view?type=sendConsent'),
+      icon: "📨"
+    },
+    {
       title: "IGMS",
       onClick: () => router.push('/view?type=igms'),
       icon: "📋"
+    },
+    {
+      title: "Send Contract",
+      onClick: () => router.push('/view?type=sendContract'), 
+      icon: "📄"
     },
     {
       title: "Ombudsman",
@@ -133,6 +143,8 @@ export default function Dashboard() {
       onClick: () => router.push('/view?type=rejectedCases'),
       icon: "❌"
     },
+
+
     {
       title: "New Partner Application",
       onClick: () => router.push('/view?type=partnerApplications'),
@@ -143,14 +155,11 @@ export default function Dashboard() {
       onClick: () => router.push('/view?type=createPartner'),
       icon: "👥"
     },
-
     {
       title: "View Partner Issues",
       onClick: () => router.push('/view?type=partnerIssues'),
       icon: "⚠️"
     },
-   
-  
     {
       title: "View Partners",
       onClick: () => router.push('/view?type=viewPartners'),

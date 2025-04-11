@@ -56,9 +56,21 @@ export default function Consent() {
         setSuccess(false);
 
         try {
+            // Send email as query param
+            const docIdResponse = await fetch(`/api/getDocId?email=${encodeURIComponent(formData.recipientEmail)}`);
+            if (!docIdResponse.ok) {
+                throw new Error('Failed to fetch document ID');
+            }
+            const { docId } = await docIdResponse.json();
+
+            if (!docId) {
+                throw new Error('Document ID not available');
+            }
+
             await sendConsent(
                 formData.recipientEmail,
                 formData.name,
+                docId,
                 formData.address,
                 formData.policyHolder,
                 formData.policyNo,
@@ -105,47 +117,32 @@ export default function Consent() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Recipient Email
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Recipient Email</label>
                     <input
                         type="email"
                         value={formData.recipientEmail}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            recipientEmail: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, recipientEmail: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Name
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Name</label>
                     <input
                         type="text"
                         value={formData.name}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            name: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Address
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Address</label>
                     <textarea
                         value={formData.address}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            address: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         rows={3}
                         required
@@ -153,96 +150,66 @@ export default function Consent() {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Policy Holder
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Policy Holder</label>
                     <input
                         type="text"
                         value={formData.policyHolder}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            policyHolder: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, policyHolder: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Policy Number
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Policy Number</label>
                     <input
                         type="text"
                         value={formData.policyNo}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            policyNo: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, policyNo: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Claim Number
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Claim Number</label>
                     <input
                         type="text"
                         value={formData.claimNo}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            claimNo: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, claimNo: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Complaint Date
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Complaint Date</label>
                     <input
                         type="date"
                         value={formData.complaintDate}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            complaintDate: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, complaintDate: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Company Name
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Company Name</label>
                     <input
                         type="text"
                         value={formData.companyName}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            companyName: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Estimated Claim Amount
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Estimated Claim Amount</label>
                     <input
                         type="number"
                         value={formData.estimatedClaimAmount}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            estimatedClaimAmount: e.target.value
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, estimatedClaimAmount: e.target.value }))}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         required
                     />

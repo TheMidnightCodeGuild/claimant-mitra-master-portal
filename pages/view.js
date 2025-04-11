@@ -13,6 +13,9 @@ import ViewPartnerIssues from './components/viewPartnerIssues';
 import PartnerApplications from './components/partnerApplications';
 import CreatePartner from './components/createPartner';
 import ViewCustomerEnquiries from './components/viewCustomerEnquiries';
+import Contract from './components/contract';
+import Consent from './components/consent';
+
 
 export default function View() {
     const router = useRouter();
@@ -54,6 +57,10 @@ export default function View() {
                 return <CreatePartner />;
             case 'customerEnquiries':
                 return <ViewCustomerEnquiries />;
+            case 'sendContract':
+                return <Contract />;
+            case 'sendConsent':
+                return <Consent />;
             default:
                 return <div>Invalid component type</div>;
         }
