@@ -47,12 +47,27 @@ export default function Contract() {
         setError(null);
         setSuccess(false);
 
+        
+
         try {
+
+            const docIdResponse = await fetch(`/api/getDocId?email=${encodeURIComponent(formData.recipientEmail)}`);
+            if (!docIdResponse.ok) {
+                throw new Error('Failed to fetch document ID');
+            }
+            const { docId } = await docIdResponse.json();
+
+            if (!docId) {
+                throw new Error('Document ID not available');
+            }
+
+        
             await sendContract(
                 formData.recipientEmail,
                 formData.name,
                 formData.address,
-                formData.aadharNo
+                formData.aadharNo,
+                docId
             );
 
             setSuccess(true);

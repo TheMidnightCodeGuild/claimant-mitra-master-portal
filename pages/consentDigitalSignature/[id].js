@@ -73,11 +73,7 @@ export default function DigitalSignature() {
 
                     // Get the download URL
                     const downloadURL = await getDownloadURL(storageRef);
-                    signatureData = {
-                        type: 'image',
-                        url: downloadURL,
-                        path: filePath // Store the path for future reference if needed
-                    };
+                    signatureData = downloadURL;
                 } catch (error) {
                     console.error('Error uploading signature image:', error);
                     alert('Failed to upload signature image');
