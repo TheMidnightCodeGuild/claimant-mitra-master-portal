@@ -20,6 +20,7 @@ export default function SendToIGMS({ docId, onComplete }) {
     const [isAddingMainLog, setIsAddingMainLog] = useState(false);
     const [isAddingInternalLog, setIsAddingInternalLog] = useState(false);
     const [showFullCase, setShowFullCase] = useState(false);
+    const [sendingConsent, setSendingConsent] = useState(false);
 
     useEffect(() => {
         async function fetchCase() {
@@ -186,6 +187,7 @@ export default function SendToIGMS({ docId, onComplete }) {
 
     const handleSendConsent = async () => {
         try {
+            setSendingConsent(true);
             // Check if all required fields exist
             const requiredFields = [
                 'email', 'name', 'address', 'policyHolder', 'policyNo', 
@@ -215,6 +217,8 @@ export default function SendToIGMS({ docId, onComplete }) {
         } catch (err) {
             console.error('Error sending consent:', err);
             alert('Failed to send consent document');
+        } finally {
+            setSendingConsent(false);
         }
     };
 
@@ -527,9 +531,14 @@ export default function SendToIGMS({ docId, onComplete }) {
                         </button>
                         <button
                             onClick={handleSendConsent}
-                            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                            disabled={sendingConsent}
+                            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
                         >
-                            Send Consent
+                            {sendingConsent ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                            ) : (
+                                'Send Consent'
+                            )}
                         </button>
                         <button
                             onClick={handleRejectCase}
