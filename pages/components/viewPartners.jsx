@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { sendEmail } from '../../lib/mailer';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 export default function ViewPartners() {
     const [partners, setPartners] = useState([]);
@@ -11,6 +13,7 @@ export default function ViewPartners() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchField, setSearchField] = useState('name');
     const [filteredPartners, setFilteredPartners] = useState([]);
+    const [passwordResetLoading, setPasswordResetLoading] = useState(false);
 
     useEffect(() => {
         async function fetchPartners() {
@@ -94,6 +97,25 @@ export default function ViewPartners() {
             ...prev,
             [field]: value
         }));
+    };
+
+    const handlePasswordReset = async (email) => {
+        if (!email) {
+            alert('Partner has no email address');
+            return;
+        }
+
+        try {
+            setPasswordResetLoading(true);
+            const auth = getAuth();
+            await sendPasswordResetEmail(auth, email);
+            alert(`Password reset email sent to ${email}`);
+        } catch (err) {
+            console.error('Error sending password reset:', err);
+            alert(`Failed to send password reset: ${err.message}`);
+        } finally {
+            setPasswordResetLoading(false);
+        }
     };
 
     if (loading) {
@@ -252,6 +274,15 @@ export default function ViewPartners() {
                                     <span className="font-medium">Joined On:</span>{' '}
                                     {formatDate(partner.createdAt)}
                                 </p>
+                                <div className="mt-4 pt-2 border-t border-gray-200">
+                                    <button
+                                        onClick={() => handlePasswordReset(partner.email)}
+                                        disabled={passwordResetLoading || !partner.email}
+                                        className="w-full px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                    >
+                                        {passwordResetLoading ? 'Sending...' : 'Change Password'}
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
