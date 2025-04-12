@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, query, where, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { sendEmail } from '../../lib/mailer';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 export default function ViewPartners() {
@@ -14,6 +13,7 @@ export default function ViewPartners() {
     const [searchField, setSearchField] = useState('name');
     const [filteredPartners, setFilteredPartners] = useState([]);
     const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+    const [partnerStats, setPartnerStats] = useState({});
 
     useEffect(() => {
         async function fetchPartners() {
@@ -26,6 +26,36 @@ export default function ViewPartners() {
                 }));
                 setPartners(partnersData);
                 setFilteredPartners(partnersData);
+                
+                // Fetch stats for each partner
+                const statsPromises = partnersData.map(async partner => {
+                    if (partner.partnerRef) {
+                        const usersRef = collection(db, 'users');
+                        const q = query(usersRef, where('partnerRef', '==', partner.partnerRef));
+                        const querySnapshot = await getDocs(q);
+                        
+                        let totalCommission = 0;
+                        querySnapshot.forEach((doc) => {
+                            const userData = doc.data();
+                            totalCommission += userData.partnerCommision || 0;
+                        });
+                        
+                        return {
+                            id: partner.id,
+                            casesReferred: querySnapshot.size,
+                            totalEarnings: totalCommission
+                        };
+                    }
+                    return { id: partner.id, casesReferred: 0, totalEarnings: 0 };
+                });
+                
+                const stats = await Promise.all(statsPromises);
+                const statsMap = {};
+                stats.forEach(stat => {
+                    statsMap[stat.id] = stat;
+                });
+                
+                setPartnerStats(statsMap);
             } catch (err) {
                 console.error('Error fetching partners:', err);
                 setError('Failed to fetch partners');
@@ -258,17 +288,17 @@ export default function ViewPartners() {
                                     <span className="font-medium">Source:</span>{' '}
                                     {partner.source || 'N/A'}
                                 </p>
-                                <p className="text-gray-600">
+                                {/* <p className="text-gray-600">
                                     <span className="font-medium">Total Cases:</span>{' '}
                                     {partner.cases || 0}
-                                </p>
+                                </p> */}
                                 <p className="text-gray-600">
                                     <span className="font-medium">Cases Referred:</span>{' '}
-                                    {partner.casesReferred || 0}
+                                    {partnerStats[partner.id]?.casesReferred || 0}
                                 </p>
                                 <p className="text-gray-600">
                                     <span className="font-medium">Total Earnings:</span>{' '}
-                                    ₹{partner.earning || 0}
+                                    ₹{partnerStats[partner.id]?.totalEarnings || 0}
                                 </p>
                                 <p className="text-gray-600">
                                     <span className="font-medium">Joined On:</span>{' '}

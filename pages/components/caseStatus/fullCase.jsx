@@ -3,6 +3,8 @@ import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import DocumentViewer from '../DocumentViewer';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+import { useRouter } from 'next/router';
+import UpdateCase from '../caseStatus/updateCases';
 
 export default function FullCase({ docId }) {
     const [caseData, setCaseData] = useState(null);
@@ -14,6 +16,12 @@ export default function FullCase({ docId }) {
     const [contractUrl, setContractUrl] = useState('');
     const [signatureUrl, setSignatureUrl] = useState('');
     const [contractSignatureUrl, setContractSignatureUrl] = useState('');
+    const [showUpdateCase, setShowUpdateCase] = useState(false);
+    const [showAllMainLogs, setShowAllMainLogs] = useState(false);
+    const [showAllInternalLogs, setShowAllInternalLogs] = useState(false);
+    const [showAllIGMSLogs, setShowAllIGMSLogs] = useState(false);
+    const [showAllOmbudsmanLogs, setShowAllOmbudsmanLogs] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         async function fetchCase() {
@@ -83,6 +91,10 @@ export default function FullCase({ docId }) {
         }
     };
 
+    const handleUpdate = () => {
+        setShowUpdateCase(true);
+    };
+
     const formatDate = (dateString) => {
         if (!dateString) return 'Not set';
         return new Date(dateString).toLocaleString('en-IN', {
@@ -127,24 +139,36 @@ export default function FullCase({ docId }) {
         );
     }
 
+    if (showUpdateCase) {
+        return <UpdateCase docId={docId} />;
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Full Case Details</h2>
-                <button
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
-                >
-                    {isDeleting ? (
-                        <>
-                            <span className="animate-spin mr-2">⌛</span>
-                            Deleting...
-                        </>
-                    ) : (
-                        'Delete Case'
-                    )}
-                </button>
+                <div className="flex space-x-4">
+                    <button
+                        onClick={handleUpdate}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    >
+                        Update Case
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
+                    >
+                        {isDeleting ? (
+                            <>
+                                <span className="animate-spin mr-2">⌛</span>
+                                Deleting...
+                            </>
+                        ) : (
+                            'Delete Case'
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Tab Navigation */}

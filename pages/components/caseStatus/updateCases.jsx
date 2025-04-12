@@ -22,6 +22,8 @@ export default function FullCase({ docId }) {
     const [contractUrl, setContractUrl] = useState('');
     const [signatureUrl, setSignatureUrl] = useState('');
     const [contractSignatureUrl, setContractSignatureUrl] = useState('');
+    const [sendingConsent, setSendingConsent] = useState(false);
+    const [sendingContract, setSendingContract] = useState(false);
 
     useEffect(() => {
         async function fetchCase() {
@@ -284,6 +286,70 @@ export default function FullCase({ docId }) {
         </div>
     );
 
+    const handleSendConsent = async () => {
+        if (!caseData.email || !consentFormUrl) {
+            alert('Email address or consent form not available');
+            return;
+        }
+
+        try {
+            setSendingConsent(true);
+            const response = await fetch('/api/send-consent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: caseData.email,
+                    consentFormUrl: consentFormUrl
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send consent form');
+            }
+
+            alert('Consent form sent successfully');
+        } catch (error) {
+            console.error('Error sending consent form:', error);
+            alert('Failed to send consent form: ' + error.message);
+        } finally {
+            setSendingConsent(false);
+        }
+    };
+
+    const handleSendContract = async () => {
+        if (!caseData.email || !contractUrl) {
+            alert('Email address or contract not available');
+            return;
+        }
+
+        try {
+            setSendingContract(true);
+            const response = await fetch('/api/send-contract', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: caseData.email,
+                    contractUrl: contractUrl
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send contract');
+            }
+
+            alert('Contract sent successfully');
+        } catch (error) {
+            console.error('Error sending contract:', error);
+            alert('Failed to send contract: ' + error.message);
+        } finally {
+            setSendingContract(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -408,56 +474,92 @@ export default function FullCase({ docId }) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Consent Form</label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => handleFileUpload(e, 'consentForm')}
-                                        className="hidden"
-                                        id="consentFormUpload"
-                                        disabled={uploading}
-                                    />
-                                    <label
-                                        htmlFor="consentFormUpload"
-                                        className={`cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 block w-fit ${uploading ? 'opacity-50' : ''}`}
-                                    >
-                                        {uploading ? 'Uploading...' : 'Upload Consent Form'}
-                                    </label>
-                                    {consentFormUrl && (
-                                        <a 
-                                            href={consentFormUrl} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:text-blue-800 block mt-2"
+                                    <div className="flex flex-col gap-2">
+                                        <input
+                                            type="file"
+                                            onChange={(e) => handleFileUpload(e, 'consentForm')}
+                                            className="hidden"
+                                            id="consentFormUpload"
+                                            disabled={uploading}
+                                        />
+                                        <label
+                                            htmlFor="consentFormUpload"
+                                            className={`cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 block w-fit ${uploading ? 'opacity-50' : ''}`}
                                         >
-                                            Download Consent Form
-                                        </a>
-                                    )}
+                                            {uploading ? 'Uploading...' : 'Upload Consent Form'}
+                                        </label>
+                                        {consentFormUrl && (
+                                            <div className="flex flex-col gap-2">
+                                                <a 
+                                                    href={consentFormUrl} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800"
+                                                >
+                                                    Download Consent Form
+                                                </a>
+                                                <button
+                                                    onClick={handleSendConsent}
+                                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-fit flex items-center"
+                                                    disabled={!caseData?.email || sendingConsent}
+                                                >
+                                                    {sendingConsent ? (
+                                                        <>
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                            Sending...
+                                                        </>
+                                                    ) : (
+                                                        'Send Consent from Database to Email'
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Contract</label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => handleFileUpload(e, 'contract')}
-                                        className="hidden"
-                                        id="contractUpload"
-                                        disabled={uploading}
-                                    />
-                                    <label
-                                        htmlFor="contractUpload"
-                                        className={`cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 block w-fit ${uploading ? 'opacity-50' : ''}`}
-                                    >
-                                        {uploading ? 'Uploading...' : 'Upload Contract'}
-                                    </label>
-                                    {contractUrl && (
-                                        <a 
-                                            href={contractUrl} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:text-blue-800 block mt-2"
+                                    <div className="flex flex-col gap-2">
+                                        <input
+                                            type="file"
+                                            onChange={(e) => handleFileUpload(e, 'contract')}
+                                            className="hidden"
+                                            id="contractUpload"
+                                            disabled={uploading}
+                                        />
+                                        <label
+                                            htmlFor="contractUpload"
+                                            className={`cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 block w-fit ${uploading ? 'opacity-50' : ''}`}
                                         >
-                                            Download Contract
-                                        </a>
-                                    )}
+                                            {uploading ? 'Uploading...' : 'Upload Contract'}
+                                        </label>
+                                        {contractUrl && (
+                                            <div className="flex flex-col gap-2">
+                                                <a 
+                                                    href={contractUrl} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800"
+                                                >
+                                                    Download Contract
+                                                </a>
+                                                <button
+                                                    onClick={handleSendContract}
+                                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-fit flex items-center"
+                                                    disabled={!caseData?.email || sendingContract}
+                                                >
+                                                    {sendingContract ? (
+                                                        <>
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                            Sending...
+                                                        </>
+                                                    ) : (
+                                                        'Send Contract from Database to Email'
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 
                                 {signatureUrl && (
