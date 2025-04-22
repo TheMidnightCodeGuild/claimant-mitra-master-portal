@@ -5,11 +5,11 @@ import FullCase from './fullCase';
 import { sendConsent } from '../consent';
 import DocumentViewer from '../DocumentViewer';
 
-export default function SendToIGMS({ docId, onComplete }) {
+export default function SendFromReimbursement({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [status, setStatus] = useState('');
+    const [status, setStatus] = useState('');   
     const [caseRejectionReason, setCaseRejectionReason] = useState('');
     const [documentShort, setDocumentShort] = useState('');
     const [editingField, setEditingField] = useState(null);
@@ -75,7 +75,9 @@ export default function SendToIGMS({ docId, onComplete }) {
                 documentShort,
                 igms: true,
                 caseAcceptanceDate: new Date().toISOString(),
-                status: "Case Accepted"
+                status: "Case Accepted",
+                inReimbursement: false,
+                takenForReview: true
             });
 
             alert('Case sent to IGMS successfully');
@@ -127,44 +129,8 @@ export default function SendToIGMS({ docId, onComplete }) {
         }
     };
 
-    const handleMarkAsPending = async () => {
-        try {
-            if (!docId) return;
-            
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                isPending: true,
-                takenForReview: false
-            });
 
-            alert('Case marked as pending successfully');
-            if (onComplete) {
-                onComplete();
-            }
-        } catch (err) {
-            console.error('Error marking case as pending:', err);
-            alert('Failed to mark case as pending');
-        }
-    };
-
-    const handleSendToReimbursement = async () => {
-        try {
-            if (!docId) return;
-            
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                inReimbursement: true
-            });
-
-            alert('Case sent to reimbursement successfully');
-            if (onComplete) {
-                onComplete();
-            }
-        } catch (err) {
-            console.error('Error sending case to reimbursement:', err);
-            alert('Failed to send case to reimbursement');
-        }
-    };
+   
 
     const handleAddMainLog = async () => {
         try {
@@ -319,7 +285,7 @@ export default function SendToIGMS({ docId, onComplete }) {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Review</h2>
+                <h2 className="text-2xl font-bold">Reimbursement Case</h2>
                 <button
                     onClick={() => setShowFullCase(true)}
                     className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
@@ -568,12 +534,7 @@ export default function SendToIGMS({ docId, onComplete }) {
                         >
                             Send to IGMS
                         </button>
-                        <button
-                            onClick={handleSendToReimbursement}
-                            className="flex-1 bg-purple-500 text-white py-2 px-4 rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                        >
-                            Send to Reimbursement
-                        </button>
+                       
                         <button
                             onClick={handleSendConsent}
                             disabled={sendingConsent}
@@ -590,12 +551,6 @@ export default function SendToIGMS({ docId, onComplete }) {
                             className="flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                         >
                             Reject Case
-                        </button>
-                        <button
-                            onClick={handleMarkAsPending}
-                            className="flex-1 bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
-                        >
-                            Mark as Pending
                         </button>
                         <button
                             onClick={handleDeleteCase}

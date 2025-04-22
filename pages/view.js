@@ -15,8 +15,8 @@ import CreatePartner from './components/createPartner';
 import ViewCustomerEnquiries from './components/viewCustomerEnquiries';
 import Contract from './components/contract';
 import Consent from './components/consent';
-
-
+import PendingCases from './components/pending';
+import ReimbursementCases from './components/reimbursement';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
@@ -61,6 +61,10 @@ export default function View() {
                 return <Contract />;
             case 'sendConsent':
                 return <Consent />;
+            case 'pendingCases':
+                return <PendingCases />;
+            case 'reimbursementCases':
+                return <ReimbursementCases />;
             default:
                 return <div>Invalid component type</div>;
         }

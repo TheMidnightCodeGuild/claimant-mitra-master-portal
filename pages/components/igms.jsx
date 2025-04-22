@@ -19,7 +19,7 @@ export default function IGMS() {
                     collection(db, 'users'),
                     where('igms', '==', true),
                     where('ombudsman', '==', false),
-                    where('rejected', '==', false)
+                    where('rejected', '==', false),
 
                 );
                 const querySnapshot = await getDocs(q);

@@ -84,6 +84,14 @@ const ViewCustomerEnquiries = dynamic(() => import('./components/viewCustomerEnq
   ssr: false,
 });
 
+const PendingCases = dynamic(() => import('./components/pending'), {
+  ssr: false,
+});
+
+const ReimbursementCases = dynamic(() => import('./components/reimbursement'), {
+  ssr: false,
+});
+
 export default function Dashboard() {
   const router = useRouter();
 
@@ -111,6 +119,16 @@ export default function Dashboard() {
     {
       title: "Cases Under Review",
       onClick: () => router.push('/view?type=casesUnderReview'),
+      icon: "🔍"
+    },
+    {
+      title: "Reimbursement Cases",
+      onClick: () => router.push('/view?type=reimbursementCases'),
+      icon: "🔍"
+    },
+    {
+      title: "Pending Cases",
+      onClick: () => router.push('/view?type=pendingCases'),
       icon: "🔍"
     },
     {

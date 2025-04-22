@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import SendToIGMS from './caseStatus/sendToIGMS';
+import SendFromPending from './caseStatus/sendFromPending';
 
-export default function CasesUnderReview() {
+export default function Pending() {
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,9 +17,9 @@ export default function CasesUnderReview() {
             try {
                 const q = query(
                     collection(db, 'users'),
-                    where('takenForReview', '==', true),
-                    where('igms', '==', false),
                     where('rejected', '==', false),
+                    where('isPending', '==', true)
+
                 );
                 const querySnapshot = await getDocs(q);
                 const casesData = querySnapshot.docs.map(doc => ({
@@ -76,12 +76,6 @@ export default function CasesUnderReview() {
         setSelectedCaseId(null);
     };
 
-    const calculateDaysElapsed = (dateString) => {
-        if (!dateString) return null;
-        const days = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
-        return days;
-    };
-
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -105,9 +99,9 @@ export default function CasesUnderReview() {
                     onClick={handleBackToCases}
                     className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
                 >
-                    ← Back to Cases
+                    ← Back to Pending Cases
                 </button>
-                <SendToIGMS docId={selectedCaseId} onComplete={handleBackToCases} />
+                <SendFromPending docId={selectedCaseId} onComplete={handleBackToCases} />
             </div>
         );
     }
@@ -116,16 +110,30 @@ export default function CasesUnderReview() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-gray-500">
-                    <p>No cases currently under review</p>
+                    <p>No Pending cases found</p>
                 </div>
             </div>
         );
     }
 
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Not set';
+        return new Date(dateString).toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    };
+    const calculateDaysElapsed = (dateString) => {
+        if (!dateString) return null;
+        const days = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
+        return days;
+    };
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-4">Cases Under Review</h2>
+                <h2 className="text-2xl font-bold mb-4">Pending Cases</h2>
                 
                 {/* Search Section */}
                 <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
@@ -168,40 +176,32 @@ export default function CasesUnderReview() {
                         className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
                         onClick={() => handleCaseClick(case_.id)}
                     >
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             <div className="flex justify-between items-start">
                                 <h3 className="font-semibold text-lg">
                                     {case_.name || 'No Name'}
                                 </h3>
                                 <span className="text-sm text-gray-500">
-                                    {new Date(case_.complaintDate).toLocaleString()}
+                                    Ref: {case_.partnerRef || 'N/A'}
                                 </span>
                             </div>
-                            {case_.estimatedClaimAmount && (
-                                <p className="text-gray-600">
-                                    <span className="font-medium">Estimated Claim:</span> ₹{case_.estimatedClaimAmount}
-                                </p>
-                            )}
-                            {case_.partnerRef && (
-                                <p className="text-gray-600">
-                                    <span className="font-medium">Ref:</span> {case_.partnerRef}
-                                </p>
-                            )}
-                            {case_.mobile && (
-                                <p className="text-gray-600">
-                                    <span className="font-medium">Mobile:</span> {case_.mobile}
-                                </p>
-                            )}
-                            {case_.reviewDate && (
-                                <p className="text-gray-600">
-                                    <span className="font-medium">Review Date:</span> {new Date(case_.reviewDate).toLocaleString()}
-                                </p>
-                            )}
-                            {case_.reviewDate && (
-                                <div className="mt-2 bg-blue-50 p-2 rounded-md text-sm text-blue-700">
-                                    Days in Review: {calculateDaysElapsed(case_.reviewDate)}
+
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                    <p className="text-gray-600">
+                                        <span className="font-medium">Mobile:</span><br />
+                                        {case_.mobile || 'N/A'}
+                                    </p>
                                 </div>
-                            )}
+                                <div>
+                                    <p className="text-gray-600">
+                                        <span className="font-medium">Claim Amount:</span><br />
+                                        ₹{case_.estimatedClaimAmount || 'N/A'}
+                                    </p>
+                                </div>
+                            </div>
+
+                          
                         </div>
                     </div>
                 ))}
