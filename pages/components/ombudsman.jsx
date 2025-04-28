@@ -19,6 +19,7 @@ export default function Ombudsman() {
                     collection(db, 'users'),
                     where('ombudsman', '==', true),
                     where('rejected', '==', false),
+                    where('solved', '==', false)
                 );
                 const querySnapshot = await getDocs(q);
                 const casesData = querySnapshot.docs.map(doc => ({

@@ -20,6 +20,7 @@ export default function Reimbursement() {
                     collection(db, 'users'),
                     where('inReimbursement', '==', true),
                     where('rejected', '==', false),
+                    where('solved', '==', false)
 
                 );
                 const querySnapshot = await getDocs(q);

@@ -682,13 +682,9 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                         </button>
                         <button
                             onClick={handleMarkAsResolved}
-                            disabled={caseData?.solved}
-                            className={`flex-1 py-2 px-4 rounded-md text-white font-medium 
-                                ${caseData?.solved 
-                                    ? 'bg-green-300 cursor-not-allowed' 
-                                    : 'bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2'}`}
+                            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
                         >
-                            {caseData?.solved ? 'Already Resolved' : 'Mark as Resolved'}
+                            Mark As Resolved
                         </button>
                     </div>
                 </div>

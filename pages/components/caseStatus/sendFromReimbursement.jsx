@@ -129,6 +129,26 @@ export default function SendFromReimbursement({ docId, onComplete }) {
         }
     };
 
+    const handleMarkResolved = async () => {
+        try {
+            if (!docId) return;
+            
+            const docRef = doc(db, 'users', docId);
+            await updateDoc(docRef, {
+                status: 'Resolved',
+                resolvedDate: new Date().toISOString(),
+                solved: true
+            });
+
+            alert('Case marked as resolved successfully');
+            if (onComplete) {
+                onComplete();
+            }
+        } catch (err) {
+            console.error('Error resolving case:', err);
+            alert('Failed to mark case as resolved');
+        }
+    };
 
    
 
@@ -545,6 +565,12 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                             ) : (
                                 'Send Consent'
                             )}
+                        </button>
+                        <button
+                            onClick={handleMarkResolved}
+                            className="flex-1 bg-purple-500 text-white py-2 px-4 rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        >
+                            Mark as Resolved
                         </button>
                         <button
                             onClick={handleRejectCase}
