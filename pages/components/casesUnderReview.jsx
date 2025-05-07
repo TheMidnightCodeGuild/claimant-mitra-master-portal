@@ -19,7 +19,7 @@ export default function CasesUnderReview() {
                     collection(db, 'users'),
                     where('takenForReview', '==', true),
                     where('igms', '==', false),
-                    where('inReimbursement', '==', false),
+                    // where('inReimbursement', '==', false),
                     where('rejected', '==', false),
                 );
                 const querySnapshot = await getDocs(q);

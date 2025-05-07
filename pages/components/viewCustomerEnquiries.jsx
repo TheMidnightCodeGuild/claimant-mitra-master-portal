@@ -50,6 +50,8 @@ function ViewCustomerEnquiries() {
         documentShort: true,
         rejected: false,
         solved: false,
+        inReimbursement: false,
+        isPending: false,
 
         // Case Dates & Details
         reviewDate: new Date().toISOString(),
