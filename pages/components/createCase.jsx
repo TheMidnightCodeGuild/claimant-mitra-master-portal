@@ -26,6 +26,8 @@ export default function CreateCase() {
         documentShort: false,
         rejected: false,
         solved: false,
+        inReimbursement: false,
+        isPending: false,
 
         // Case Dates & Details
         reviewDate: '',
@@ -36,6 +38,7 @@ export default function CreateCase() {
         claim: '',
         commisionReceived: '',
         partnerCommision: '',
+
 
         // IGMS Details
         igms: false,
