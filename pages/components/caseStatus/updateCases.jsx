@@ -48,15 +48,19 @@ export default function FullCase({ docId }) {
                         const contractUrl = await getDownloadURL(contractRef);
                         setContractUrl(contractUrl);
                     }
-                    if (data.signature) {
+                    if (data.signature && data.signature.length >= 15) {
                         const signatureRef = ref(storage, data.signature);
                         const signatureUrl = await getDownloadURL(signatureRef);
                         setSignatureUrl(signatureUrl);
+                    } else if (data.signature) {
+                        setSignatureUrl(data.signature);
                     }
-                    if (data.contractSignature) {
+                    if (data.contractSignature && data.contractSignature.length >= 15) {
                         const contractSignatureRef = ref(storage, data.contractSignature);
                         const contractSignatureUrl = await getDownloadURL(contractSignatureRef);
                         setContractSignatureUrl(contractSignatureUrl);
+                    } else if (data.contractSignature) {
+                        setContractSignatureUrl(data.contractSignature);
                     }
                 } else {
                     setError('Case not found');
@@ -565,40 +569,52 @@ export default function FullCase({ docId }) {
                                 {signatureUrl && (
                                     <div className="space-y-2">
                                         <label className="block text-sm font-medium text-gray-700">Consent Signature</label>
-                                        <img 
-                                            src={signatureUrl} 
-                                            alt="Signature" 
-                                            className="max-w-xs border rounded-md"
-                                        />
-                                        <a 
-                                            href={signatureUrl}
-                                            download="consent_signature"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:text-blue-800 block mt-2"
-                                        >
-                                            Download Signature
-                                        </a>
+                                        {signatureUrl.length >= 15 ? (
+                                            <>
+                                                <img 
+                                                    src={signatureUrl} 
+                                                    alt="Signature" 
+                                                    className="max-w-xs border rounded-md"
+                                                />
+                                                <a 
+                                                    href={signatureUrl}
+                                                    download="consent_signature"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 block mt-2"
+                                                >
+                                                    Download Signature
+                                                </a>
+                                            </>
+                                        ) : (
+                                            <div className="mt-1 text-gray-900">{signatureUrl}</div>
+                                        )}
                                     </div>
                                 )}
                                 
                                 {contractSignatureUrl && (
                                     <div className="space-y-2">
                                         <label className="block text-sm font-medium text-gray-700">Contract Signature</label>
-                                        <img 
-                                            src={contractSignatureUrl} 
-                                            alt="Contract Signature" 
-                                            className="max-w-xs border rounded-md"
-                                        />
-                                        <a
-                                            href={contractSignatureUrl}
-                                            download="contract_signature" 
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:text-blue-800 block mt-2"
-                                        >
-                                            Download Signature
-                                        </a>
+                                        {contractSignatureUrl.length >= 15 ? (
+                                            <>
+                                                <img 
+                                                    src={contractSignatureUrl} 
+                                                    alt="Contract Signature" 
+                                                    className="max-w-xs border rounded-md"
+                                                />
+                                                <a
+                                                    href={contractSignatureUrl}
+                                                    download="contract_signature" 
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 block mt-2"
+                                                >
+                                                    Download Signature
+                                                </a>
+                                            </>
+                                        ) : (
+                                            <div className="mt-1 text-gray-900">{contractSignatureUrl}</div>
+                                        )}
                                     </div>
                                 )}
                             </div>
