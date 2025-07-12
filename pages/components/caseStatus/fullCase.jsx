@@ -49,14 +49,14 @@ export default function FullCase({ docId }) {
             const contractUrl = await getDownloadURL(contractRef);
             setContractUrl(contractUrl);
           }
-          if (data.signature && data.signature.length >= 15) {
+          if (data.signature && data.signature.length >= 25) {
             const signatureRef = ref(storage, data.signature);
             const signatureUrl = await getDownloadURL(signatureRef);
             setSignatureUrl(signatureUrl);
           } else if (data.signature) {
             setSignatureUrl(data.signature);
           }
-          if (data.contractSignature && data.contractSignature.length >= 15) {
+          if (data.contractSignature && data.contractSignature.length >= 25) {
             const contractSignatureRef = ref(storage, data.contractSignature);
             const contractSignatureUrl = await getDownloadURL(
               contractSignatureRef
@@ -699,7 +699,7 @@ export default function FullCase({ docId }) {
                   <label className="block text-sm font-medium text-gray-700">
                     Consent Signature
                   </label>
-                  {signatureUrl.length >= 15 ? (
+                  {signatureUrl.length >= 25 ? (
                     <Image
                       src={signatureUrl}
                       alt="Signature"
@@ -718,7 +718,7 @@ export default function FullCase({ docId }) {
                   <label className="block text-sm font-medium text-gray-700">
                     Contract Signature
                   </label>
-                  {contractSignatureUrl.length >= 15 ? (
+                  {contractSignatureUrl.length >= 25 ? (
                     <Image
                       src={contractSignatureUrl}
                       alt="Contract Signature"

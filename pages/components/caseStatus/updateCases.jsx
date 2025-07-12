@@ -9,6 +9,8 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function FullCase({ docId }) {
   const [caseData, setCaseData] = useState(null);
@@ -615,14 +617,14 @@ export default function FullCase({ docId }) {
                     </label>
                     {consentFormUrl && (
                       <div className="flex flex-col gap-2">
-                        <a
+                        <Link
                           href={consentFormUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800"
                         >
                           Download Consent Form
-                        </a>
+                        </Link>
                         <button
                           onClick={handleSendConsent}
                           className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-fit flex items-center"
@@ -664,14 +666,14 @@ export default function FullCase({ docId }) {
                     </label>
                     {contractUrl && (
                       <div className="flex flex-col gap-2">
-                        <a
+                        <Link
                           href={contractUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800"
                         >
                           Download Contract
-                        </a>
+                        </Link>
                         <button
                           onClick={handleSendContract}
                           className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-fit flex items-center"
@@ -696,14 +698,16 @@ export default function FullCase({ docId }) {
                     <label className="block text-sm font-medium text-gray-700">
                       Consent Signature
                     </label>
-                    {signatureUrl.length >= 15 ? (
+                    {signatureUrl.length >= 25 ? (
                       <>
-                        <img
+                        <Image
                           src={signatureUrl}
                           alt="Signature"
+                          width={200}
+                          height={100}
                           className="max-w-xs border rounded-md"
                         />
-                        <a
+                        <Link
                           href={signatureUrl}
                           download="consent_signature"
                           target="_blank"
@@ -711,7 +715,7 @@ export default function FullCase({ docId }) {
                           className="text-blue-600 hover:text-blue-800 block mt-2"
                         >
                           Download Signature
-                        </a>
+                        </Link>
                       </>
                     ) : (
                       <div className="mt-1 text-gray-900">{signatureUrl}</div>
@@ -724,14 +728,16 @@ export default function FullCase({ docId }) {
                     <label className="block text-sm font-medium text-gray-700">
                       Contract Signature
                     </label>
-                    {contractSignatureUrl.length >= 15 ? (
+                    {contractSignatureUrl.length >= 25 ? (
                       <>
-                        <img
+                        <Image
                           src={contractSignatureUrl}
                           alt="Contract Signature"
+                          width={200}
+                          height={100}
                           className="max-w-xs border rounded-md"
                         />
-                        <a
+                        <Link
                           href={contractSignatureUrl}
                           download="contract_signature"
                           target="_blank"
@@ -739,7 +745,7 @@ export default function FullCase({ docId }) {
                           className="text-blue-600 hover:text-blue-800 block mt-2"
                         >
                           Download Signature
-                        </a>
+                        </Link>
                       </>
                     ) : (
                       <div className="mt-1 text-gray-900">
