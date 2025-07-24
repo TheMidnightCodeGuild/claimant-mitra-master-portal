@@ -57,10 +57,15 @@ export default function InOmbudsman({ docId, onComplete }) {
         fetchCase();
     }, [docId]);
 
-    const handleAddMainLog = async () => {
-        try {
-            if (!newMainLogRemark.trim()) return;
+    // Helper for confirmation
+    const confirmAction = (message = "Are you sure?") => {
+        return window.confirm(message);
+    };
 
+    const handleAddMainLog = async () => {
+        if (!newMainLogRemark.trim()) return;
+        if (!confirmAction("Are you sure you want to add this main log?")) return;
+        try {
             const newLog = {
                 date: new Date().toISOString(),
                 remark: newMainLogRemark.trim()
@@ -87,9 +92,9 @@ export default function InOmbudsman({ docId, onComplete }) {
     };
 
     const handleAddInternalLog = async () => {
+        if (!newInternalLogRemark.trim()) return;
+        if (!confirmAction("Are you sure you want to add this internal log?")) return;
         try {
-            if (!newInternalLogRemark.trim()) return;
-
             const newLog = {
                 date: new Date().toISOString(),
                 remark: newInternalLogRemark.trim()
@@ -116,9 +121,9 @@ export default function InOmbudsman({ docId, onComplete }) {
     };
 
     const handleAddIgmsLog = async () => {
+        if (!newIgmsLogRemark.trim()) return;
+        if (!confirmAction("Are you sure you want to add this IGMS log?")) return;
         try {
-            if (!newIgmsLogRemark.trim()) return;
-
             const newLog = {
                 date: new Date().toISOString(),
                 remark: newIgmsLogRemark.trim()
@@ -145,9 +150,9 @@ export default function InOmbudsman({ docId, onComplete }) {
     };
 
     const handleAddOmbudsmanLog = async () => {
+        if (!newOmbudsmanLogRemark.trim()) return;
+        if (!confirmAction("Are you sure you want to add this Ombudsman log?")) return;
         try {
-            if (!newOmbudsmanLogRemark.trim()) return;
-
             const newLog = {
                 date: new Date().toISOString(),
                 remark: newOmbudsmanLogRemark.trim()
@@ -174,6 +179,7 @@ export default function InOmbudsman({ docId, onComplete }) {
     };
 
     const handleUpdateOmbudsmanStatus = async () => {
+        if (!confirmAction("Are you sure you want to update the Ombudsman status?")) return;
         try {
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
@@ -192,6 +198,7 @@ export default function InOmbudsman({ docId, onComplete }) {
     };
 
     const handleCaseResolved = async () => {
+        if (!confirmAction("Are you sure you want to mark this case as resolved?")) return;
         try {
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
@@ -211,6 +218,7 @@ export default function InOmbudsman({ docId, onComplete }) {
     };
 
     const handleCaseRejected = async () => {
+        if (!confirmAction("Are you sure you want to mark this case as rejected?")) return;
         try {
             const docRef = doc(db, 'users', docId);
             await updateDoc(docRef, {
@@ -230,18 +238,17 @@ export default function InOmbudsman({ docId, onComplete }) {
     };
 
     const handleDeleteCase = async () => {
-        if (window.confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
-            try {
-                const docRef = doc(db, 'users', docId);
-                await deleteDoc(docRef);
-                alert('Case deleted successfully');
-                if (onComplete) {
-                    onComplete();
-                }
-            } catch (err) {
-                console.error('Error deleting case:', err);
-                alert('Failed to delete case');
+        if (!confirmAction('Are you sure you want to delete this case? This action cannot be undone.')) return;
+        try {
+            const docRef = doc(db, 'users', docId);
+            await deleteDoc(docRef);
+            alert('Case deleted successfully');
+            if (onComplete) {
+                onComplete();
             }
+        } catch (err) {
+            console.error('Error deleting case:', err);
+            alert('Failed to delete case');
         }
     };
 

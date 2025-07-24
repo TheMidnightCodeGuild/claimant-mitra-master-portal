@@ -68,93 +68,119 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         }
     };
 
-    const handleSendToOmbudsman = async () => {
-        try {
-            if (!docId) return;
-            
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                caseRejectionReason,
-                igmsRejectionReason,
-                ombudsman: true,
-                ombudsmanDate: new Date().toISOString(),
-                status: "Sent in Ombudsman"
-            });
-
-            alert('Case sent to Ombudsman successfully');
-            if (onComplete) {
-                onComplete();
-            }
-        } catch (err) {
-            console.error('Error updating case:', err);
-            alert('Failed to send case to Ombudsman');
+    // Confirmation wrapper for destructive/important actions
+    const confirmAction = async (message, action) => {
+        alert(message);
+        if (window.confirm('Are you sure?')) {
+            await action();
         }
+    };
+
+    const handleSendToOmbudsman = async () => {
+        await confirmAction(
+            'You are about to send this case to Ombudsman.',
+            async () => {
+                try {
+                    if (!docId) return;
+                    
+                    const docRef = doc(db, 'users', docId);
+                    await updateDoc(docRef, {
+                        caseRejectionReason,
+                        igmsRejectionReason,
+                        ombudsman: true,
+                        ombudsmanDate: new Date().toISOString(),
+                        status: "Sent in Ombudsman"
+                    });
+
+                    alert('Case sent to Ombudsman successfully');
+                    if (onComplete) {
+                        onComplete();
+                    }
+                } catch (err) {
+                    console.error('Error updating case:', err);
+                    alert('Failed to send case to Ombudsman');
+                }
+            }
+        );
     };
 
     const handleRejectCase = async () => {
-        try {
-            if (!docId) return;
-            
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                status: 'Rejected in IGMS',
-                caseRejectionDate: new Date().toISOString(),
-                rejected: true
-            });
+        await confirmAction(
+            'You are about to reject this case.',
+            async () => {
+                try {
+                    if (!docId) return;
+                    
+                    const docRef = doc(db, 'users', docId);
+                    await updateDoc(docRef, {
+                        status: 'Rejected in IGMS',
+                        caseRejectionDate: new Date().toISOString(),
+                        rejected: true
+                    });
 
-            alert('Case rejected successfully');
-            if (onComplete) {
-                onComplete();
+                    alert('Case rejected successfully');
+                    if (onComplete) {
+                        onComplete();
+                    }
+                } catch (err) {
+                    console.error('Error rejecting case:', err);
+                    alert('Failed to reject case');
+                }
             }
-        } catch (err) {
-            console.error('Error rejecting case:', err);
-            alert('Failed to reject case');
-        }
+        );
     };
 
     const handleMarkAsResolved = async () => {
-        try {
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                solved: true,
-                solvedDate: new Date().toISOString(),
-                status: 'Resolved'
-            });
-            
-            // Update the local state
-            setCaseData(prev => ({
-                ...prev,
-                solved: true,
-                solvedDate: new Date().toISOString(),
-                status: 'Resolved'
-            }));
+        await confirmAction(
+            'You are about to mark this case as resolved.',
+            async () => {
+                try {
+                    const docRef = doc(db, 'users', docId);
+                    await updateDoc(docRef, {
+                        solved: true,
+                        solvedDate: new Date().toISOString(),
+                        status: 'Resolved'
+                    });
+                    
+                    // Update the local state
+                    setCaseData(prev => ({
+                        ...prev,
+                        solved: true,
+                        solvedDate: new Date().toISOString(),
+                        status: 'Resolved'
+                    }));
 
-            alert('Case marked as resolved successfully');
-            if (onComplete) {
-                onComplete();
+                    alert('Case marked as resolved successfully');
+                    if (onComplete) {
+                        onComplete();
+                    }
+                } catch (err) {
+                    console.error('Error marking case as resolved:', err);
+                    alert('Failed to mark case as resolved');
+                }
             }
-        } catch (err) {
-            console.error('Error marking case as resolved:', err);
-            alert('Failed to mark case as resolved');
-        }
+        );
     };
 
     const handleDeleteCase = async () => {
-        try {
-            if (!docId) return;
+        await confirmAction(
+            'You are about to delete this case. This action cannot be undone.',
+            async () => {
+                try {
+                    if (!docId) return;
 
-            if (window.confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
-                const docRef = doc(db, 'users', docId);
-                await deleteDoc(docRef);
-                alert('Case deleted successfully');
-                if (onComplete) {
-                    onComplete();
+                    const docRef = doc(db, 'users', docId);
+                    await deleteDoc(docRef);
+                    alert('Case deleted successfully');
+                    if (onComplete) {
+                        onComplete();
+                    }
+                } catch (err) {
+                    console.error('Error deleting case:', err);
+                    alert('Failed to delete case');
                 }
             }
-        } catch (err) {
-            console.error('Error deleting case:', err);
-            alert('Failed to delete case');
-        }
+        );
     };
 
     const handleAddMainLog = async () => {
@@ -245,31 +271,36 @@ export default function SendToOmbudsman({ docId, onComplete }) {
     };
 
     const handleSendContract = async () => {
-        try {
-            // Check if all required fields exist
-            const requiredFields = [
-                'email', 'name', 'address', 'aadharNo'
-            ];
-            
-            const missingFields = requiredFields.filter(field => !caseData?.[field]);
-            
-            if (missingFields.length > 0) {
-                alert(`Missing required fields: ${missingFields.join(', ')}`);
-                return;
-            }
+        await confirmAction(
+            'You are about to send the contract document.',
+            async () => {
+                try {
+                    // Check if all required fields exist
+                    const requiredFields = [
+                        'email', 'name', 'address', 'aadharNo'
+                    ];
+                    
+                    const missingFields = requiredFields.filter(field => !caseData?.[field]);
+                    
+                    if (missingFields.length > 0) {
+                        alert(`Missing required fields: ${missingFields.join(', ')}`);
+                        return;
+                    }
 
-            await sendContract(
-                caseData.email,
-                caseData.name, 
-                caseData.address,
-                caseData.aadharNo,
-                docId
-            );
-            alert('Contract document sent successfully');
-        } catch (err) {
-            console.error('Error sending contract:', err);
-            alert('Failed to send contract document');
-        }
+                    await sendContract(
+                        caseData.email,
+                        caseData.name, 
+                        caseData.address,
+                        caseData.aadharNo,
+                        docId
+                    );
+                    alert('Contract document sent successfully');
+                } catch (err) {
+                    console.error('Error sending contract:', err);
+                    alert('Failed to send contract document');
+                }
+            }
+        );
     };
 
     const renderLogs = (logs, isMainLog = true, isIGMSLog = false) => {

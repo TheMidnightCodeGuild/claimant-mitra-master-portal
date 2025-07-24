@@ -64,91 +64,102 @@ export default function SendFromPending({ docId, onComplete }) {
         }
     };
 
-    const handleSendToIGMS = async () => {
-        try {
-            if (!docId) return;
-            
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                igmsDate: new Date().toISOString(),
-                caseRejectionReason,
-                documentShort,
-                igms: true,
-                caseAcceptanceDate: new Date().toISOString(),
-                status: "Case Accepted",
-                isPending: false,
-                takenForReview: true
-            });
-
-            alert('Case sent to IGMS successfully');
-            if (onComplete) {
-                onComplete();
-            }
-        } catch (err) {
-            console.error('Error updating case:', err);
-            alert('Failed to send case to IGMS');
+    // Confirmation wrapper for destructive/important actions
+    const confirmAction = async (message, action) => {
+        if (window.confirm(message)) {
+            await action();
         }
+    };
+
+    const handleSendToIGMS = async () => {
+        await confirmAction('Are you sure you want to send this case to IGMS?', async () => {
+            try {
+                if (!docId) return;
+                
+                const docRef = doc(db, 'users', docId);
+                await updateDoc(docRef, {
+                    igmsDate: new Date().toISOString(),
+                    caseRejectionReason,
+                    documentShort,
+                    igms: true,
+                    caseAcceptanceDate: new Date().toISOString(),
+                    status: "Case Accepted",
+                    isPending: false,
+                    takenForReview: true
+                });
+
+                alert('Case sent to IGMS successfully');
+                if (onComplete) {
+                    onComplete();
+                }
+            } catch (err) {
+                console.error('Error updating case:', err);
+                alert('Failed to send case to IGMS');
+            }
+        });
     };
 
     const handleRejectCase = async () => {
-        try {
-            if (!docId) return;
-            
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                status: 'Rejected in Review',
-                caseRejectionDate: new Date().toISOString(),
-                rejected: true
-            });
+        await confirmAction('Are you sure you want to reject this case?', async () => {
+            try {
+                if (!docId) return;
+                
+                const docRef = doc(db, 'users', docId);
+                await updateDoc(docRef, {
+                    status: 'Rejected in Review',
+                    caseRejectionDate: new Date().toISOString(),
+                    rejected: true
+                });
 
-            alert('Case rejected successfully');
-            if (onComplete) {
-                onComplete();
+                alert('Case rejected successfully');
+                if (onComplete) {
+                    onComplete();
+                }
+            } catch (err) {
+                console.error('Error rejecting case:', err);
+                alert('Failed to reject case');
             }
-        } catch (err) {
-            console.error('Error rejecting case:', err);
-            alert('Failed to reject case');
-        }
+        });
     };
 
     const handleDeleteCase = async () => {
-        try {
-            if (!docId) return;
-            
-            if (window.confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
+        await confirmAction('Are you sure you want to delete this case? This action cannot be undone.', async () => {
+            try {
+                if (!docId) return;
                 const docRef = doc(db, 'users', docId);
                 await deleteDoc(docRef);
                 alert('Case deleted successfully');
                 if (onComplete) {
                     onComplete();
                 }
+            } catch (err) {
+                console.error('Error deleting case:', err);
+                alert('Failed to delete case');
             }
-        } catch (err) {
-            console.error('Error deleting case:', err);
-            alert('Failed to delete case');
-        }
+        });
     };
 
-
     const handleSendToReimbursement = async () => {
-        try {
-            if (!docId) return;
-            
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                inReimbursement: true,
-                isPending: false,
-                takenForReview: true
-            });
+        await confirmAction('Are you sure you want to send this case to reimbursement?', async () => {
+            try {
+                if (!docId) return;
+                
+                const docRef = doc(db, 'users', docId);
+                await updateDoc(docRef, {
+                    inReimbursement: true,
+                    isPending: false,
+                    takenForReview: true
+                });
 
-            alert('Case sent to reimbursement successfully');
-            if (onComplete) {
-                onComplete();
+                alert('Case sent to reimbursement successfully');
+                if (onComplete) {
+                    onComplete();
+                }
+            } catch (err) {
+                console.error('Error sending case to reimbursement:', err);
+                alert('Failed to send case to reimbursement');
             }
-        } catch (err) {
-            console.error('Error sending case to reimbursement:', err);
-            alert('Failed to send case to reimbursement');
-        }
+        });
     };
 
     const handleAddMainLog = async () => {
@@ -210,40 +221,42 @@ export default function SendFromPending({ docId, onComplete }) {
     };
 
     const handleSendConsent = async () => {
-        try {
-            setSendingConsent(true);
-            // Check if all required fields exist
-            const requiredFields = [
-                'email', 'name', 'address', 'policyHolder', 'policyNo', 
-                'claimNo', 'complaintDate', 'companyName', 'estimatedClaimAmount'
-            ];
-            
-            const missingFields = requiredFields.filter(field => !caseData?.[field]);
-            
-            if (missingFields.length > 0) {
-                alert(`Missing required fields: ${missingFields.join(', ')}`);
-                return;
-            }
+        await confirmAction('Are you sure you want to send the consent document?', async () => {
+            try {
+                setSendingConsent(true);
+                // Check if all required fields exist
+                const requiredFields = [
+                    'email', 'name', 'address', 'policyHolder', 'policyNo', 
+                    'claimNo', 'complaintDate', 'companyName', 'estimatedClaimAmount'
+                ];
+                
+                const missingFields = requiredFields.filter(field => !caseData?.[field]);
+                
+                if (missingFields.length > 0) {
+                    alert(`Missing required fields: ${missingFields.join(', ')}`);
+                    return;
+                }
 
-            await sendConsent(
-                caseData.email,
-                caseData.name,
-                docId, // Use docId directly from props/scope instead of caseData
-                caseData.address,
-                caseData.policyHolder,
-                caseData.policyNo,
-                caseData.claimNo,
-                caseData.complaintDate,
-                caseData.companyName,
-                caseData.estimatedClaimAmount
-            );
-            alert('Consent document sent successfully');
-        } catch (err) {
-            console.error('Error sending consent:', err);
-            alert('Failed to send consent document');
-        } finally {
-            setSendingConsent(false);
-        }
+                await sendConsent(
+                    caseData.email,
+                    caseData.name,
+                    docId, // Use docId directly from props/scope instead of caseData
+                    caseData.address,
+                    caseData.policyHolder,
+                    caseData.policyNo,
+                    caseData.claimNo,
+                    caseData.complaintDate,
+                    caseData.companyName,
+                    caseData.estimatedClaimAmount
+                );
+                alert('Consent document sent successfully');
+            } catch (err) {
+                console.error('Error sending consent:', err);
+                alert('Failed to send consent document');
+            } finally {
+                setSendingConsent(false);
+            }
+        });
     };
 
     const renderLogs = (logs, isMainLog = true) => {
