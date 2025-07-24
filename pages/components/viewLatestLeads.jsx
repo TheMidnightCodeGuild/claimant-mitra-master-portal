@@ -26,7 +26,13 @@ export default function ViewLatestLeads() {
         today.setHours(0, 0, 0, 0);
         const todayStr = today.toISOString();
 
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        const tomorrowStr = tomorrow.toISOString();
+
         const usersRef = collection(db, "users");
+        
         const twoDaysAgoQuery = query(
           usersRef,
           where("complaintDate", ">=", twoDaysAgoStr),
@@ -39,9 +45,16 @@ export default function ViewLatestLeads() {
           where("complaintDate", "<", todayStr)
         );
 
-        const [twoDaysAgoSnapshot, yesterdaySnapshot] = await Promise.all([
+        const todayQuery = query(
+          usersRef,
+          where("complaintDate", ">=", todayStr),
+          where("complaintDate", "<", tomorrowStr)
+        );
+
+        const [twoDaysAgoSnapshot, yesterdaySnapshot, todaySnapshot] = await Promise.all([
           getDocs(twoDaysAgoQuery),
           getDocs(yesterdayQuery),
+          getDocs(todayQuery)
         ]);
 
         const twoDaysAgoLeads = twoDaysAgoSnapshot.docs.map((doc) => ({
@@ -54,7 +67,12 @@ export default function ViewLatestLeads() {
           ...doc.data(),
         }));
 
-        const allLeads = [...twoDaysAgoLeads, ...yesterdayLeads];
+        const todayLeads = todaySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        const allLeads = [...twoDaysAgoLeads, ...yesterdayLeads, ...todayLeads];
         allLeads.sort(
           (a, b) => new Date(b.complaintDate) - new Date(a.complaintDate)
         );

@@ -163,7 +163,11 @@ export default function ViewPartners() {
     }
   };
 
+  // Modified handleDelete to show a confirmation dialog
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Do you really wanna delete this entry?");
+    if (!confirmDelete) return;
+
     try {
       setDeleting(true);
       const partnerRef = doc(db, "partners", id);
