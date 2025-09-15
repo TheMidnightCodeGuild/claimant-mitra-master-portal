@@ -104,6 +104,32 @@ export default function SendToOmbudsman({ docId, onComplete }) {
         );
     };
 
+    // New handler for sending to reimbursement
+    const handleSendToReimbursement = async () => {
+        await confirmAction(
+            'You are about to send this case to Reimbursement.',
+            async () => {
+                try {
+                    if (!docId) return;
+
+                    const docRef = doc(db, 'users', docId);
+                    await updateDoc(docRef, {
+                        inReimbursement: true,
+                        igms: false
+                    });
+
+                    alert('Case sent to Reimbursement successfully');
+                    if (onComplete) {
+                        onComplete();
+                    }
+                } catch (err) {
+                    console.error('Error sending case to Reimbursement:', err);
+                    alert('Failed to send case to Reimbursement');
+                }
+            }
+        );
+    };
+
     const handleRejectCase = async () => {
         await confirmAction(
             'You are about to reject this case.',
@@ -698,6 +724,12 @@ export default function SendToOmbudsman({ docId, onComplete }) {
                             className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                         >
                             Send to Ombudsman
+                        </button>
+                        <button
+                            onClick={handleSendToReimbursement}
+                            className="flex-1 bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+                        >
+                            Send to Reimbursement
                         </button>
                         <button
                             onClick={handleSendContract}

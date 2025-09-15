@@ -31,6 +31,7 @@ export default function FullCase({ docId }) {
   const [contractSignatureUrl, setContractSignatureUrl] = useState("");
   const [sendingConsent, setSendingConsent] = useState(false);
   const [sendingContract, setSendingContract] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
 
   useEffect(() => {
     async function fetchCase() {
@@ -189,6 +190,34 @@ export default function FullCase({ docId }) {
     } catch (err) {
       console.error("Error deleting case:", err);
       alert("Failed to delete case");
+    }
+  };
+
+  // New: handleRejectCase function
+  const handleRejectCase = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to reject this case? This will mark the case as rejected."
+      )
+    )
+      return;
+
+    try {
+      setRejecting(true);
+      const docRef = doc(db, "users", docId);
+      await updateDoc(docRef, {
+        rejected: true,
+      });
+      setCaseData((prev) => ({
+        ...prev,
+        rejected: true,
+      }));
+      alert("Case marked as rejected.");
+    } catch (err) {
+      console.error("Error rejecting case:", err);
+      alert("Failed to reject case");
+    } finally {
+      setRejecting(false);
     }
   };
 
@@ -449,6 +478,20 @@ export default function FullCase({ docId }) {
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           >
             Delete Case
+          </button>
+          <button
+            onClick={handleRejectCase}
+            className={`bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 ${
+              rejecting || caseData?.rejected ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={rejecting || caseData?.rejected}
+            title={caseData?.rejected ? "Case is already rejected" : "Reject this case"}
+          >
+            {rejecting
+              ? "Rejecting..."
+              : caseData?.rejected
+              ? "Rejected"
+              : "Reject"}
           </button>
         </div>
       </div>

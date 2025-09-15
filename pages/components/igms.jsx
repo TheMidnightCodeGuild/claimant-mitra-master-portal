@@ -18,6 +18,7 @@ export default function IGMS() {
                 const q = query(
                     collection(db, 'users'),
                     where('igms', '==', true),
+                    where('inReimbursement', '==', false),
                     where('ombudsman', '==', false),
                     where('rejected', '==', false),
                     where('solved', '==', false)
