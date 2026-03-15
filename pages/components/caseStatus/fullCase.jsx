@@ -559,7 +559,11 @@ export default function FullCase({ docId }) {
             <div className="space-y-2">
               <h3 className="text-lg font-medium">Main Logs</h3>
               <div className="bg-gray-50 p-4 rounded-md">
-                {renderLogs(caseData?.mainLogs?.slice(0, 3))}
+                {renderLogs(
+                  showAllMainLogs
+                    ? caseData?.mainLogs
+                    : caseData?.mainLogs?.slice(0, 3)
+                )}
                 {caseData?.mainLogs?.length > 3 && (
                   <button
                     className="mt-2 text-blue-600 hover:text-blue-800"
@@ -574,7 +578,11 @@ export default function FullCase({ docId }) {
             <div className="space-y-2">
               <h3 className="text-lg font-medium">Internal Logs</h3>
               <div className="bg-gray-50 p-4 rounded-md">
-                {renderLogs(caseData?.internalLogs?.slice(0, 3))}
+                {renderLogs(
+                  showAllInternalLogs
+                    ? caseData?.internalLogs
+                    : caseData?.internalLogs?.slice(0, 3)
+                )}
                 {caseData?.internalLogs?.length > 3 && (
                   <button
                     className="mt-2 text-blue-600 hover:text-blue-800"
@@ -589,7 +597,11 @@ export default function FullCase({ docId }) {
             <div className="space-y-2">
               <h3 className="text-lg font-medium">IGMS Logs</h3>
               <div className="bg-gray-50 p-4 rounded-md">
-                {renderLogs(caseData?.igmsLogs?.slice(0, 3))}
+                {renderLogs(
+                  showAllIGMSLogs
+                    ? caseData?.igmsLogs
+                    : caseData?.igmsLogs?.slice(0, 3)
+                )}
                 {caseData?.igmsLogs?.length > 3 && (
                   <button
                     className="mt-2 text-blue-600 hover:text-blue-800"
@@ -604,7 +616,11 @@ export default function FullCase({ docId }) {
             <div className="space-y-2">
               <h3 className="text-lg font-medium">Ombudsman Logs</h3>
               <div className="bg-gray-50 p-4 rounded-md">
-                {renderLogs(caseData?.ombudsmanLogs?.slice(0, 3))}
+                {renderLogs(
+                  showAllOmbudsmanLogs
+                    ? caseData?.ombudsmanLogs
+                    : caseData?.ombudsmanLogs?.slice(0, 3)
+                )}
                 {caseData?.ombudsmanLogs?.length > 3 && (
                   <button
                     className="mt-2 text-blue-600 hover:text-blue-800"
