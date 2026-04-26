@@ -32,6 +32,19 @@ export default function FullCase({ docId }) {
   const [sendingConsent, setSendingConsent] = useState(false);
   const [sendingContract, setSendingContract] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+  const [verificationLinkCopied, setVerificationLinkCopied] = useState(false);
+  const [showVerificationPanel, setShowVerificationPanel] = useState(false);
+  const [verificationUrl, setVerificationUrl] = useState("");
+  const [verificationScriptForm, setVerificationScriptForm] = useState({
+    name: "",
+    insuranceCompany: "",
+    claimNo: "",
+    policyNo: "",
+    hospitalName: "",
+    claimAmount: "",
+  });
+  const [showVerificationMedia, setShowVerificationMedia] = useState(false);
+  const [verificationActionLoading, setVerificationActionLoading] = useState(false);
 
   useEffect(() => {
     async function fetchCase() {
@@ -443,6 +456,170 @@ export default function FullCase({ docId }) {
     window.location.href = "/view?type=allCases";
   };
 
+  const getVerificationScriptData = () => {
+    const formName = verificationScriptForm.name?.trim();
+    const formInsuranceCompany = verificationScriptForm.insuranceCompany?.trim();
+    const formClaimNo = verificationScriptForm.claimNo?.trim();
+    const formPolicyNo = verificationScriptForm.policyNo?.trim();
+    const formHospitalName = verificationScriptForm.hospitalName?.trim();
+    const formClaimAmount = verificationScriptForm.claimAmount?.toString().trim();
+
+    return {
+      name: formName || caseData?.name || "N/A",
+      insuranceCompany: formInsuranceCompany || caseData?.companyName || "____",
+      claimNo: formClaimNo || caseData?.claimNo || "N/A",
+      policyNo: formPolicyNo || caseData?.policyNo || "N/A",
+      hospitalName: formHospitalName || "____",
+      claimAmount:
+        formClaimAmount ||
+        caseData?.estimatedClaimAmount?.toString() ||
+        caseData?.claim?.toString() ||
+        "____",
+    };
+  };
+
+  const getVerificationMonologue = () => {
+    const {
+      name,
+      insuranceCompany,
+      claimNo,
+      policyNo,
+      hospitalName,
+      claimAmount,
+    } = getVerificationScriptData();
+    return `1. मेरा नाम "${name}" है।
+2. मेरी ${insuranceCompany} Insurance Company की पॉलिसी है।
+3. मेरा Claim No. "${claimNo}" तथा Policy No. "${policyNo}" है।
+4. बीमा कंपनी ने मेरे ${hospitalName} Hospital के ₹${claimAmount} के क्लेम को अस्वीकृत कर दिया है।
+5. मुझे क्लेम प्रक्रिया की पूरी जानकारी नहीं है।
+6. इसलिए मैं CLAIMANT MITRA को अपना अधिकृत सलाहकार नियुक्त करता/करती हूँ।
+7. मैं यह शपथपूर्वक स्वीकार करता/करती हूँ कि सफल क्लेम राशि प्राप्त होने पर मैं CLAIMANT MITRA को क्लेम राशि का 20% शुल्क प्रदान करूँगा/करूँगी।
+8. यदि प्रक्रिया के दौरान मेरी ओर से किसी दस्तावेज़ में कमी, त्रुटि या तथ्य छुपाने के कारण क्लेम अस्वीकृत होता है, तो उसकी पूर्ण जिम्मेदारी मेरी स्वयं की होगी।
+9. मैं अपनी सहमति से यह घोषणा कर रहा/रही हूँ।`;
+  };
+
+  const copyVerificationUrl = async (urlToCopy) => {
+    try {
+      await navigator.clipboard.writeText(urlToCopy);
+      setVerificationLinkCopied(true);
+      setTimeout(() => setVerificationLinkCopied(false), 2500);
+    } catch (err) {
+      console.error("Failed to copy verification link:", err);
+      window.open(urlToCopy, "_blank");
+    }
+  };
+
+  const handleRequestVerification = () => {
+    setShowVerificationPanel((prev) => {
+      const nextValue = !prev;
+      if (nextValue) {
+        setVerificationScriptForm({
+          name: caseData?.name || "",
+          insuranceCompany: caseData?.companyName || "",
+          claimNo: caseData?.claimNo || "",
+          policyNo: caseData?.policyNo || "",
+          hospitalName: "",
+          claimAmount:
+            caseData?.estimatedClaimAmount?.toString() ||
+            caseData?.claim?.toString() ||
+            "",
+        });
+      }
+      return nextValue;
+    });
+  };
+
+  const handleGenerateVerificationLink = async () => {
+    if (!docId) {
+      alert("Invalid case ID");
+      return;
+    }
+
+    const verificationPath = `/requestVerification/${docId}`;
+    const verificationUrl = `${window.location.origin}${verificationPath}`;
+
+    try {
+      const docRef = doc(db, "users", docId);
+      const scriptData = getVerificationScriptData();
+      await updateDoc(docRef, {
+        requestVerificationRequestedAt: new Date().toISOString(),
+        requestVerificationScriptData: scriptData,
+      });
+    } catch (err) {
+      console.error("Error updating verification request timestamp:", err);
+    }
+
+    setVerificationUrl(verificationUrl);
+    await copyVerificationUrl(verificationUrl);
+    alert("Verification link copied to clipboard");
+  };
+
+  const handleCopyVerificationLinkAgain = async () => {
+    if (!verificationUrl) return;
+    await copyVerificationUrl(verificationUrl);
+    alert("Verification link copied again");
+  };
+
+  const verificationMediaFiles = caseData?.requestVerificationFiles || [];
+  const videoVerificationStatus = caseData?.VideoVerification || "Verification Pending";
+
+  const handleSetVideoVerification = async (nextStatus) => {
+    if (!docId) return;
+
+    try {
+      setVerificationActionLoading(true);
+      const docRef = doc(db, "users", docId);
+      await updateDoc(docRef, { VideoVerification: nextStatus });
+      setCaseData((prev) => ({
+        ...prev,
+        VideoVerification: nextStatus,
+      }));
+      alert(`VideoVerification updated to ${nextStatus}`);
+    } catch (err) {
+      console.error("Error updating VideoVerification:", err);
+      alert("Failed to update VideoVerification");
+    } finally {
+      setVerificationActionLoading(false);
+    }
+  };
+
+  const handleDeleteVerificationMedia = async (fileToDelete) => {
+    if (!window.confirm("Delete this verification media file?")) return;
+
+    try {
+      setVerificationActionLoading(true);
+      if (fileToDelete?.path) {
+        const storageRef = ref(storage, fileToDelete.path);
+        await deleteObject(storageRef);
+      }
+
+      const updatedFiles = verificationMediaFiles.filter(
+        (file) =>
+          !(
+            file?.url === fileToDelete?.url &&
+            file?.path === fileToDelete?.path &&
+            file?.uploadedAt === fileToDelete?.uploadedAt
+          )
+      );
+
+      const docRef = doc(db, "users", docId);
+      await updateDoc(docRef, {
+        requestVerificationFiles: updatedFiles,
+      });
+
+      setCaseData((prev) => ({
+        ...prev,
+        requestVerificationFiles: updatedFiles,
+      }));
+      alert("Verification media deleted");
+    } catch (err) {
+      console.error("Error deleting verification media:", err);
+      alert("Failed to delete verification media");
+    } finally {
+      setVerificationActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -480,6 +657,12 @@ export default function FullCase({ docId }) {
             Delete Case
           </button>
           <button
+            onClick={handleRequestVerification}
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+          >
+            Request Verification
+          </button>
+          <button
             onClick={handleRejectCase}
             className={`bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 ${
               rejecting || caseData?.rejected ? "opacity-50 cursor-not-allowed" : ""
@@ -494,6 +677,235 @@ export default function FullCase({ docId }) {
               : "Reject"}
           </button>
         </div>
+      </div>
+
+      {showVerificationPanel && (
+        <div className="mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-4">
+          <h3 className="text-lg font-semibold text-purple-900">
+            Request Verification Script
+          </h3>
+          <p className="text-gray-800 leading-relaxed whitespace-pre-line">
+            {getVerificationMonologue()}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+              </label>
+              <input
+                type="text"
+                value={verificationScriptForm.name}
+                onChange={(e) =>
+                  setVerificationScriptForm((prev) => ({
+                    ...prev,
+                    name: e.target.value,
+                  }))
+                }
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Insurance Company
+              </label>
+              <input
+                type="text"
+                value={verificationScriptForm.insuranceCompany}
+                onChange={(e) =>
+                  setVerificationScriptForm((prev) => ({
+                    ...prev,
+                    insuranceCompany: e.target.value,
+                  }))
+                }
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Claim Number
+              </label>
+              <input
+                type="text"
+                value={verificationScriptForm.claimNo}
+                onChange={(e) =>
+                  setVerificationScriptForm((prev) => ({
+                    ...prev,
+                    claimNo: e.target.value,
+                  }))
+                }
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Policy Number
+              </label>
+              <input
+                type="text"
+                value={verificationScriptForm.policyNo}
+                onChange={(e) =>
+                  setVerificationScriptForm((prev) => ({
+                    ...prev,
+                    policyNo: e.target.value,
+                  }))
+                }
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Hospital Name
+              </label>
+              <input
+                type="text"
+                value={verificationScriptForm.hospitalName}
+                onChange={(e) =>
+                  setVerificationScriptForm((prev) => ({
+                    ...prev,
+                    hospitalName: e.target.value,
+                  }))
+                }
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Claim Amount (₹)
+              </label>
+              <input
+                type="text"
+                value={verificationScriptForm.claimAmount}
+                onChange={(e) =>
+                  setVerificationScriptForm((prev) => ({
+                    ...prev,
+                    claimAmount: e.target.value,
+                  }))
+                }
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleGenerateVerificationLink}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+            >
+              {verificationLinkCopied ? "Link Copied" : "Generate Link"}
+            </button>
+            {verificationUrl && (
+              <button
+                onClick={handleCopyVerificationLinkAgain}
+                className="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
+              >
+                Copy Again
+              </button>
+            )}
+          </div>
+          {verificationUrl && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">
+                Generated Verification Link
+              </p>
+              <div className="bg-white border rounded-md px-3 py-2 text-sm text-gray-900 break-all">
+                {verificationUrl}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="mb-6 bg-indigo-50 border border-indigo-200 rounded-lg p-4 space-y-3">
+        <h3 className="text-lg font-semibold text-indigo-900">
+          Video Verification
+        </h3>
+        <p className="text-sm text-gray-700">
+          Status: <span className="font-semibold">{videoVerificationStatus}</span>
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {verificationMediaFiles.length > 0 && (
+            <button
+              onClick={() => setShowVerificationMedia((prev) => !prev)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+            >
+              {showVerificationMedia ? "Hide Media" : "View Media"}
+            </button>
+          )}
+
+          {videoVerificationStatus === "Uploaded" && (
+            <>
+              <button
+                onClick={() => handleSetVideoVerification("Approved")}
+                disabled={verificationActionLoading}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-60"
+              >
+                Approve
+              </button>
+              <button
+                onClick={async () => {
+                  await handleSetVideoVerification("Rejected");
+                  setShowVerificationPanel(true);
+                }}
+                disabled={verificationActionLoading}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:opacity-60"
+              >
+                Reject
+              </button>
+            </>
+          )}
+
+          {videoVerificationStatus === "Approved" && (
+            <>
+              <button
+                onClick={() => handleSetVideoVerification("Completed")}
+                disabled={verificationActionLoading}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded disabled:opacity-60"
+              >
+                Complete
+              </button>
+            </>
+          )}
+        </div>
+
+        {showVerificationMedia && verificationMediaFiles.length > 0 && (
+          <div className="space-y-3 pt-2">
+            {verificationMediaFiles.map((file, index) => {
+              const isVideo = (file?.type || "").includes("video");
+              return (
+                <div
+                  key={`${file?.path || file?.url || "verification-file"}-${index}`}
+                  className="bg-white border rounded-md p-3 space-y-2"
+                >
+                  <p className="text-sm text-gray-700">
+                    {file?.name || `Verification media ${index + 1}`}
+                  </p>
+                  {isVideo ? (
+                    <video controls className="w-full max-w-md rounded border">
+                      <source src={file?.url} type={file?.type || "video/webm"} />
+                    </video>
+                  ) : (
+                    <Image
+                      src={file?.url}
+                      alt={file?.name || "Verification media"}
+                      width={320}
+                      height={180}
+                      className="rounded border max-w-full h-auto"
+                    />
+                  )}
+                  {videoVerificationStatus === "Approved" && (
+                    <button
+                      onClick={() => handleDeleteVerificationMedia(file)}
+                      disabled={verificationActionLoading}
+                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded disabled:opacity-60"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Tab Navigation */}
