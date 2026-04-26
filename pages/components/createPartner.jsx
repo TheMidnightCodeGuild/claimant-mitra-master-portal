@@ -16,6 +16,7 @@ function CreateAccount() {
   const [source, setsource] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [name, setName] = useState("");
+  const [partnerType, setPartnerType] = useState("normal");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -67,6 +68,8 @@ function CreateAccount() {
         source,
         phoneNumber,
         name,
+        partnerType,
+        ...(partnerType === "super" ? { partnersUnder: [] } : {}),
         partnerRef: (
           name.substring(0, 4) + phoneNumber.slice(-4)
         ).toUpperCase(),
@@ -80,6 +83,7 @@ function CreateAccount() {
       setsource("");
       setPhoneNumber("");
       setName("");
+      setPartnerType("normal");
     } catch (error) {
       setError(error.message);
     } finally {
@@ -149,6 +153,20 @@ function CreateAccount() {
               required
               className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+          <div>
+            <label htmlFor="partnerType" className="sr-only">
+              Partner Type
+            </label>
+            <select
+              id="partnerType"
+              value={partnerType}
+              onChange={(e) => setPartnerType(e.target.value)}
+              className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="normal">Normal Partner</option>
+              <option value="super">Super Partner</option>
+            </select>
           </div>
           <div>
             <label htmlFor="phoneNumber" className="sr-only">

@@ -5,9 +5,10 @@ import {
   getDocs,
   doc,
   updateDoc,
+  arrayUnion,
+  arrayRemove,
   query,
   where,
-  getDoc,
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
@@ -26,6 +27,11 @@ export default function ViewPartners() {
   const [partnerStats, setPartnerStats] = useState({});
   const [deleting, setDeleting] = useState(false);
   const [showDeleteMessage, setShowDeleteMessage] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [connectTargetByPartner, setConnectTargetByPartner] = useState({});
+  const [showConnectPanelByPartner, setShowConnectPanelByPartner] = useState({});
+  const [selectedUnderBySuper, setSelectedUnderBySuper] = useState({});
+  const [showAddUnderBySuper, setShowAddUnderBySuper] = useState({});
 
   useEffect(() => {
     async function fetchPartners() {
@@ -185,6 +191,155 @@ export default function ViewPartners() {
     }
   };
 
+  const normalizePartnerType = (partner) =>
+    partner?.partnerType === "super" ? "super" : "normal";
+
+  const superPartners = filteredPartners.filter(
+    (partner) => normalizePartnerType(partner) === "super"
+  );
+
+  const handleConvertToSuper = async (partner) => {
+    try {
+      setActionLoadingId(partner.id);
+      const partnerRef = doc(db, "partners", partner.id);
+      const updatePayload = {
+        partnerType: "super",
+      };
+      if (!Array.isArray(partner.partnersUnder)) {
+        updatePayload.partnersUnder = [];
+      }
+      if (partner.superPartner) {
+        updatePayload.superPartner = "";
+      }
+      await updateDoc(partnerRef, updatePayload);
+
+      setPartners((prev) =>
+        prev.map((item) =>
+          item.id === partner.id
+            ? {
+                ...item,
+                ...updatePayload,
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error("Error converting partner to super:", err);
+      alert("Failed to convert partner");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const reassignSinglePartner = async (childPartner, targetSuperId) => {
+    const currentSuperId = childPartner?.superPartner;
+    if (currentSuperId && currentSuperId !== targetSuperId) {
+      const oldSuper = partners.find((p) => p.id === currentSuperId);
+      const oldSuperName = oldSuper?.name || oldSuper?.partnerRef || currentSuperId;
+      const newSuper = partners.find((p) => p.id === targetSuperId);
+      const newSuperName = newSuper?.name || newSuper?.partnerRef || targetSuperId;
+      const confirmChange = window.confirm(
+        `Change super partner from ${oldSuperName} to ${newSuperName}?`
+      );
+      if (!confirmChange) return false;
+
+      await updateDoc(doc(db, "partners", currentSuperId), {
+        partnersUnder: arrayRemove(childPartner.id),
+      });
+    }
+
+    await updateDoc(doc(db, "partners", targetSuperId), {
+      partnersUnder: arrayUnion(childPartner.id),
+      partnerType: "super",
+    });
+
+    await updateDoc(doc(db, "partners", childPartner.id), {
+      superPartner: targetSuperId,
+    });
+
+    setPartners((prev) =>
+      prev.map((item) => {
+        if (item.id === childPartner.id) {
+          return { ...item, superPartner: targetSuperId };
+        }
+        if (item.id === targetSuperId) {
+          const existing = Array.isArray(item.partnersUnder) ? item.partnersUnder : [];
+          return {
+            ...item,
+            partnerType: "super",
+            partnersUnder: existing.includes(childPartner.id)
+              ? existing
+              : [...existing, childPartner.id],
+          };
+        }
+        if (item.id === currentSuperId) {
+          const existing = Array.isArray(item.partnersUnder) ? item.partnersUnder : [];
+          return {
+            ...item,
+            partnersUnder: existing.filter((id) => id !== childPartner.id),
+          };
+        }
+        return item;
+      })
+    );
+
+    return true;
+  };
+
+  const handleConnectToSuper = async (childPartner) => {
+    const targetSuperId = connectTargetByPartner[childPartner.id];
+    if (!targetSuperId) {
+      alert("Please select a super partner");
+      return;
+    }
+    try {
+      setActionLoadingId(childPartner.id);
+      const didUpdate = await reassignSinglePartner(childPartner, targetSuperId);
+      if (!didUpdate) return;
+      setShowConnectPanelByPartner((prev) => ({
+        ...prev,
+        [childPartner.id]: false,
+      }));
+      setConnectTargetByPartner((prev) => ({
+        ...prev,
+        [childPartner.id]: "",
+      }));
+      alert("Super partner linked successfully");
+    } catch (err) {
+      console.error("Error connecting to super partner:", err);
+      alert("Failed to connect partner");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleAddPartnersUnder = async (superPartner) => {
+    const selectedPartnerIds = selectedUnderBySuper[superPartner.id] || [];
+    if (!selectedPartnerIds.length) {
+      alert("Please select at least one partner");
+      return;
+    }
+
+    try {
+      setActionLoadingId(superPartner.id);
+
+      for (const partnerId of selectedPartnerIds) {
+        const childPartner = partners.find((p) => p.id === partnerId);
+        if (!childPartner) continue;
+        await reassignSinglePartner(childPartner, superPartner.id);
+      }
+
+      setShowAddUnderBySuper((prev) => ({ ...prev, [superPartner.id]: false }));
+      setSelectedUnderBySuper((prev) => ({ ...prev, [superPartner.id]: [] }));
+      alert("Partners linked under super partner");
+    } catch (err) {
+      console.error("Error adding partners under super partner:", err);
+      alert("Failed to add partners under super partner");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -258,7 +413,14 @@ export default function ViewPartners() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredPartners.map((partner) => (
-          <div key={partner.id} className="bg-white rounded-lg shadow-md p-6">
+          <div
+            key={partner.id}
+            className={`rounded-lg shadow-md p-6 border ${
+              normalizePartnerType(partner) === "super"
+                ? "bg-purple-50 border-purple-500 border-2"
+                : "bg-white border-gray-200"
+            }`}
+          >
             {editingId === partner.id ? (
               <div className="space-y-4">
                 <input
@@ -326,6 +488,16 @@ export default function ViewPartners() {
                     </button>
                   </div>
                 </div>
+                {normalizePartnerType(partner) === "super" && (
+                  <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-purple-700 text-white">
+                    Super Partner
+                  </span>
+                )}
+                {normalizePartnerType(partner) === "normal" && (
+                  <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-gray-700 text-white">
+                    Normal Partner
+                  </span>
+                )}
                 <p className="text-gray-600">
                   <span className="font-medium">Name:</span>{" "}
                   {partner.name || "N/A"}
@@ -358,6 +530,20 @@ export default function ViewPartners() {
                   <span className="font-medium">Joined On:</span>{" "}
                   {formatDate(partner.createdAt)}
                 </p>
+                {normalizePartnerType(partner) === "normal" && (
+                  <p className="text-gray-600">
+                    <span className="font-medium">Super Partner:</span>{" "}
+                    {partner.superPartner || "Not assigned"}
+                  </p>
+                )}
+                {normalizePartnerType(partner) === "super" && (
+                  <p className="text-gray-600">
+                    <span className="font-medium">Partners Under:</span>{" "}
+                    {Array.isArray(partner.partnersUnder)
+                      ? partner.partnersUnder.length
+                      : 0}
+                  </p>
+                )}
                 <div className="mt-4 pt-2 border-t border-gray-200">
                   <button
                     onClick={() => handlePasswordReset(partner.email)}
@@ -367,6 +553,128 @@ export default function ViewPartners() {
                     {passwordResetLoading ? "Sending..." : "Change Password"}
                   </button>
                 </div>
+
+                {normalizePartnerType(partner) !== "super" && (
+                  <button
+                    onClick={() => handleConvertToSuper(partner)}
+                    disabled={actionLoadingId === partner.id}
+                    className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:bg-gray-300"
+                  >
+                    {actionLoadingId === partner.id
+                      ? "Updating..."
+                      : "Convert to Super Partner"}
+                  </button>
+                )}
+
+                {(normalizePartnerType(partner) === "normal" ||
+                  normalizePartnerType(partner) === "super") && (
+                  <div className="pt-2 border-t border-gray-200 space-y-2">
+                    <button
+                      onClick={() =>
+                        setShowConnectPanelByPartner((prev) => ({
+                          ...prev,
+                          [partner.id]: !prev[partner.id],
+                        }))
+                      }
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Connect to Super Partner
+                    </button>
+                    {showConnectPanelByPartner[partner.id] && (
+                      <div className="space-y-2">
+                        <select
+                          value={connectTargetByPartner[partner.id] || ""}
+                          onChange={(e) =>
+                            setConnectTargetByPartner((prev) => ({
+                              ...prev,
+                              [partner.id]: e.target.value,
+                            }))
+                          }
+                          className="w-full p-2 border rounded"
+                        >
+                          <option value="">Select super partner</option>
+                          {superPartners
+                            .filter((superP) => superP.id !== partner.id)
+                            .map((superP) => (
+                              <option key={superP.id} value={superP.id}>
+                                {superP.name || superP.partnerRef || superP.id}
+                              </option>
+                            ))}
+                        </select>
+                        <button
+                          onClick={() => handleConnectToSuper(partner)}
+                          disabled={actionLoadingId === partner.id}
+                          className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:bg-gray-300"
+                        >
+                          {actionLoadingId === partner.id
+                            ? "Saving..."
+                            : "Save Super Partner"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {normalizePartnerType(partner) === "super" && (
+                  <div className="pt-2 border-t border-gray-200 space-y-2">
+                    <button
+                      onClick={() =>
+                        setShowAddUnderBySuper((prev) => ({
+                          ...prev,
+                          [partner.id]: !prev[partner.id],
+                        }))
+                      }
+                      className="w-full px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                    >
+                      Add Partners Under
+                    </button>
+                    {showAddUnderBySuper[partner.id] && (
+                      <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-2 bg-white">
+                        {partners
+                          .filter((candidatePartner) => candidatePartner.id !== partner.id)
+                          .map((candidatePartner) => {
+                            const selected =
+                              selectedUnderBySuper[partner.id]?.includes(candidatePartner.id) ||
+                              false;
+                            return (
+                              <label
+                                key={`${partner.id}-${candidatePartner.id}`}
+                                className="flex items-center gap-2 text-sm"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selected}
+                                  onChange={(e) => {
+                                    setSelectedUnderBySuper((prev) => {
+                                      const prevList = prev[partner.id] || [];
+                                      return {
+                                        ...prev,
+                                        [partner.id]: e.target.checked
+                                          ? [...prevList, candidatePartner.id]
+                                          : prevList.filter((id) => id !== candidatePartner.id),
+                                      };
+                                    });
+                                  }}
+                                />
+                                <span>
+                                  {candidatePartner.name ||
+                                    candidatePartner.partnerRef ||
+                                    candidatePartner.id}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        <button
+                          onClick={() => handleAddPartnersUnder(partner)}
+                          disabled={actionLoadingId === partner.id}
+                          className="w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded hover:bg-emerald-800 disabled:bg-gray-300"
+                        >
+                          {actionLoadingId === partner.id ? "Saving..." : "Save Partners Under"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
