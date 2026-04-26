@@ -18,11 +18,16 @@ export default function RequestVerificationPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [cameraReady, setCameraReady] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isMarqueeRunning, setIsMarqueeRunning] = useState(true);
+  const [marqueeKey, setMarqueeKey] = useState(0);
+  const [marqueeManualOffsetPx, setMarqueeManualOffsetPx] = useState(0);
+  const [marqueeDragging, setMarqueeDragging] = useState(false);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
+  const marqueeDragStartRef = useRef({ startX: 0, startOffset: 0 });
 
   useEffect(() => {
     async function fetchCase() {
@@ -136,6 +141,33 @@ export default function RequestVerificationPage() {
     () => verificationMonologue.replace(/\s*\n\s*/g, " "),
     [verificationMonologue]
   );
+
+  const handleStartScript = () => setIsMarqueeRunning(true);
+  const handlePauseScript = () => setIsMarqueeRunning(false);
+  const handleReloadScript = () => {
+    setMarqueeManualOffsetPx(0);
+    setMarqueeKey((prev) => prev + 1);
+    setIsMarqueeRunning(true);
+  };
+
+  const handleMarqueePointerDown = (clientX) => {
+    setMarqueeDragging(true);
+    setIsMarqueeRunning(false);
+    marqueeDragStartRef.current = {
+      startX: clientX,
+      startOffset: marqueeManualOffsetPx,
+    };
+  };
+
+  const handleMarqueePointerMove = (clientX) => {
+    if (!marqueeDragging) return;
+    const deltaX = clientX - marqueeDragStartRef.current.startX;
+    setMarqueeManualOffsetPx(marqueeDragStartRef.current.startOffset + deltaX);
+  };
+
+  const handleMarqueePointerUp = () => {
+    setMarqueeDragging(false);
+  };
 
   const startCamera = async () => {
     setError("");
@@ -345,17 +377,63 @@ export default function RequestVerificationPage() {
         Please capture and upload verification media for this case.
       </p>
 
-      <div className="mb-4 overflow-hidden rounded border border-blue-200 bg-blue-50">
-        <div className="whitespace-nowrap py-2 marquee-track">
-          <span className="inline-block px-4 text-sm font-medium text-blue-900 marquee-text">
-            {verificationMonologueMarquee}
-          </span>
-          <span
-            className="inline-block px-4 text-sm font-medium text-blue-900 marquee-text"
-            aria-hidden="true"
+      <div className="mb-4 space-y-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleStartScript}
+            className="px-3 py-2 rounded text-white bg-green-600 hover:bg-green-700 text-sm"
           >
-            {verificationMonologueMarquee}
-          </span>
+            Start Script
+          </button>
+          <button
+            type="button"
+            onClick={handlePauseScript}
+            className="px-3 py-2 rounded text-white bg-gray-600 hover:bg-gray-700 text-sm"
+          >
+            Pause Script
+          </button>
+          <button
+            type="button"
+            onClick={handleReloadScript}
+            className="px-3 py-2 rounded text-white bg-blue-600 hover:bg-blue-700 text-sm"
+          >
+            Reload Script
+          </button>
+          <p className="text-xs text-gray-500 self-center">
+            Tip: swipe/drag on the script to reposition it.
+          </p>
+        </div>
+
+        <div
+          className="overflow-hidden rounded border border-blue-200 bg-blue-50 marquee-surface"
+          onMouseDown={(e) => handleMarqueePointerDown(e.clientX)}
+          onMouseMove={(e) => handleMarqueePointerMove(e.clientX)}
+          onMouseUp={handleMarqueePointerUp}
+          onMouseLeave={handleMarqueePointerUp}
+          onTouchStart={(e) => handleMarqueePointerDown(e.touches[0]?.clientX || 0)}
+          onTouchMove={(e) => handleMarqueePointerMove(e.touches[0]?.clientX || 0)}
+          onTouchEnd={handleMarqueePointerUp}
+          role="region"
+          aria-label="Verification script marquee"
+        >
+          <div style={{ transform: `translateX(${marqueeManualOffsetPx}px)` }}>
+            <div
+              key={marqueeKey}
+              className="whitespace-nowrap py-2 marquee-track"
+              style={{ animationPlayState: isMarqueeRunning ? "running" : "paused" }}
+            >
+              <span className="inline-block px-4 text-sm font-medium text-blue-900 marquee-text">
+                {verificationMonologueMarquee}
+              </span>
+              <span
+                className="inline-block px-4 text-sm font-medium text-blue-900 marquee-text"
+                aria-hidden="true"
+              >
+                {verificationMonologueMarquee}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -527,6 +605,11 @@ export default function RequestVerificationPage() {
       </div>
 
       <style jsx>{`
+        .marquee-surface {
+          touch-action: pan-y;
+          user-select: none;
+        }
+
         .marquee-track {
           display: inline-flex;
           min-width: 100%;
