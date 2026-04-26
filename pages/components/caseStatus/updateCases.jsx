@@ -543,6 +543,7 @@ export default function FullCase({ docId }) {
       await updateDoc(docRef, {
         requestVerificationRequestedAt: new Date().toISOString(),
         requestVerificationScriptData: scriptData,
+        allowUpload: "allow",
       });
     } catch (err) {
       console.error("Error updating verification request timestamp:", err);
@@ -557,6 +558,27 @@ export default function FullCase({ docId }) {
     if (!verificationUrl) return;
     await copyVerificationUrl(verificationUrl);
     alert("Verification link copied again");
+  };
+
+  const uploadAccessStatus = caseData?.allowUpload || "restrict";
+
+  const handleSetAllowUpload = async (nextValue) => {
+    if (!docId) return;
+    try {
+      setVerificationActionLoading(true);
+      const docRef = doc(db, "users", docId);
+      await updateDoc(docRef, { allowUpload: nextValue });
+      setCaseData((prev) => ({
+        ...prev,
+        allowUpload: nextValue,
+      }));
+      alert(`Upload access set to ${nextValue}`);
+    } catch (err) {
+      console.error("Error updating allowUpload:", err);
+      alert("Failed to update upload access");
+    } finally {
+      setVerificationActionLoading(false);
+    }
   };
 
   const verificationMediaFiles = caseData?.requestVerificationFiles || [];
@@ -820,8 +842,27 @@ export default function FullCase({ docId }) {
         <p className="text-sm text-gray-700">
           Status: <span className="font-semibold">{videoVerificationStatus}</span>
         </p>
+        <p className="text-sm text-gray-700">
+          Upload access:{" "}
+          <span className="font-semibold">{uploadAccessStatus}</span>
+        </p>
 
         <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => handleSetAllowUpload("allow")}
+            disabled={verificationActionLoading}
+            className="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded disabled:opacity-60"
+          >
+            Allow Access
+          </button>
+          <button
+            onClick={() => handleSetAllowUpload("restrict")}
+            disabled={verificationActionLoading}
+            className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded disabled:opacity-60"
+          >
+            Remove Access
+          </button>
+
           {verificationMediaFiles.length > 0 && (
             <button
               onClick={() => setShowVerificationMedia((prev) => !prev)}
