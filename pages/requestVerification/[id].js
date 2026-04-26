@@ -346,6 +346,10 @@ export default function RequestVerificationPage() {
           uploadedItems.length > 1 ? "s" : ""
         } successfully.`
       );
+
+      setTimeout(() => {
+        window.location.assign("https://www.claimantmitra.com/");
+      }, 900);
     } catch (err) {
       console.error("Error uploading verification files:", err);
       setError("Failed to upload files. Please try again.");

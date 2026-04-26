@@ -208,8 +208,7 @@ export default function FullCase({ docId }) {
       return;
     }
 
-    const verificationPath = `/requestVerification/${docId}`;
-    const verificationUrl = `${window.location.origin}${verificationPath}`;
+    const verificationUrl = `https://verification.claimantmitra.com/requestVerification/${docId}`;
 
     try {
       const docRef = doc(db, "users", docId);
