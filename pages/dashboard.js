@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import KpiDashboard from './components/kpiDashboard';
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -232,6 +233,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-[95%] lg:max-w-[1300px] mx-auto py-4 sm:py-6 md:py-8 px-3 sm:px-4 md:px-6 lg:px-8">
+        <KpiDashboard />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
           {dashboardItems.map((item, index) => (
             <DashboardCard
