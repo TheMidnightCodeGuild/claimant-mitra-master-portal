@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -94,6 +96,21 @@ const ReimbursementCases = dynamic(() => import('./components/reimbursement'), {
 
 export default function Dashboard() {
   const router = useRouter();
+  const [noticeCount, setNoticeCount] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, 'notice'),
+      (snapshot) => {
+        setNoticeCount(snapshot.size);
+      },
+      (err) => {
+        console.error('Error listening notice count:', err);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const dashboardItems = [
     {
@@ -200,6 +217,17 @@ export default function Dashboard() {
               Master Portal Dashboard
             </h1>
           </div>
+          <button
+            onClick={() => router.push('/view?type=noticeBoard')}
+            className="relative bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium"
+          >
+            Notice Board
+            {noticeCount > 0 && (
+              <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] rounded-full bg-red-600 text-white text-xs font-semibold flex items-center justify-center px-1">
+                {noticeCount}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 

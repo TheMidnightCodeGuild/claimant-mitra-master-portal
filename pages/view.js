@@ -1,5 +1,7 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import ViewLatestLeads from './components/viewLatestLeads';
 import ViewAllCases from './components/viewAllCases';
 import CasesUnderReview from './components/casesUnderReview';
@@ -18,9 +20,25 @@ import Consent from './components/consent';
 import PendingCases from './components/pending';
 import ReimbursementCases from './components/reimbursement';
 import ViewSuperPartners from './components/viewSuperPartners';
+import NoticeBoard from './components/noticeBoard';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
+    const [noticeCount, setNoticeCount] = useState(0);
+
+    useEffect(() => {
+        const unsubscribe = onSnapshot(
+            collection(db, 'notice'),
+            (snapshot) => {
+                setNoticeCount(snapshot.size);
+            },
+            (err) => {
+                console.error('Error listening notice count:', err);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
 
     // Handle back button click
     const handleBack = () => {
@@ -68,6 +86,8 @@ export default function View() {
                 return <PendingCases />;
             case 'reimbursementCases':
                 return <ReimbursementCases />;
+            case 'noticeBoard':
+                return <NoticeBoard />;
             default:
                 return <div>Invalid component type</div>;
         }
@@ -76,7 +96,7 @@ export default function View() {
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Back button */}
-            <div className="p-4">
+            <div className="p-4 flex items-center justify-between">
                 <button
                     onClick={handleBack}
                     className="flex items-center text-blue-600 hover:text-blue-800"
@@ -94,6 +114,17 @@ export default function View() {
                     </svg>
                     Back to Dashboard
                 </button>
+                {/* <button
+                    onClick={() => router.push('/view?type=noticeBoard')}
+                    className="relative bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium"
+                >
+                    Notice Board
+                    {noticeCount > 0 && (
+                        <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] rounded-full bg-red-600 text-white text-xs font-semibold flex items-center justify-center px-1">
+                            {noticeCount}
+                        </span>
+                    )}
+                </button> */}
             </div>
 
             {/* Component container */}
