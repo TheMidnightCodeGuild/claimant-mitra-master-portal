@@ -14,7 +14,7 @@ import {
 import { db } from "../../lib/firebase";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
-export default function ViewPartners() {
+export default function ViewSuperPartners() {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,38 +30,39 @@ export default function ViewPartners() {
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [connectTargetByPartner, setConnectTargetByPartner] = useState({});
   const [showConnectPanelByPartner, setShowConnectPanelByPartner] = useState({});
+  const [selectedUnderBySuper, setSelectedUnderBySuper] = useState({});
+  const [showAddUnderBySuper, setShowAddUnderBySuper] = useState({});
 
   useEffect(() => {
     async function fetchPartners() {
       try {
         const partnersRef = collection(db, "partners");
         const querySnapshot = await getDocs(partnersRef);
-        const partnersData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const partnersData = querySnapshot.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data(),
         }));
         setPartners(partnersData);
         setFilteredPartners(partnersData);
 
-        // Fetch stats for each partner
         const statsPromises = partnersData.map(async (partner) => {
           if (partner.partnerRef) {
             const usersRef = collection(db, "users");
-            const q = query(
+            const usersQuery = query(
               usersRef,
               where("partnerRef", "==", partner.partnerRef)
             );
-            const querySnapshot = await getDocs(q);
+            const usersSnapshot = await getDocs(usersQuery);
 
             let totalCommission = 0;
-            querySnapshot.forEach((doc) => {
-              const userData = doc.data();
+            usersSnapshot.forEach((docItem) => {
+              const userData = docItem.data();
               totalCommission += userData.partnerCommision || 0;
             });
 
             return {
               id: partner.id,
-              casesReferred: querySnapshot.size,
+              casesReferred: usersSnapshot.size,
               totalEarnings: totalCommission,
             };
           }
@@ -92,26 +93,26 @@ export default function ViewPartners() {
       return;
     }
 
-    const query = searchQuery.toLowerCase();
+    const queryText = searchQuery.toLowerCase();
     const filtered = partners.filter((partner) => {
       switch (searchField) {
         case "name":
-          return partner.name?.toLowerCase().includes(query);
+          return partner.name?.toLowerCase().includes(queryText);
         case "email":
-          return partner.email?.toLowerCase().includes(query);
+          return partner.email?.toLowerCase().includes(queryText);
         case "phone":
-          return partner.phoneNumber?.toString().includes(query);
+          return partner.phoneNumber?.toString().includes(queryText);
         case "source":
-          return partner.source?.toLowerCase().includes(query);
+          return partner.source?.toLowerCase().includes(queryText);
         case "partnerRef":
-          return partner.partnerRef?.toLowerCase().includes(query);
+          return partner.partnerRef?.toLowerCase().includes(queryText);
         case "all":
           return (
-            partner.name?.toLowerCase().includes(query) ||
-            partner.email?.toLowerCase().includes(query) ||
-            partner.phoneNumber?.toString().includes(query) ||
-            partner.source?.toLowerCase().includes(query) ||
-            partner.partnerRef?.toLowerCase().includes(query)
+            partner.name?.toLowerCase().includes(queryText) ||
+            partner.email?.toLowerCase().includes(queryText) ||
+            partner.phoneNumber?.toString().includes(queryText) ||
+            partner.source?.toLowerCase().includes(queryText) ||
+            partner.partnerRef?.toLowerCase().includes(queryText)
           );
         default:
           return true;
@@ -120,6 +121,16 @@ export default function ViewPartners() {
 
     setFilteredPartners(filtered);
   }, [searchQuery, searchField, partners]);
+
+  const normalizePartnerType = (partner) =>
+    partner?.partnerType === "super" ? "super" : "normal";
+
+  const superPartners = filteredPartners.filter(
+    (partner) => normalizePartnerType(partner) === "super"
+  );
+  const normalPartners = partners.filter(
+    (partner) => normalizePartnerType(partner) === "normal"
+  );
 
   const handleEdit = (partner) => {
     setEditingId(partner.id);
@@ -130,10 +141,7 @@ export default function ViewPartners() {
     try {
       const partnerRef = doc(db, "partners", id);
       await updateDoc(partnerRef, editValues);
-
-      setPartners(
-        partners.map((p) => (p.id === id ? { ...p, ...editValues } : p))
-      );
+      setPartners((prev) => prev.map((p) => (p.id === id ? { ...p, ...editValues } : p)));
       setEditingId(null);
     } catch (err) {
       console.error("Error updating partner:", err);
@@ -153,7 +161,6 @@ export default function ViewPartners() {
       alert("Partner has no email address");
       return;
     }
-
     try {
       setPasswordResetLoading(true);
       const auth = getAuth();
@@ -167,18 +174,14 @@ export default function ViewPartners() {
     }
   };
 
-  // Modified handleDelete to show a confirmation dialog
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Do you really wanna delete this entry?");
     if (!confirmDelete) return;
-
     try {
       setDeleting(true);
-      const partnerRef = doc(db, "partners", id);
-      await deleteDoc(partnerRef);
-
-      setPartners(partners.filter((p) => p.id !== id));
-      setFilteredPartners(filteredPartners.filter((p) => p.id !== id));
+      await deleteDoc(doc(db, "partners", id));
+      setPartners((prev) => prev.filter((p) => p.id !== id));
+      setFilteredPartners((prev) => prev.filter((p) => p.id !== id));
       setShowDeleteMessage(true);
       setTimeout(() => setShowDeleteMessage(false), 3000);
     } catch (err) {
@@ -186,49 +189,6 @@ export default function ViewPartners() {
       alert("Failed to delete partner");
     } finally {
       setDeleting(false);
-    }
-  };
-
-  const normalizePartnerType = (partner) =>
-    partner?.partnerType === "super" ? "super" : "normal";
-
-  const superPartners = filteredPartners.filter(
-    (partner) => normalizePartnerType(partner) === "super"
-  );
-  const normalPartners = filteredPartners.filter(
-    (partner) => normalizePartnerType(partner) === "normal"
-  );
-
-  const handleConvertToSuper = async (partner) => {
-    try {
-      setActionLoadingId(partner.id);
-      const partnerRef = doc(db, "partners", partner.id);
-      const updatePayload = {
-        partnerType: "super",
-      };
-      if (!Array.isArray(partner.partnersUnder)) {
-        updatePayload.partnersUnder = [];
-      }
-      if (partner.superPartner) {
-        updatePayload.superPartner = "";
-      }
-      await updateDoc(partnerRef, updatePayload);
-
-      setPartners((prev) =>
-        prev.map((item) =>
-          item.id === partner.id
-            ? {
-                ...item,
-                ...updatePayload,
-              }
-            : item
-        )
-      );
-    } catch (err) {
-      console.error("Error converting partner to super:", err);
-      alert("Failed to convert partner");
-    } finally {
-      setActionLoadingId(null);
     }
   };
 
@@ -297,14 +257,8 @@ export default function ViewPartners() {
       setActionLoadingId(childPartner.id);
       const didUpdate = await reassignSinglePartner(childPartner, targetSuperId);
       if (!didUpdate) return;
-      setShowConnectPanelByPartner((prev) => ({
-        ...prev,
-        [childPartner.id]: false,
-      }));
-      setConnectTargetByPartner((prev) => ({
-        ...prev,
-        [childPartner.id]: "",
-      }));
+      setShowConnectPanelByPartner((prev) => ({ ...prev, [childPartner.id]: false }));
+      setConnectTargetByPartner((prev) => ({ ...prev, [childPartner.id]: "" }));
       alert("Super partner linked successfully");
     } catch (err) {
       console.error("Error connecting to super partner:", err);
@@ -312,6 +266,39 @@ export default function ViewPartners() {
     } finally {
       setActionLoadingId(null);
     }
+  };
+
+  const handleAddPartnersUnder = async (superPartner) => {
+    const selectedNormalIds = selectedUnderBySuper[superPartner.id] || [];
+    if (!selectedNormalIds.length) {
+      alert("Please select at least one normal partner");
+      return;
+    }
+    try {
+      setActionLoadingId(superPartner.id);
+      for (const normalPartnerId of selectedNormalIds) {
+        const childPartner = partners.find((p) => p.id === normalPartnerId);
+        if (!childPartner) continue;
+        await reassignSinglePartner(childPartner, superPartner.id);
+      }
+      setShowAddUnderBySuper((prev) => ({ ...prev, [superPartner.id]: false }));
+      setSelectedUnderBySuper((prev) => ({ ...prev, [superPartner.id]: [] }));
+      alert("Normal partners linked under super partner");
+    } catch (err) {
+      console.error("Error adding partners under super partner:", err);
+      alert("Failed to add partners under super partner");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not set";
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
   if (loading) {
@@ -330,15 +317,6 @@ export default function ViewPartners() {
     );
   }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not set";
-    return new Date(dateString).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       {showDeleteMessage && (
@@ -347,9 +325,7 @@ export default function ViewPartners() {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-6">
-        Normal Partners ({normalPartners.length})
-      </h2>
+      <h2 className="text-2xl font-bold mb-6">Super Partners ({superPartners.length})</h2>
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4 mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -380,16 +356,16 @@ export default function ViewPartners() {
         </div>
 
         <div className="text-sm text-gray-600">
-          Found {normalPartners.length} partners
+          Found {superPartners.length} super partners
           {searchQuery && ` matching "${searchQuery}"`}
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {normalPartners.map((partner) => (
+        {superPartners.map((partner) => (
           <div
             key={partner.id}
-            className="rounded-lg shadow-md p-6 border bg-white border-gray-200"
+            className="rounded-lg shadow-md p-6 bg-purple-50 border-purple-500 border-2"
           >
             {editingId === partner.id ? (
               <div className="space-y-4">
@@ -458,29 +434,23 @@ export default function ViewPartners() {
                     </button>
                   </div>
                 </div>
-                <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-gray-700 text-white">
-                  Normal Partner
+
+                <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-purple-700 text-white">
+                  Super Partner
                 </span>
+
                 <p className="text-gray-600">
-                  <span className="font-medium">Name:</span>{" "}
-                  {partner.name || "N/A"}
+                  <span className="font-medium">Name:</span> {partner.name || "N/A"}
                 </p>
                 <p className="text-gray-600">
-                  <span className="font-medium">Email:</span>{" "}
-                  {partner.email || "N/A"}
+                  <span className="font-medium">Email:</span> {partner.email || "N/A"}
                 </p>
                 <p className="text-gray-600">
-                  <span className="font-medium">Phone:</span>{" "}
-                  {partner.phoneNumber || "N/A"}
+                  <span className="font-medium">Phone:</span> {partner.phoneNumber || "N/A"}
                 </p>
                 <p className="text-gray-600">
-                  <span className="font-medium">Source:</span>{" "}
-                  {partner.source || "N/A"}
+                  <span className="font-medium">Source:</span> {partner.source || "N/A"}
                 </p>
-                {/* <p className="text-gray-600">
-                                    <span className="font-medium">Total Cases:</span>{' '}
-                                    {partner.cases || 0}
-                                </p> */}
                 <p className="text-gray-600">
                   <span className="font-medium">Cases Referred:</span>{" "}
                   {partnerStats[partner.id]?.casesReferred || 0}
@@ -490,13 +460,17 @@ export default function ViewPartners() {
                   {partnerStats[partner.id]?.totalEarnings || 0}
                 </p>
                 <p className="text-gray-600">
-                  <span className="font-medium">Joined On:</span>{" "}
-                  {formatDate(partner.createdAt)}
+                  <span className="font-medium">Joined On:</span> {formatDate(partner.createdAt)}
                 </p>
                 <p className="text-gray-600">
                   <span className="font-medium">Super Partner:</span>{" "}
                   {partner.superPartner || "Not assigned"}
                 </p>
+                <p className="text-gray-600">
+                  <span className="font-medium">Partners Under:</span>{" "}
+                  {Array.isArray(partner.partnersUnder) ? partner.partnersUnder.length : 0}
+                </p>
+
                 <div className="mt-4 pt-2 border-t border-gray-200">
                   <button
                     onClick={() => handlePasswordReset(partner.email)}
@@ -506,16 +480,6 @@ export default function ViewPartners() {
                     {passwordResetLoading ? "Sending..." : "Change Password"}
                   </button>
                 </div>
-
-                <button
-                  onClick={() => handleConvertToSuper(partner)}
-                  disabled={actionLoadingId === partner.id}
-                  className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:bg-gray-300"
-                >
-                  {actionLoadingId === partner.id
-                    ? "Updating..."
-                    : "Convert to Super Partner"}
-                </button>
 
                 <div className="pt-2 border-t border-gray-200 space-y-2">
                   <button
@@ -555,9 +519,61 @@ export default function ViewPartners() {
                         disabled={actionLoadingId === partner.id}
                         className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:bg-gray-300"
                       >
-                        {actionLoadingId === partner.id
-                          ? "Saving..."
-                          : "Save Super Partner"}
+                        {actionLoadingId === partner.id ? "Saving..." : "Save Super Partner"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-gray-200 space-y-2">
+                  <button
+                    onClick={() =>
+                      setShowAddUnderBySuper((prev) => ({
+                        ...prev,
+                        [partner.id]: !prev[partner.id],
+                      }))
+                    }
+                    className="w-full px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                  >
+                    Add Normal Partners Under
+                  </button>
+                  {showAddUnderBySuper[partner.id] && (
+                    <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-2 bg-white">
+                      {normalPartners
+                        .filter((normalP) => normalP.id !== partner.id)
+                        .map((normalP) => {
+                          const selected =
+                            selectedUnderBySuper[partner.id]?.includes(normalP.id) || false;
+                          return (
+                            <label
+                              key={`${partner.id}-${normalP.id}`}
+                              className="flex items-center gap-2 text-sm"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selected}
+                                onChange={(e) => {
+                                  setSelectedUnderBySuper((prev) => {
+                                    const prevList = prev[partner.id] || [];
+                                    return {
+                                      ...prev,
+                                      [partner.id]: e.target.checked
+                                        ? [...prevList, normalP.id]
+                                        : prevList.filter((id) => id !== normalP.id),
+                                    };
+                                  });
+                                }}
+                              />
+                              <span>{normalP.name || normalP.partnerRef || normalP.id}</span>
+                            </label>
+                          );
+                        })}
+                      <button
+                        onClick={() => handleAddPartnersUnder(partner)}
+                        disabled={actionLoadingId === partner.id}
+                        className="w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded hover:bg-emerald-800 disabled:bg-gray-300"
+                      >
+                        {actionLoadingId === partner.id ? "Saving..." : "Save Partners Under"}
                       </button>
                     </div>
                   )}
@@ -568,9 +584,9 @@ export default function ViewPartners() {
         ))}
       </div>
 
-      {normalPartners.length === 0 && (
+      {superPartners.length === 0 && (
         <div className="text-center text-gray-500 mt-8">
-          {searchQuery ? "No matching normal partners found" : "No normal partners found"}
+          {searchQuery ? "No matching super partners found" : "No super partners found"}
         </div>
       )}
     </div>

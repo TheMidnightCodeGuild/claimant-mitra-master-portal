@@ -21,6 +21,8 @@ export default function SendToIGMS({ docId, onComplete }) {
     const [isAddingInternalLog, setIsAddingInternalLog] = useState(false);
     const [showFullCase, setShowFullCase] = useState(false);
     const [sendingConsent, setSendingConsent] = useState(false);
+    const videoVerificationStatus = caseData?.VideoVerification || 'Verification Pending';
+    const canProceedToIGMS = videoVerificationStatus === 'Completed';
 
     useEffect(() => {
         async function fetchCase() {
@@ -73,6 +75,10 @@ export default function SendToIGMS({ docId, onComplete }) {
     };
 
     const handleSendToIGMS = async () => {
+        if (!canProceedToIGMS) {
+            alert('Video verification must be Completed before sending to IGMS.');
+            return;
+        }
         await confirmAction('You are about to send this case to IGMS.', async () => {
             try {
                 if (!docId) return;
@@ -161,6 +167,10 @@ export default function SendToIGMS({ docId, onComplete }) {
     };
 
     const handleSendToReimbursement = async () => {
+        if (!canProceedToIGMS) {
+            alert('Video verification must be Completed before sending to reimbursement.');
+            return;
+        }
         await confirmAction('You are about to send this case to reimbursement.', async () => {
             try {
                 if (!docId) return;
@@ -383,6 +393,11 @@ export default function SendToIGMS({ docId, onComplete }) {
                     </div>
 
                     <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">Video Verification</label>
+                        <p className="mt-1 text-gray-900">{videoVerificationStatus}</p>
+                    </div>
+
+                    <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">Policy Number</label>
                         <p className="mt-1 text-gray-900">{caseData?.policyNo || 'N/A'}</p>
                     </div>
@@ -581,13 +596,33 @@ export default function SendToIGMS({ docId, onComplete }) {
                     <div className="col-span-2 mt-6 flex gap-4">
                         <button
                             onClick={handleSendToIGMS}
-                            className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            disabled={!canProceedToIGMS}
+                            title={
+                                canProceedToIGMS
+                                    ? 'Send case to IGMS'
+                                    : 'Complete video verification first'
+                            }
+                            className={`flex-1 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                                canProceedToIGMS
+                                    ? 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-500'
+                                    : 'bg-gray-400 cursor-not-allowed focus:ring-gray-400'
+                            }`}
                         >
                             Send to IGMS
                         </button>
                         <button
                             onClick={handleSendToReimbursement}
-                            className="flex-1 bg-purple-500 text-white py-2 px-4 rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                            disabled={!canProceedToIGMS}
+                            title={
+                                canProceedToIGMS
+                                    ? 'Send case to reimbursement'
+                                    : 'Complete video verification first'
+                            }
+                            className={`flex-1 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                                canProceedToIGMS
+                                    ? 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-500'
+                                    : 'bg-gray-400 cursor-not-allowed focus:ring-gray-400'
+                            }`}
                         >
                             Send to Reimbursement
                         </button>
@@ -621,6 +656,11 @@ export default function SendToIGMS({ docId, onComplete }) {
                             Delete Case
                         </button>
                     </div>
+                    {!canProceedToIGMS && (
+                        <p className="col-span-2 mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                            Send to IGMS and Send to Reimbursement are blocked until Video Verification is Completed.
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

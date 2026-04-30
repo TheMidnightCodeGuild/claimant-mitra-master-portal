@@ -183,6 +183,11 @@ export default function Dashboard() {
       onClick: () => router.push('/view?type=viewPartners'),
       icon: "👥"
     },
+    {
+      title: "View Super Partners",
+      onClick: () => router.push('/view?type=viewSuperPartners'),
+      icon: "👥"
+    },
   ];
 
   return (

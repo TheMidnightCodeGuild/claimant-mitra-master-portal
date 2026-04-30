@@ -203,6 +203,18 @@ export default function CasesUnderReview() {
                                     Days in Review: {calculateDaysElapsed(case_.reviewDate)}
                                 </div>
                             )}
+                            <div className="mt-2">
+                                <span className="font-medium text-gray-700">Video Verification:</span>{" "}
+                                <span
+                                    className={`text-sm font-semibold ${
+                                        (case_.VideoVerification || 'Verification Pending') === 'Completed'
+                                            ? 'text-green-700'
+                                            : 'text-amber-700'
+                                    }`}
+                                >
+                                    {case_.VideoVerification || 'Verification Pending'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 ))}

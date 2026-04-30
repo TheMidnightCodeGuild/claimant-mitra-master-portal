@@ -40,8 +40,8 @@ export default function FullCase({ docId }) {
     insuranceCompany: "",
     claimNo: "",
     policyNo: "",
-    hospitalName: "",
-    claimAmount: "",
+    caseDescription: "",
+    feePercentage: "20",
   });
   const [showVerificationMedia, setShowVerificationMedia] = useState(false);
   const [verificationActionLoading, setVerificationActionLoading] = useState(false);
@@ -461,20 +461,29 @@ export default function FullCase({ docId }) {
     const formInsuranceCompany = verificationScriptForm.insuranceCompany?.trim();
     const formClaimNo = verificationScriptForm.claimNo?.trim();
     const formPolicyNo = verificationScriptForm.policyNo?.trim();
-    const formHospitalName = verificationScriptForm.hospitalName?.trim();
-    const formClaimAmount = verificationScriptForm.claimAmount?.toString().trim();
+    const formCaseDescription = verificationScriptForm.caseDescription?.trim();
+    const formFeePercentage = verificationScriptForm.feePercentage?.toString().trim();
+
+    const fallbackClaimAmount =
+      caseData?.estimatedClaimAmount?.toString() || caseData?.claim?.toString() || "____";
+    const fallbackCaseDescription =
+      caseData?.requestVerificationScriptData?.caseDescription ||
+      (caseData?.requestVerificationScriptData?.hospitalName
+        ? `बीमा कंपनी ने मेरे ${caseData.requestVerificationScriptData.hospitalName} Hospital के ₹${
+            caseData?.requestVerificationScriptData?.claimAmount || fallbackClaimAmount
+          } के क्लेम को अस्वीकृत कर दिया है।`
+        : `बीमा कंपनी ने मेरे Hospital के ₹${fallbackClaimAmount} के क्लेम को अस्वीकृत कर दिया है।`);
 
     return {
       name: formName || caseData?.name || "N/A",
       insuranceCompany: formInsuranceCompany || caseData?.companyName || "____",
       claimNo: formClaimNo || caseData?.claimNo || "N/A",
       policyNo: formPolicyNo || caseData?.policyNo || "N/A",
-      hospitalName: formHospitalName || "____",
-      claimAmount:
-        formClaimAmount ||
-        caseData?.estimatedClaimAmount?.toString() ||
-        caseData?.claim?.toString() ||
-        "____",
+      caseDescription: formCaseDescription || fallbackCaseDescription,
+      feePercentage:
+        formFeePercentage ||
+        caseData?.requestVerificationScriptData?.feePercentage?.toString() ||
+        "20",
     };
   };
 
@@ -484,16 +493,16 @@ export default function FullCase({ docId }) {
       insuranceCompany,
       claimNo,
       policyNo,
-      hospitalName,
-      claimAmount,
+      caseDescription,
+      feePercentage,
     } = getVerificationScriptData();
     return `1. मेरा नाम "${name}" है।
 2. मेरी ${insuranceCompany} Insurance Company की पॉलिसी है।
 3. मेरा Claim No. "${claimNo}" तथा Policy No. "${policyNo}" है।
-4. बीमा कंपनी ने मेरे ${hospitalName} Hospital के ₹${claimAmount} के क्लेम को अस्वीकृत कर दिया है।
+4. ${caseDescription}
 5. मुझे क्लेम प्रक्रिया की पूरी जानकारी नहीं है।
 6. इसलिए मैं CLAIMANT MITRA को अपना अधिकृत सलाहकार नियुक्त करता/करती हूँ।
-7. मैं यह शपथपूर्वक स्वीकार करता/करती हूँ कि सफल क्लेम राशि प्राप्त होने पर मैं CLAIMANT MITRA को क्लेम राशि का 20% शुल्क प्रदान करूँगा/करूँगी।
+7. मैं यह शपथपूर्वक स्वीकार करता/करती हूँ कि सफल क्लेम राशि प्राप्त होने पर मैं CLAIMANT MITRA को क्लेम राशि का ${feePercentage}% शुल्क प्रदान करूँगा/करूँगी।
 8. यदि प्रक्रिया के दौरान मेरी ओर से किसी दस्तावेज़ में कमी, त्रुटि या तथ्य छुपाने के कारण क्लेम अस्वीकृत होता है, तो उसकी पूर्ण जिम्मेदारी मेरी स्वयं की होगी।
 9. मैं अपनी सहमति से यह घोषणा कर रहा/रही हूँ।`;
   };
@@ -518,11 +527,16 @@ export default function FullCase({ docId }) {
           insuranceCompany: caseData?.companyName || "",
           claimNo: caseData?.claimNo || "",
           policyNo: caseData?.policyNo || "",
-          hospitalName: "",
-          claimAmount:
-            caseData?.estimatedClaimAmount?.toString() ||
-            caseData?.claim?.toString() ||
-            "",
+          caseDescription:
+            caseData?.requestVerificationScriptData?.caseDescription ||
+            `बीमा कंपनी ने मेरे Hospital के ₹${
+              caseData?.estimatedClaimAmount?.toString() ||
+              caseData?.claim?.toString() ||
+              "____"
+            } के क्लेम को अस्वीकृत कर दिया है।`,
+          feePercentage:
+            caseData?.requestVerificationScriptData?.feePercentage?.toString() ||
+            "20",
         });
       }
       return nextValue;
@@ -775,31 +789,32 @@ export default function FullCase({ docId }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Hospital Name
+                Case Description
               </label>
               <input
                 type="text"
-                value={verificationScriptForm.hospitalName}
+                value={verificationScriptForm.caseDescription}
                 onChange={(e) =>
                   setVerificationScriptForm((prev) => ({
                     ...prev,
-                    hospitalName: e.target.value,
+                    caseDescription: e.target.value,
                   }))
                 }
+                placeholder="case description"
                 className="w-full border rounded-md px-3 py-2 text-sm"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Claim Amount (₹)
+                Fee Percentage (%)
               </label>
               <input
                 type="text"
-                value={verificationScriptForm.claimAmount}
+                value={verificationScriptForm.feePercentage}
                 onChange={(e) =>
                   setVerificationScriptForm((prev) => ({
                     ...prev,
-                    claimAmount: e.target.value,
+                    feePercentage: e.target.value,
                   }))
                 }
                 className="w-full border rounded-md px-3 py-2 text-sm"

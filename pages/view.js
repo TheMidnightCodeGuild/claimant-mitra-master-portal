@@ -17,6 +17,7 @@ import Contract from './components/contract';
 import Consent from './components/consent';
 import PendingCases from './components/pending';
 import ReimbursementCases from './components/reimbursement';
+import ViewSuperPartners from './components/viewSuperPartners';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
@@ -49,6 +50,8 @@ export default function View() {
                 return <CreateCase />;
             case 'viewPartners':
                 return <ViewPartners />;
+            case 'viewSuperPartners':
+                return <ViewSuperPartners />;
             case 'partnerIssues':
                 return <ViewPartnerIssues />;
             case 'partnerApplications':
