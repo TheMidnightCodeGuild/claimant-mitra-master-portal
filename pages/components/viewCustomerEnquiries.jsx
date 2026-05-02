@@ -109,16 +109,19 @@ function ViewCustomerEnquiries() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <div className="flex min-h-[30vh] items-center justify-center"><div className="ui-spinner" /></div>;
+  if (error) return <div className="ui-empty-state border-rose-200 text-rose-700">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="w-full">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">Customer Enquiries</h2>
+        <div className="ui-page-intro mb-6">
+          <p className="ui-section-eyebrow">CRM</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Customer Enquiries</h2>
+        </div>
         <div className="grid gap-6">
           {enquiries.map((enquiry) => (
-            <div key={enquiry.id} className="bg-white shadow rounded-lg p-6">
+            <div key={enquiry.id} className="ui-card-padded border-indigo-100/80 shadow-md transition hover:shadow-lg">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-semibold">Full Name</h3>
@@ -158,12 +161,10 @@ function ViewCustomerEnquiries() {
                 </div>
                 <div className="col-span-2 mt-4">
                   <button
+                    type="button"
                     onClick={() => handleTakeAsComplaint(enquiry)}
                     disabled={processingId === enquiry.id}
-                    className={`px-4 py-2 rounded-md text-white font-medium 
-                      ${processingId === enquiry.id 
-                        ? 'bg-blue-300 cursor-not-allowed' 
-                        : 'bg-blue-600 hover:bg-blue-700'}`}
+                    className="ui-btn-primary disabled:opacity-50"
                   >
                     {processingId === enquiry.id ? 'Converting...' : 'Take as Complaint'}
                   </button>

@@ -216,20 +216,21 @@ export default function KpiDashboard() {
   const currency = (value) => `₹${Math.round(value || 0).toLocaleString("en-IN")}`;
 
   return (
-    <section className="mb-8 bg-white border border-gray-200 rounded-xl p-4 md:p-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+    <section className="ui-section-indigo mb-2 overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900">KPI Dashboard</h2>
-          <p className="text-sm text-gray-600">
+          <p className="ui-section-eyebrow">Performance</p>
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">KPI Dashboard</h2>
+          <p className="text-sm text-slate-600 mt-1">
             Last updated: {lastUpdated ? lastUpdated.toLocaleString("en-IN") : "Not loaded yet"}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <select
             value={range}
             onChange={(e) => setRange(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+            className="ui-input w-auto min-w-[160px] border-indigo-200/80 bg-white/90"
           >
             {RANGE_OPTIONS.map((option) => (
               <option key={option.id} value={option.id}>
@@ -238,16 +239,17 @@ export default function KpiDashboard() {
             ))}
           </select>
           <button
+            type="button"
             onClick={() => setRefreshIndex((prev) => prev + 1)}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-2 text-sm font-medium"
+            className="ui-btn-primary"
           >
             Refresh
           </button>
         </div>
       </div>
 
-      {loading && <p className="text-gray-600">Loading KPI metrics...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {loading && <p className="text-slate-600">Loading KPI metrics...</p>}
+      {error && <p className="text-rose-600 font-medium">{error}</p>}
 
       {!loading && !error && (
         <div className="space-y-6">
@@ -267,54 +269,54 @@ export default function KpiDashboard() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Claim Amounts (Range)</h3>
-              <p className="text-sm text-gray-700">Total: {currency(metrics.claimTotal)}</p>
-              <p className="text-sm text-gray-700">Average: {currency(metrics.claimAvg)}</p>
-              <p className="text-sm text-gray-700">Minimum: {currency(metrics.claimMin)}</p>
-              <p className="text-sm text-gray-700">Maximum: {currency(metrics.claimMax)}</p>
+            <div className="ui-card-padded border-cyan-100/80 bg-gradient-to-br from-white via-cyan-50/30 to-white">
+              <h3 className="ui-section-title mb-3 text-indigo-950">Claim Amounts (Range)</h3>
+              <p className="text-sm text-slate-700">Total: {currency(metrics.claimTotal)}</p>
+              <p className="text-sm text-slate-700">Average: {currency(metrics.claimAvg)}</p>
+              <p className="text-sm text-slate-700">Minimum: {currency(metrics.claimMin)}</p>
+              <p className="text-sm text-slate-700">Maximum: {currency(metrics.claimMax)}</p>
             </div>
 
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Verification Funnel (Range)</h3>
-              <p className="text-sm text-gray-700">Pending: {metrics.verificationPending}</p>
-              <p className="text-sm text-gray-700">Uploaded: {metrics.verificationUploaded}</p>
-              <p className="text-sm text-gray-700">Approved: {metrics.verificationApproved}</p>
-              <p className="text-sm text-gray-700">Rejected: {metrics.verificationRejected}</p>
-              <p className="text-sm text-gray-700">Completed: {metrics.verificationCompleted}</p>
+            <div className="ui-card-padded border-violet-100/80 bg-gradient-to-br from-white via-violet-50/40 to-white">
+              <h3 className="ui-section-title mb-3 text-indigo-950">Verification Funnel (Range)</h3>
+              <p className="text-sm text-slate-700">Pending: {metrics.verificationPending}</p>
+              <p className="text-sm text-slate-700">Uploaded: {metrics.verificationUploaded}</p>
+              <p className="text-sm text-slate-700">Approved: {metrics.verificationApproved}</p>
+              <p className="text-sm text-slate-700">Rejected: {metrics.verificationRejected}</p>
+              <p className="text-sm text-slate-700">Completed: {metrics.verificationCompleted}</p>
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Partner Metrics</h3>
-              <p className="text-sm text-gray-700">Total Partners: {metrics.totalPartners}</p>
-              <p className="text-sm text-gray-700">Normal Partners: {metrics.normalCount}</p>
-              <p className="text-sm text-gray-700">Super Partners: {metrics.superCount}</p>
-              <p className="text-sm text-gray-700">
+            <div className="ui-section-slate">
+              <h3 className="ui-section-title mb-3">Partner Metrics</h3>
+              <p className="text-sm text-slate-700">Total Partners: {metrics.totalPartners}</p>
+              <p className="text-sm text-slate-700">Normal Partners: {metrics.normalCount}</p>
+              <p className="text-sm text-slate-700">Super Partners: {metrics.superCount}</p>
+              <p className="text-sm text-slate-700">
                 Super Partners with Children: {metrics.supersWithChildren}
               </p>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-slate-700">
                 Avg Children per Super: {metrics.avgChildrenPerSuper.toFixed(2)}
               </p>
             </div>
 
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Notice Metrics</h3>
-              <p className="text-sm text-gray-700">Total Notices: {metrics.totalNotices}</p>
-              <p className="text-sm text-gray-700">
+            <div className="ui-section-slate">
+              <h3 className="ui-section-title mb-3">Notice Metrics</h3>
+              <p className="text-sm text-slate-700">Total Notices: {metrics.totalNotices}</p>
+              <p className="text-sm text-slate-700">
                 Notices in Range: {metrics.noticesRangeCount}
               </p>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-slate-700">
                 Latest Notice:{" "}
                 {metrics.latestNotice ? metrics.latestNotice.toLocaleString("en-IN") : "N/A"}
               </p>
               <div className="mt-2">
-                <p className="text-sm font-medium text-gray-800">Top Notice Users</p>
+                <p className="text-sm font-medium text-slate-800">Top Notice Users</p>
                 {metrics.topNoticeUsers.length === 0 ? (
-                  <p className="text-sm text-gray-600">No notice users yet.</p>
+                  <p className="text-sm text-slate-600">No notice users yet.</p>
                 ) : (
-                  <ul className="text-sm text-gray-700">
+                  <ul className="text-sm text-slate-700 space-y-1">
                     {metrics.topNoticeUsers.map((item) => (
                       <li key={item.userId}>
                         {item.name} ({item.userId}): {item.count}
@@ -333,9 +335,11 @@ export default function KpiDashboard() {
 
 function KpiCard({ label, value }) {
   return (
-    <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-      <p className="text-xs text-gray-600">{label}</p>
-      <p className="text-xl font-bold text-gray-900">{value ?? 0}</p>
+    <div className="ui-kpi-tile transition hover:scale-[1.01]">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-xl font-bold bg-gradient-to-r from-slate-900 to-indigo-900 bg-clip-text text-transparent">
+        {value ?? 0}
+      </p>
     </div>
   );
 }

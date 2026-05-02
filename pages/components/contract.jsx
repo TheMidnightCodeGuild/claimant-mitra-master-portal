@@ -83,13 +83,14 @@ export default function Contract() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="w-full py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full mx-auto space-y-8">
+        <div className="ui-card-padded border-indigo-100/90 shadow-xl">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-2 text-center text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-indigo-800 bg-clip-text text-transparent">
             Generate Contract
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-slate-600">
             Fill in the details below to generate a new contract
           </p>
         </div>
@@ -147,7 +148,7 @@ export default function Contract() {
             <div className="mb-4">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-slate-700"
               >
                 Email Address
               </label>
@@ -162,7 +163,7 @@ export default function Contract() {
                     recipientEmail: e.target.value,
                   }))
                 }
-                className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-slate-300 placeholder-gray-500 text-slate-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Enter email address"
               />
             </div>
@@ -170,7 +171,7 @@ export default function Contract() {
             <div className="mb-4">
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-slate-700"
               >
                 Full Name
               </label>
@@ -182,7 +183,7 @@ export default function Contract() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
                 }
-                className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-slate-300 placeholder-gray-500 text-slate-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Enter full name"
               />
             </div>
@@ -190,7 +191,7 @@ export default function Contract() {
             <div className="mb-4">
               <label
                 htmlFor="address"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-slate-700"
               >
                 Address
               </label>
@@ -202,7 +203,7 @@ export default function Contract() {
                   setFormData((prev) => ({ ...prev, address: e.target.value }))
                 }
                 rows={3}
-                className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-slate-300 placeholder-gray-500 text-slate-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Enter complete address"
               />
             </div>
@@ -210,7 +211,7 @@ export default function Contract() {
             <div className="mb-4">
               <label
                 htmlFor="aadhar"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-slate-700"
               >
                 Aadhar Number
               </label>
@@ -222,7 +223,7 @@ export default function Contract() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, aadharNo: e.target.value }))
                 }
-                className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-slate-300 placeholder-gray-500 text-slate-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Enter Aadhar number"
               />
             </div>
@@ -262,6 +263,7 @@ export default function Contract() {
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

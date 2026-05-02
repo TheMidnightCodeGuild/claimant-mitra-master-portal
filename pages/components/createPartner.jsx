@@ -92,8 +92,8 @@ function CreateAccount() {
   };
 
   return (
-    <div className="h-[50vh] flex items-start justify-center bg-gray-50 mt-5">
-      <div className="max-w-md w-full space-y-6 p-8 bg-white border-2 border-gray-700 rounded-lg ">
+    <div className="mt-5 flex h-[50vh] items-start justify-center bg-gradient-to-b from-slate-100/80 to-indigo-50/40">
+      <div className="ui-card-padded max-w-md w-full space-y-6 !p-8 shadow-lg">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
         </div>

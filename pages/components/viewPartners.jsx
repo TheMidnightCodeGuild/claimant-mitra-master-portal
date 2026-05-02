@@ -317,7 +317,7 @@ export default function ViewPartners() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="ui-spinner"></div>
       </div>
     );
   }
@@ -340,18 +340,22 @@ export default function ViewPartners() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="ui-content-max">
       {showDeleteMessage && (
         <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg">
           Partner deleted successfully!
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-6">
-        Normal Partners ({normalPartners.length})
-      </h2>
+      <div className="ui-page-intro mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="ui-section-eyebrow">Directory</p>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Normal Partners</h2>
+        </div>
+        <span className="ui-stat-pill">{normalPartners.length} listed</span>
+      </div>
 
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4 mb-6">
+      <div className="ui-search-panel mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <input
@@ -359,7 +363,7 @@ export default function ViewPartners() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search partners..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="ui-input"
             />
           </div>
 
@@ -367,7 +371,7 @@ export default function ViewPartners() {
             <select
               value={searchField}
               onChange={(e) => setSearchField(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="ui-input sm:w-48"
             >
               <option value="all">All Fields</option>
               <option value="name">Name</option>
@@ -389,7 +393,7 @@ export default function ViewPartners() {
         {normalPartners.map((partner) => (
           <div
             key={partner.id}
-            className="rounded-lg shadow-md p-6 border bg-white border-gray-200"
+            className="ui-card-padded border-slate-200/90 shadow-lg transition hover:shadow-xl"
           >
             {editingId === partner.id ? (
               <div className="space-y-4">

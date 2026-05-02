@@ -73,7 +73,7 @@ export default function ViewAllCases() {
     if (loading) {
         return (
             <div className="min-h-[50vh] sm:min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-4 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-4 border-indigo-600"></div>
             </div>
         );
     }
@@ -93,8 +93,8 @@ export default function ViewAllCases() {
         return (
             <div className="min-h-[50vh] sm:min-h-screen flex items-center justify-center p-4">
                 <div className="text-center">
-                    <p className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">No Cases Found</p>
-                    <p className="text-sm sm:text-base text-gray-500">There are currently no cases in the system.</p>
+                    <p className="text-lg sm:text-xl font-semibold text-slate-700 mb-2">No Cases Found</p>
+                    <p className="text-sm sm:text-base text-slate-500">There are currently no cases in the system.</p>
                 </div>
             </div>
         );
@@ -102,15 +102,18 @@ export default function ViewAllCases() {
 
     return (
         <div className="w-full lg:max-w-[1300px] mx-auto px-3 sm:px-0 py-4 sm:py-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-8 mb-6 sm:mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 uppercase underline text-center sm:text-left">All Cases</h2>
-                <span className="bg-blue-100 text-blue-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-sm sm:text-base text-center">
+            <div className="ui-page-intro mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="ui-section-eyebrow">Registry</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 text-center sm:text-left">All Cases</h2>
+                </div>
+                <span className="ui-stat-pill justify-center">
                     {cases.length} {cases.length === 1 ? 'Case' : 'Cases'}
                 </span>
             </div>
 
             <div className="mb-6">
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
+                <div className="ui-search-panel">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1">
                             <input
@@ -118,7 +121,7 @@ export default function ViewAllCases() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search cases..."
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="ui-input"
                             />
                         </div>
                         
@@ -126,7 +129,7 @@ export default function ViewAllCases() {
                             <select
                                 value={searchField}
                                 onChange={(e) => setSearchField(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="ui-input sm:w-48"
                             >
                                 <option value="all">All Fields</option>
                                 <option value="name">Name</option>
@@ -136,7 +139,7 @@ export default function ViewAllCases() {
                         </div>
                     </div>
 
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-slate-600">
                         Found {filteredCases.length} cases
                         {searchQuery && ` matching "${searchQuery}"`}
                     </div>
@@ -147,15 +150,15 @@ export default function ViewAllCases() {
                 {filteredCases.map((case_) => (
                     <div 
                         key={case_.id}
-                        className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md p-4 sm:p-6 border border-gray-800 transition-all duration-200 cursor-pointer"
+                        className="ui-list-card"
                         onClick={() => handleCaseClick(case_.id)}
                     >
                         <div className="space-y-2 sm:space-y-3">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
-                                <h3 className="font-semibold text-lg sm:text-xl text-gray-800 break-words">
+                                <h3 className="font-semibold text-lg sm:text-xl text-slate-800 break-words">
                                     {case_.name || 'Unnamed Case'}
                                 </h3>
-                                <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+                                <span className="text-xs sm:text-sm text-slate-500 whitespace-nowrap">
                                     {new Date(case_.complaintDate).toLocaleString(undefined, {
                                         dateStyle: 'medium',
                                         timeStyle: 'short'
@@ -163,34 +166,34 @@ export default function ViewAllCases() {
                                 </span>
                             </div>
 
-                            <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                            <p className="text-slate-700 flex items-center gap-2 text-sm sm:text-base">
                                 <span className="font-medium">Case ID:</span>
                                 <span className="break-all">{case_.id}</span>
                             </p>
 
                             {case_.policyNumber && (
-                                <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                                <p className="text-slate-700 flex items-center gap-2 text-sm sm:text-base">
                                     <span className="font-medium">Policy:</span>
                                     <span className="break-all">{case_.policyNumber}</span>
                                 </p>
                             )}
 
                             {case_.status && (
-                                <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                                <p className="text-slate-700 flex items-center gap-2 text-sm sm:text-base">
                                     <span className="font-medium">Status:</span>
                                     <span>{case_.status}</span>
                                 </p>
                             )}
 
                             {case_.mobile && (
-                                <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                                <p className="text-slate-700 flex items-center gap-2 text-sm sm:text-base">
                                     <span className="font-medium">Contact:</span>
                                     <span>{case_.mobile}</span>
                                 </p>
                             )}
 
                             {case_.email && (
-                                <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                                <p className="text-slate-700 flex items-center gap-2 text-sm sm:text-base">
                                     <span className="font-medium">Email:</span>
                                     <span className="break-all">{case_.email}</span>
                                 </p>
@@ -201,8 +204,8 @@ export default function ViewAllCases() {
             </div>
 
             {filteredCases.length === 0 && (
-                <div className="text-center py-8">
-                    <p className="text-gray-500">No cases found matching your search criteria</p>
+                <div className="ui-empty-state py-8">
+                    <p className="text-slate-500">No cases found matching your search criteria</p>
                 </div>
             )}
         </div>

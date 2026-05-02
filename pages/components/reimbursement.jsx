@@ -81,7 +81,7 @@ export default function Reimbursement() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <div className="ui-spinner" />
             </div>
         );
     }
@@ -99,7 +99,7 @@ export default function Reimbursement() {
             <div>
                 <button 
                     onClick={handleBackToCases}
-                    className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                    className="mb-4 px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-800"
                 >
                     ← Back to Reimbursement Cases
                 </button>
@@ -111,7 +111,7 @@ export default function Reimbursement() {
     if (cases.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="text-gray-500">
+                <div className="text-slate-500">
                     <p>No Reimbursement cases found</p>
                 </div>
             </div>
@@ -133,12 +133,15 @@ export default function Reimbursement() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="ui-content-max">
+            <div className="ui-page-intro mb-6">
+                <p className="ui-section-eyebrow">Finance</p>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Reimbursement Cases</h2>
+            </div>
+
             <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-4">Reimbursement Cases</h2>
-                
                 {/* Search Section */}
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
+                <div className="ui-search-panel">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1">
                             <input
@@ -146,7 +149,7 @@ export default function Reimbursement() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search cases..."
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="ui-input"
                             />
                         </div>
                         
@@ -154,7 +157,7 @@ export default function Reimbursement() {
                             <select
                                 value={searchField}
                                 onChange={(e) => setSearchField(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="ui-input sm:w-48"
                             >
                                 <option value="all">All Fields</option>
                                 <option value="name">Name</option>
@@ -164,7 +167,7 @@ export default function Reimbursement() {
                         </div>
                     </div>
 
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-slate-600">
                         Found {filteredCases.length} cases
                         {searchQuery && ` matching "${searchQuery}"`}
                     </div>
@@ -175,7 +178,7 @@ export default function Reimbursement() {
                 {filteredCases.map((case_) => (
                     <div 
                         key={case_.id} 
-                        className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                        className="ui-list-card"
                         onClick={() => handleCaseClick(case_.id)}
                     >
                         <div className="space-y-3">
@@ -183,20 +186,20 @@ export default function Reimbursement() {
                                 <h3 className="font-semibold text-lg">
                                     {case_.name || 'No Name'}
                                 </h3>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm text-slate-500">
                                     Ref: {case_.partnerRef || 'N/A'}
                                 </span>
                             </div>
 
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div>
-                                    <p className="text-gray-600">
+                                    <p className="text-slate-600">
                                         <span className="font-medium">Mobile:</span><br />
                                         {case_.mobile || 'N/A'}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-gray-600">
+                                    <p className="text-slate-600">
                                         <span className="font-medium">Claim Amount:</span><br />
                                         ₹{case_.estimatedClaimAmount || 'N/A'}
                                     </p>
@@ -206,7 +209,7 @@ export default function Reimbursement() {
                             <div className="border-t pt-2 mt-2">
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div>
-                                        <p className="text-gray-600">
+                                        <p className="text-slate-600">
                                             <span className="font-medium">Acceptance:</span><br />
                                             {formatDate(case_.caseAcceptanceDate)}
                                         </p>

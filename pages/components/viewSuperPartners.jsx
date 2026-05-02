@@ -304,7 +304,7 @@ export default function ViewSuperPartners() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="ui-spinner"></div>
       </div>
     );
   }
@@ -318,16 +318,22 @@ export default function ViewSuperPartners() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="ui-content-max">
       {showDeleteMessage && (
         <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg">
           Partner deleted successfully!
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-6">Super Partners ({superPartners.length})</h2>
+      <div className="ui-page-intro mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="ui-section-eyebrow">Directory</p>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Super Partners</h2>
+        </div>
+        <span className="ui-stat-pill">{superPartners.length} listed</span>
+      </div>
 
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4 mb-6">
+      <div className="ui-search-panel mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <input
@@ -335,7 +341,7 @@ export default function ViewSuperPartners() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search partners..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="ui-input"
             />
           </div>
 
@@ -343,7 +349,7 @@ export default function ViewSuperPartners() {
             <select
               value={searchField}
               onChange={(e) => setSearchField(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="ui-input sm:w-48"
             >
               <option value="all">All Fields</option>
               <option value="name">Name</option>
@@ -365,7 +371,7 @@ export default function ViewSuperPartners() {
         {superPartners.map((partner) => (
           <div
             key={partner.id}
-            className="rounded-lg shadow-md p-6 bg-purple-50 border-purple-500 border-2"
+            className="ui-card-padded border-purple-300/90 bg-gradient-to-br from-purple-50 via-white to-indigo-50 shadow-xl ring-2 ring-purple-400/30 transition hover:scale-[1.01] hover:shadow-2xl"
           >
             {editingId === partner.id ? (
               <div className="space-y-4">
@@ -538,7 +544,7 @@ export default function ViewSuperPartners() {
                     Add Normal Partners Under
                   </button>
                   {showAddUnderBySuper[partner.id] && (
-                    <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-2 bg-white">
+                    <div className="ui-card-compact max-h-48 space-y-2 overflow-y-auto p-2">
                       {normalPartners
                         .filter((normalP) => normalP.id !== partner.id)
                         .map((normalP) => {

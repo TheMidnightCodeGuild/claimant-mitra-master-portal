@@ -82,7 +82,7 @@ export default function IGMS() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <div className="ui-spinner" />
             </div>
         );
     }
@@ -100,7 +100,8 @@ export default function IGMS() {
             <div>
                 <button 
                     onClick={handleBackToCases}
-                    className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                    type="button"
+                    className="ui-btn-secondary mb-4"
                 >
                     ← Back to IGMS Cases
                 </button>
@@ -112,7 +113,7 @@ export default function IGMS() {
     if (cases.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="text-gray-500">
+                <div className="text-slate-500">
                     <p>No IGMS cases found</p>
                 </div>
             </div>
@@ -134,12 +135,17 @@ export default function IGMS() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="ui-content-max">
+            <div className="ui-page-intro flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="ui-section-eyebrow">Pipeline</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">IGMS Cases</h2>
+                </div>
+            </div>
+
             <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-4">IGMS Cases</h2>
-                
                 {/* Search Section */}
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
+                <div className="ui-search-panel">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1">
                             <input
@@ -147,7 +153,7 @@ export default function IGMS() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search cases..."
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="ui-input"
                             />
                         </div>
                         
@@ -155,7 +161,7 @@ export default function IGMS() {
                             <select
                                 value={searchField}
                                 onChange={(e) => setSearchField(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="ui-input sm:w-48"
                             >
                                 <option value="all">All Fields</option>
                                 <option value="name">Name</option>
@@ -165,7 +171,7 @@ export default function IGMS() {
                         </div>
                     </div>
 
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-slate-600">
                         Found {filteredCases.length} cases
                         {searchQuery && ` matching "${searchQuery}"`}
                     </div>
@@ -176,7 +182,7 @@ export default function IGMS() {
                 {filteredCases.map((case_) => (
                     <div 
                         key={case_.id} 
-                        className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                        className="ui-list-card"
                         onClick={() => handleCaseClick(case_.id)}
                     >
                         <div className="space-y-3">
@@ -184,36 +190,36 @@ export default function IGMS() {
                                 <h3 className="font-semibold text-lg">
                                     {case_.name || 'No Name'}
                                 </h3>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm text-slate-500">
                                     Ref: {case_.partnerRef || 'N/A'}
                                 </span>
                             </div>
 
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div>
-                                    <p className="text-gray-600">
+                                    <p className="text-slate-600">
                                         <span className="font-medium">Mobile:</span><br />
                                         {case_.mobile || 'N/A'}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-gray-600">
+                                    <p className="text-slate-600">
                                         <span className="font-medium">Claim Amount:</span><br />
                                         ₹{case_.estimatedClaimAmount || 'N/A'}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="border-t pt-2 mt-2">
+                            <div className="ui-divider-accent pt-2 mt-2">
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div>
-                                        <p className="text-gray-600">
+                                        <p className="text-slate-600">
                                             <span className="font-medium">Acceptance:</span><br />
                                             {formatDate(case_.caseAcceptanceDate)}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-gray-600">
+                                        <p className="text-slate-600">
                                             <span className="font-medium">Follow-up:</span><br />
                                             {formatDate(case_.igmsFollowUpDate)}
                                         </p>
@@ -222,14 +228,14 @@ export default function IGMS() {
                             </div>
 
                             {case_.igmsFollowUpDate && new Date(case_.igmsFollowUpDate) <= new Date() && (
-                                <div className="mt-2 bg-yellow-50 p-2 rounded-md text-sm text-yellow-700">
-                                    Follow-up required
+                                <div className="mt-2">
+                                    <span className="ui-badge-amber">Follow-up required</span>
                                 </div>
                             )}
 
                             {case_.igmsDate && (
-                                <div className="mt-2 bg-blue-50 p-2 rounded-md text-sm text-blue-700">
-                                    Days in IGMS: {calculateDaysElapsed(case_.igmsDate)}
+                                <div className="mt-2">
+                                    <span className="ui-badge-cyan">Days in IGMS: {calculateDaysElapsed(case_.igmsDate)}</span>
                                 </div>
                             )}
                         </div>

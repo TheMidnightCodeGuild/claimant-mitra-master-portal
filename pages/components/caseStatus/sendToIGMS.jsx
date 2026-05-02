@@ -330,7 +330,7 @@ export default function SendToIGMS({ docId, onComplete }) {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <div className="ui-spinner"></div>
             </div>
         );
     }
@@ -344,7 +344,7 @@ export default function SendToIGMS({ docId, onComplete }) {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="ui-content-max">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Review</h2>
                 <button
@@ -354,7 +354,7 @@ export default function SendToIGMS({ docId, onComplete }) {
                     View Entire Doc
                 </button>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="ui-card-padded">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Basic Information */}
                     <div className="space-y-2">

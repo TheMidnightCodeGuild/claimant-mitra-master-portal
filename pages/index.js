@@ -46,19 +46,19 @@ export default function Home() {
       className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat px-4 sm:px-6 lg:px-8"
       style={{ backgroundImage: "url('/images/bgsignin.jpg')" }}
     >
-      <div className="w-full max-w-sm sm:max-w-md space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 bg-white rounded-xl shadow-2xl border-black border-4">
+      <div className="w-full max-w-sm sm:max-w-md space-y-6 sm:space-y-8 rounded-2xl border border-white/50 bg-gradient-to-br from-white/98 via-white/95 to-indigo-50/90 p-6 sm:p-8 shadow-2xl shadow-indigo-950/20 backdrop-blur-md ring-1 ring-white/70">
         <div className="text-center">
           <Image
             src="/images/logo.png"
             width={100}
             height={100}
             alt="Logo"
-            className="mx-auto h-16 sm:h-20 w-auto"
+            className="mx-auto h-16 sm:h-20 w-auto rounded-xl"
           />
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="mb-2 text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-900 to-indigo-700 bg-clip-text text-transparent sm:text-3xl">
             Welcome to the Master Portal
           </h2>
-          <p className="text-sm sm:text-base text-gray-600">
+          <p className="text-sm text-slate-600 sm:text-base">
             Please sign in to continue
           </p>
         </div>
@@ -70,7 +70,7 @@ export default function Home() {
             <div>
               <label
                 htmlFor="username"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="mb-1 block text-sm font-medium text-slate-700"
               >
                 Username
               </label>
@@ -79,7 +79,7 @@ export default function Home() {
                 name="username"
                 type="text"
                 required
-                className="appearance-none rounded-lg relative block w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out text-sm sm:text-base"
+                className="ui-input relative block px-3 py-2.5 text-sm sm:px-4 sm:py-3 sm:text-base"
                 placeholder="Enter your username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -89,7 +89,7 @@ export default function Home() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="mb-1 block text-sm font-medium text-slate-700"
               >
                 Password
               </label>
@@ -99,7 +99,7 @@ export default function Home() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  className="appearance-none rounded-lg relative block w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out text-sm sm:text-base"
+                  className="ui-input relative block px-3 py-2.5 text-sm sm:px-4 sm:py-3 sm:text-base"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -117,7 +117,7 @@ export default function Home() {
                       viewBox="0 0 24 24"
                       strokeWidth={1.5}
                       stroke="currentColor"
-                      className="w-5 h-5 text-gray-500"
+                      className="h-5 w-5 text-slate-400"
                     >
                       <path
                         strokeLinecap="round"
@@ -132,7 +132,7 @@ export default function Home() {
                       viewBox="0 0 24 24"
                       strokeWidth={1.5}
                       stroke="currentColor"
-                      className="w-5 h-5 text-gray-500"
+                      className="h-5 w-5 text-slate-400"
                     >
                       <path
                         strokeLinecap="round"
@@ -155,7 +155,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 sm:py-3 px-3 sm:px-4 border border-transparent text-sm sm:text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out transform hover:scale-[1.02]"
+              className="ui-btn-primary group relative w-full px-3 py-2.5 sm:py-3 sm:text-base"
             >
               {isLoading ? (
                 <div className="flex items-center">
@@ -188,8 +188,8 @@ export default function Home() {
           </div>
         </form>
         {error && (
-          <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-red-50 rounded-lg">
-            <p className="text-center text-xs sm:text-sm text-red-600">
+          <div className="mt-3 rounded-lg border border-rose-100 bg-rose-50 p-2 sm:mt-4 sm:p-3">
+            <p className="text-center text-xs text-rose-700 sm:text-sm">
               {error}
             </p>
           </div>

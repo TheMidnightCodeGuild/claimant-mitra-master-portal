@@ -49,7 +49,7 @@ export default function ViewPartnerIssues() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <div className="ui-spinner" />
             </div>
         );
     }
@@ -74,31 +74,39 @@ export default function ViewPartnerIssues() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Partner Issues ({issues.length})</h2>
+        <div className="ui-content-max">
+            <div className="ui-page-intro mb-6 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="ui-section-eyebrow">Support</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Partner Issues</h2>
+                </div>
+                <span className="ui-stat-pill">
+                    {issues.length} {issues.length === 1 ? 'issue' : 'issues'}
+                </span>
+            </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {issues.map((issue) => (
-                    <div key={issue.id} className="bg-white rounded-lg shadow-md p-6">
+                    <div key={issue.id} className="ui-list-card-muted">
                         <div className="space-y-3">
-                            <p className="text-gray-600">
+                            <p className="text-slate-600">
                                 <span className="font-medium">Date:</span>{' '}
                                 {formatDate(issue.date)}
                             </p>
-                            <p className="text-gray-600">
+                            <p className="text-slate-600">
                                 <span className="font-medium">Partner Ref:</span>{' '}
                                 {issue.partnerRef || 'N/A'}
                             </p>
-                            <p className="text-gray-600">
+                            <p className="text-slate-600">
                                 <span className="font-medium">Message:</span>{' '}
                                 {issue.message || 'N/A'}
                             </p>
                             <div className="flex items-center justify-between">
-                                <span className="font-medium text-gray-600">Status:</span>
+                                <span className="font-medium text-slate-600">Status:</span>
                                 {editingId === issue.id ? (
                                     <select 
                                         value={issue.status || ''}
                                         onChange={(e) => handleStatusUpdate(issue.id, e.target.value)}
-                                        className="ml-2 p-2 border rounded"
+                                        className="ui-input ml-2 min-w-[9rem]"
                                     >
                                         <option value="pending">Pending</option>
                                         <option value="in-progress">In Progress</option>
@@ -107,17 +115,18 @@ export default function ViewPartnerIssues() {
                                     </select>
                                 ) : (
                                     <div className="flex items-center gap-2">
-                                        <span className={`px-2 py-1 rounded text-sm ${
-                                            issue.status === 'resolved' ? 'bg-green-100 text-green-800' :
-                                            issue.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                            issue.status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
+                                        <span className={
+                                            issue.status === 'resolved' ? 'ui-badge-emerald' :
+                                            issue.status === 'rejected' ? 'ui-badge-rose' :
+                                            issue.status === 'in-progress' ? 'ui-badge-amber' :
+                                            'ui-badge-indigo'
+                                        }>
                                             {issue.status || 'pending'}
                                         </span>
                                         <button
+                                            type="button"
                                             onClick={() => setEditingId(issue.id)}
-                                            className="text-blue-500 hover:text-blue-700"
+                                            className="ui-btn-secondary text-xs py-1.5"
                                         >
                                             Edit
                                         </button>

@@ -134,13 +134,13 @@ export default function CreateCase() {
 
     return (
       <div key={field} className="flex flex-col space-y-2">
-        <label className="text-sm font-medium text-gray-700 flex items-center">
+        <label className="text-sm font-medium text-slate-700 flex items-center">
           {label}
           {field === "mobile" && (
-            <span className="text-xs text-gray-500 ml-2">(10 digits)</span>
+            <span className="text-xs text-slate-500 ml-2">(10 digits)</span>
           )}
           {isNumber && field !== "mobile" && (
-            <span className="text-xs text-gray-500 ml-2">(in Rs.)</span>
+            <span className="text-xs text-slate-500 ml-2">(in Rs.)</span>
           )}
         </label>
         {isBoolean ? (
@@ -152,9 +152,9 @@ export default function CreateCase() {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, [field]: e.target.checked }))
               }
-              className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              className="h-4 w-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
             />
-            <span className="text-sm text-gray-600">Yes</span>
+            <span className="text-sm text-slate-600">Yes</span>
           </div>
         ) : (
           <input
@@ -162,7 +162,7 @@ export default function CreateCase() {
             name={field}
             value={formData[field]}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
             placeholder={`Enter ${label.toLowerCase()}`}
             min={isDate ? "2000-01-01" : undefined}
             max={isDate ? "2100-12-31" : undefined}
@@ -225,8 +225,8 @@ export default function CreateCase() {
 
   return (
     <div className="lg:max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
-      <div className="flex items-center justify-between mb-8 border-b pb-4 border-gray-200">
-        <h2 className="text-3xl font-bold text-gray-800">Create New Case</h2>
+      <div className="flex items-center justify-between mb-8 border-b pb-4 border-slate-200">
+        <h2 className="text-3xl font-bold text-slate-800">Create New Case</h2>
       </div>
 
       {error && (
@@ -245,9 +245,9 @@ export default function CreateCase() {
         {Object.entries(fieldGroups).map(([groupName, fields]) => (
           <div
             key={groupName}
-            className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+            className="ui-card-padded border-slate-200/90 shadow-md"
           >
-            <h3 className="text-xl font-semibold mb-6 text-gray-700">
+            <h3 className="text-xl font-semibold mb-6 text-slate-700">
               {groupName}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -256,8 +256,8 @@ export default function CreateCase() {
           </div>
         ))}
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-xl font-semibold mb-6 text-gray-700">
+        <div className="ui-card-padded border-slate-200/90 shadow-md">
+          <h3 className="text-xl font-semibold mb-6 text-slate-700">
             Documents
           </h3>
           <div className="space-y-4">
@@ -265,15 +265,15 @@ export default function CreateCase() {
               type="file"
               multiple
               onChange={handleFileUpload}
-              className="block w-full text-sm text-gray-500
+              className="block w-full text-sm text-slate-500
                                 file:mr-4 file:py-2 file:px-4
                                 file:rounded-full file:border-0
                                 file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
+                                file:bg-blue-50 file:text-indigo-700
                                 hover:file:bg-blue-100"
             />
             {uploading && (
-              <div className="text-blue-600">Uploading files...</div>
+              <div className="text-indigo-600">Uploading files...</div>
             )}
             {files.length > 0 && <DocumentViewer files={files} />}
           </div>
@@ -283,14 +283,14 @@ export default function CreateCase() {
           <button
             type="button"
             onClick={() => setFormData(initialFormState)}
-            className="px-6 py-3 mr-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition duration-200 ease-in-out shadow-sm"
+            className="px-6 py-3 mr-4 bg-slate-100 text-slate-700 rounded-md hover:bg-slate-200 transition duration-200 ease-in-out shadow-sm"
           >
             Reset Form
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 transition duration-200 ease-in-out shadow-md flex items-center"
+            className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-blue-300 transition duration-200 ease-in-out shadow-md flex items-center"
           >
             {loading ? (
               <>

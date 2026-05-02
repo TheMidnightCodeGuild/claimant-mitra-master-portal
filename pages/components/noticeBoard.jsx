@@ -62,54 +62,59 @@ export default function NoticeBoard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
+      <div className="ui-empty-state border-rose-200 bg-rose-50/80 text-rose-700">
+        {error}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6">Notice Board ({notices.length})</h2>
+    <div className="w-full">
+      <div className="mb-8">
+        <p className="ui-section-eyebrow">Alerts</p>
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
+          Notice Board{" "}
+          <span className="text-lg font-semibold text-indigo-600">({notices.length})</span>
+        </h2>
+      </div>
 
       {notices.length === 0 ? (
-        <div className="text-gray-500 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          No notices found.
-        </div>
+        <div className="ui-empty-state">No notices found.</div>
       ) : (
         <div className="space-y-4">
           {notices.map((notice) => (
             <div
               key={notice.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+              className="ui-card-padded border-indigo-100/90 shadow-md transition hover:shadow-lg"
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <p className="text-base font-semibold text-gray-900">
+                <div className="space-y-2">
+                  <p className="text-base font-semibold text-slate-900">
                     {notice.name || "Unknown User"}
                   </p>
-                  <p className="text-sm text-gray-600">{notice.message || "No message"}</p>
-                  <p className="text-xs text-gray-500">
-                    <span className="font-medium">User ID:</span> {notice.userId || "N/A"}
+                  <p className="text-sm leading-relaxed text-slate-600">{notice.message || "No message"}</p>
+                  <p className="text-xs text-slate-500">
+                    <span className="font-medium text-slate-700">User ID:</span> {notice.userId || "N/A"}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    <span className="font-medium">Uploaded At:</span>{" "}
+                  <p className="text-xs text-slate-500">
+                    <span className="font-medium text-slate-700">Uploaded At:</span>{" "}
                     {formatDate(notice.uploadedAt)}
                   </p>
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => handleDeleteNotice(notice.id)}
                   disabled={deletingId === notice.id}
-                  className="px-3 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm disabled:bg-gray-300"
+                  className="ui-btn-danger shrink-0 text-sm"
                 >
                   {deletingId === notice.id ? "Deleting..." : "Delete"}
                 </button>

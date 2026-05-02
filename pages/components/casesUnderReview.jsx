@@ -86,7 +86,7 @@ export default function CasesUnderReview() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <div className="ui-spinner"></div>
             </div>
         );
     }
@@ -103,8 +103,9 @@ export default function CasesUnderReview() {
         return (
             <div>
                 <button 
+                    type="button"
                     onClick={handleBackToCases}
-                    className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                    className="ui-btn-secondary mb-4"
                 >
                     ← Back to Cases
                 </button>
@@ -124,12 +125,17 @@ export default function CasesUnderReview() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="ui-content-max">
+            <div className="ui-page-intro mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="ui-section-eyebrow">Review queue</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Cases Under Review</h2>
+                </div>
+            </div>
+
             <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-4">Cases Under Review</h2>
-                
                 {/* Search Section */}
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
+                <div className="ui-search-panel">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1">
                             <input
@@ -137,7 +143,7 @@ export default function CasesUnderReview() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search cases..."
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="ui-input"
                             />
                         </div>
                         
@@ -145,7 +151,7 @@ export default function CasesUnderReview() {
                             <select
                                 value={searchField}
                                 onChange={(e) => setSearchField(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="ui-input sm:w-48"
                             >
                                 <option value="all">All Fields</option>
                                 <option value="name">Name</option>
@@ -166,7 +172,7 @@ export default function CasesUnderReview() {
                 {filteredCases.map((case_) => (
                     <div 
                         key={case_.id} 
-                        className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                        className="ui-list-card"
                         onClick={() => handleCaseClick(case_.id)}
                     >
                         <div className="space-y-2">

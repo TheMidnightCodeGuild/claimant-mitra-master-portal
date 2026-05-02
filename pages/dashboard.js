@@ -26,11 +26,17 @@ export async function getServerSideProps(context) {
   };
 }
 
-const DashboardCard = ({ title, onClick, bgColor = "bg-white", icon }) => (
-  <div onClick={onClick} className={`${bgColor} px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 md:py-9 rounded-2xl sm:rounded-3xl md:rounded-4xl border-2 border-gray-900 hover:bg-[#19BFDD] hover:text-white hover:scale-105 transition-all duration-700 cursor-pointer w-full`}>
-    <div className="flex items-center space-x-3 sm:space-x-4">
-      {icon && <span className="text-xl sm:text-2xl">{icon}</span>}
-      <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800">{title}</h3>
+const DashboardCard = ({ title, onClick, icon }) => (
+  <div
+    onClick={onClick}
+    className="group relative overflow-hidden rounded-2xl border border-indigo-200/60 bg-gradient-to-br from-white via-slate-50/90 to-indigo-50/70 px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 md:py-9 shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/15 cursor-pointer w-full"
+  >
+    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-indigo-500/0 to-violet-500/0 opacity-0 transition-opacity duration-500 group-hover:from-cyan-500/5 group-hover:via-indigo-500/8 group-hover:to-violet-500/5 group-hover:opacity-100" />
+    <div className="relative flex items-center space-x-3 sm:space-x-4">
+      {icon && <span className="text-xl sm:text-2xl drop-shadow-sm">{icon}</span>}
+      <h3 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800 group-hover:text-indigo-950 transition-colors">
+        {title}
+      </h3>
     </div>
   </div>
 );
@@ -209,22 +215,27 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-2 border-gray-900 py-4 sm:py-6 px-3 sm:px-4">
-        <div className="max-w-[1300px] mx-auto flex flex-row items-center justify-between">
-          <div className="flex items-center gap-10">
-            <Image src="/images/logo.png" width={80} height={80} alt="Logo" className="h-16 sm:h-20 w-auto" />
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold uppercase underline text-gray-800">
-              Master Portal Dashboard
-            </h1>
+    <div className="min-h-screen">
+      <header className="border-b border-indigo-200/50 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 py-4 sm:py-6 px-3 sm:px-4 shadow-lg shadow-indigo-950/40">
+        <div className="max-w-[1300px] mx-auto flex flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-6 sm:gap-10">
+            <Image src="/images/logo.png" width={80} height={80} alt="Logo" className="h-14 sm:h-20 w-auto rounded-xl ring-2 ring-white/20 shadow-lg" />
+            <div>
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300/90">
+                Operations
+              </p>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
+                Master Portal Dashboard
+              </h1>
+            </div>
           </div>
           <button
             onClick={() => router.push('/view?type=noticeBoard')}
-            className="relative bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium"
+            className="ui-btn-primary relative shrink-0 px-5 py-2.5 text-sm shadow-lg shadow-indigo-900/40"
           >
             Notice Board
             {noticeCount > 0 && (
-              <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] rounded-full bg-red-600 text-white text-xs font-semibold flex items-center justify-center px-1">
+              <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] rounded-full bg-gradient-to-br from-rose-500 to-red-600 text-white text-xs font-semibold flex items-center justify-center px-1 ring-2 ring-white">
                 {noticeCount}
               </span>
             )}
@@ -232,18 +243,23 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-[95%] lg:max-w-[1300px] mx-auto py-4 sm:py-6 md:py-8 px-3 sm:px-4 md:px-6 lg:px-8">
+      <main className="max-w-[95%] lg:max-w-[1300px] mx-auto py-6 sm:py-8 md:py-10 px-3 sm:px-4 md:px-6 lg:px-8 space-y-8">
         <KpiDashboard />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
+        <div>
+          <p className="ui-section-eyebrow mb-2">Modules</p>
+          <h2 className="text-xl font-semibold text-slate-900 mb-4 tracking-tight">
+            Choose a workflow
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {dashboardItems.map((item, index) => (
             <DashboardCard
               key={index}
               title={item.title}
               onClick={item.onClick}
               icon={item.icon}
-              className="border-2 border-gray-900 rounded-lg"
             />
           ))}
+          </div>
         </div>
       </main>
     </div>

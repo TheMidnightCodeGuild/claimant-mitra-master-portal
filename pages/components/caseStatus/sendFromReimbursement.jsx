@@ -291,10 +291,10 @@ export default function SendFromReimbursement({ docId, onComplete }) {
             <div className="space-y-3">
                 {logsToShow.map((log, index) => (
                     <div key={index} className="border-b pb-2 last:border-b-0">
-                        <div className="flex justify-between text-sm text-gray-500">
+                        <div className="flex justify-between text-sm text-slate-500">
                             <span>{new Date(log.date).toLocaleString()}</span>
                         </div>
-                        <p className="mt-1 text-gray-900">{log.remark}</p>
+                        <p className="mt-1 text-slate-900">{log.remark}</p>
                     </div>
                 ))}
             </div>
@@ -306,7 +306,7 @@ export default function SendFromReimbursement({ docId, onComplete }) {
             <div>
                 <button 
                     onClick={() => setShowFullCase(false)}
-                    className="mb-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                    className="mb-4 px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-800"
                 >
                     ← Back to Details
                 </button>
@@ -318,80 +318,82 @@ export default function SendFromReimbursement({ docId, onComplete }) {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-red-500">{error}</div>
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="rounded-lg border border-rose-200 bg-rose-50 px-6 py-4 text-rose-700 shadow-sm">
+                    {error}
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Reimbursement Case</h2>
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+            <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Reimbursement Case</h2>
                 <button
                     onClick={() => setShowFullCase(true)}
-                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md"
+                    className="ui-btn-secondary"
                 >
                     View Entire Doc
                 </button>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="ui-card-padded">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Basic Information */}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Name</label>
-                        <p className="mt-1 text-gray-900">{caseData?.name || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Name</label>
+                        <p className="mt-1 text-slate-900">{caseData?.name || 'N/A'}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Estimated Claim Amount</label>
-                        <p className="mt-1 text-gray-900">₹{caseData?.estimatedClaimAmount || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Estimated Claim Amount</label>
+                        <p className="mt-1 text-slate-900">₹{caseData?.estimatedClaimAmount || 'N/A'}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Partner Reference</label>
-                        <p className="mt-1 text-gray-900">{caseData?.partnerRef || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Partner Reference</label>
+                        <p className="mt-1 text-slate-900">{caseData?.partnerRef || 'N/A'}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Mobile</label>
-                        <p className="mt-1 text-gray-900">{caseData?.mobile || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Mobile</label>
+                        <p className="mt-1 text-slate-900">{caseData?.mobile || 'N/A'}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
-                        <p className="mt-1 text-gray-900">{caseData?.email || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Email</label>
+                        <p className="mt-1 text-slate-900">{caseData?.email || 'N/A'}</p>
                     </div>
 
                     {/* <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Review Status</label>
-                        <p className="mt-1 text-gray-900">{ status || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Review Status</label>
+                        <p className="mt-1 text-slate-900">{ status || 'N/A'}</p>
                     </div> */}
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Company Name</label>
-                        <p className="mt-1 text-gray-900">{caseData?.companyName || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Company Name</label>
+                        <p className="mt-1 text-slate-900">{caseData?.companyName || 'N/A'}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Policy Number</label>
-                        <p className="mt-1 text-gray-900">{caseData?.policyNo || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Policy Number</label>
+                        <p className="mt-1 text-slate-900">{caseData?.policyNo || 'N/A'}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Claim Number</label>
-                        <p className="mt-1 text-gray-900">{caseData?.claimNo || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Claim Number</label>
+                        <p className="mt-1 text-slate-900">{caseData?.claimNo || 'N/A'}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Rejection Reason</label>
+                        <label className="block text-sm font-medium text-slate-700">Rejection Reason</label>
                         <div className="flex items-center">
                             {editingField === 'caseRejectionReason' ? (
                                 <>
@@ -399,21 +401,21 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                                         type="text"
                                         value={caseRejectionReason}
                                         onChange={(e) => setRejectionReason(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     />
                                     <button 
                                         onClick={() => handleFieldUpdate('rejectionReason', caseRejectionReason)}
-                                        className="ml-2 text-blue-500 hover:text-blue-700"
+                                        className="ml-2 text-indigo-600 hover:text-indigo-800"
                                     >
                                         ✓
                                     </button>
                                 </>
                             ) : (
                                 <>
-                                    <span className="mt-1 text-gray-900">{caseRejectionReason || 'N/A'}</span>
+                                    <span className="mt-1 text-slate-900">{caseRejectionReason || 'N/A'}</span>
                                     <button 
                                         onClick={() => setEditingField('caseRejectionReason')}
-                                        className="ml-2 text-gray-500 hover:text-gray-700"
+                                        className="ml-2 text-slate-500 hover:text-slate-700"
                                     >
                                         ✎
                                     </button>
@@ -423,31 +425,31 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Documents?</label>
+                        <label className="block text-sm font-medium text-slate-700">Documents?</label>
                         <div className="flex items-center">
                             {editingField === 'documentShort' ? (
                                 <>
                                     <select
                                         value={documentShort}
                                         onChange={(e) => setDocumentShort(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     >
                                         <option value={false}>Complete</option>
                                         <option value={true}>Incomplete</option>
                                     </select>
                                     <button 
                                         onClick={() => handleFieldUpdate('documentShort', documentShort)}
-                                        className="ml-2 text-blue-500 hover:text-blue-700"
+                                        className="ml-2 text-indigo-600 hover:text-indigo-800"
                                     >
                                         ✓
                                     </button>
                                 </>
                             ) : (
                                 <>
-                                    <span className="mt-1 text-gray-900">{documentShort ? 'Incomplete' : 'Complete'}</span>
+                                    <span className="mt-1 text-slate-900">{documentShort ? 'Incomplete' : 'Complete'}</span>
                                     <button 
                                         onClick={() => setEditingField('documentShort')}
-                                        className="ml-2 text-gray-500 hover:text-gray-700"
+                                        className="ml-2 text-slate-500 hover:text-slate-700"
                                     >
                                         ✎
                                     </button>
@@ -457,13 +459,13 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                     </div>
 {/* 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">File Bucket</label>
-                        <p className="mt-1 text-gray-900">{caseData?.fileBucket || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">File Bucket</label>
+                        <p className="mt-1 text-slate-900">{caseData?.fileBucket || 'N/A'}</p>
                     </div> */}
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Complaint Date</label>
-                        <p className="mt-1 text-gray-900">
+                        <label className="block text-sm font-medium text-slate-700">Complaint Date</label>
+                        <p className="mt-1 text-slate-900">
                             {caseData?.complaintDate ? new Date(caseData.complaintDate).toLocaleString() : 'N/A'}
                         </p>
                     </div>
@@ -478,25 +480,25 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                     {/* Updated Logs sections */}
                     <div className="col-span-2 space-y-2">
                         <div className="flex justify-between items-center">
-                            <label className="block text-sm font-medium text-gray-700">Main Logs</label>
+                            <label className="block text-sm font-medium text-slate-700">Main Logs</label>
                             <div className="space-x-2">
                                 {caseData?.mainLogs?.length > 1 && (
                                     <button
                                         onClick={() => setShowAllMainLogs(!showAllMainLogs)}
-                                        className="text-sm text-blue-500 hover:text-blue-700"
+                                        className="text-sm text-indigo-600 hover:text-indigo-800"
                                     >
                                         {showAllMainLogs ? 'Show Latest' : 'View All'}
                                     </button>
                                 )}
                                 <button
                                     onClick={() => setIsAddingMainLog(!isAddingMainLog)}
-                                    className="text-sm text-green-500 hover:text-green-700"
+                                    className="text-sm text-emerald-600 hover:text-emerald-800"
                                 >
                                     + Add Log
                                 </button>
                             </div>
                         </div>
-                        <div className="mt-1 bg-gray-50 p-3 rounded-md">
+                        <div className="mt-1 rounded-lg border border-slate-100 bg-slate-50/80 p-3">
                             {isAddingMainLog && (
                                 <div className="mb-3 space-y-2">
                                     <textarea
@@ -509,13 +511,13 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                                     <div className="flex justify-end space-x-2">
                                         <button
                                             onClick={() => setIsAddingMainLog(false)}
-                                            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+                                            className="px-3 py-1 text-sm text-slate-600 hover:text-slate-800"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleAddMainLog}
-                                            className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                                            className="rounded-md bg-indigo-600 px-3 py-1 text-sm text-white transition-colors hover:bg-indigo-700"
                                         >
                                             Add Log
                                         </button>
@@ -528,25 +530,25 @@ export default function SendFromReimbursement({ docId, onComplete }) {
 
                     <div className="col-span-2 space-y-2">
                         <div className="flex justify-between items-center">
-                            <label className="block text-sm font-medium text-gray-700">Internal Logs</label>
+                            <label className="block text-sm font-medium text-slate-700">Internal Logs</label>
                             <div className="space-x-2">
                                 {caseData?.internalLogs?.length > 1 && (
                                     <button
                                         onClick={() => setShowAllInternalLogs(!showAllInternalLogs)}
-                                        className="text-sm text-blue-500 hover:text-blue-700"
+                                        className="text-sm text-indigo-600 hover:text-indigo-800"
                                     >
                                         {showAllInternalLogs ? 'Show Latest' : 'View All'}
                                     </button>
                                 )}
                                 <button
                                     onClick={() => setIsAddingInternalLog(!isAddingInternalLog)}
-                                    className="text-sm text-green-500 hover:text-green-700"
+                                    className="text-sm text-emerald-600 hover:text-emerald-800"
                                 >
                                     + Add Log
                                 </button>
                             </div>
                         </div>
-                        <div className="mt-1 bg-gray-50 p-3 rounded-md">
+                        <div className="mt-1 rounded-lg border border-slate-100 bg-slate-50/80 p-3">
                             {isAddingInternalLog && (
                                 <div className="mb-3 space-y-2">
                                     <textarea
@@ -559,13 +561,13 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                                     <div className="flex justify-end space-x-2">
                                         <button
                                             onClick={() => setIsAddingInternalLog(false)}
-                                            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+                                            className="px-3 py-1 text-sm text-slate-600 hover:text-slate-800"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleAddInternalLog}
-                                            className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                                            className="rounded-md bg-indigo-600 px-3 py-1 text-sm text-white transition-colors hover:bg-indigo-700"
                                         >
                                             Add Log
                                         </button>
@@ -576,10 +578,10 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                         </div>
                     </div>
 
-                    <div className="col-span-2 mt-6 flex gap-4">
+                    <div className="col-span-2 mt-6 flex flex-wrap gap-2">
                         <button
                             onClick={handleSendToIGMS}
-                            className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            className="min-h-[42px] min-w-[140px] flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
                         >
                             Send to IGMS
                         </button>
@@ -587,29 +589,29 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                         <button
                             onClick={handleSendConsent}
                             disabled={sendingConsent}
-                            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
+                            className="flex min-h-[42px] min-w-[140px] flex-1 items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
                         >
                             {sendingConsent ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                             ) : (
                                 'Send Consent'
                             )}
                         </button>
                         <button
                             onClick={handleMarkResolved}
-                            className="flex-1 bg-purple-500 text-white py-2 px-4 rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                            className="min-h-[42px] min-w-[160px] flex-1 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
                         >
                             Mark as Resolved
                         </button>
                         <button
                             onClick={handleRejectCase}
-                            className="flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                            className="min-h-[42px] min-w-[120px] flex-1 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
                         >
                             Reject Case
                         </button>
                         <button
                             onClick={handleDeleteCase}
-                            className="flex-1 bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                            className="min-h-[42px] min-w-[120px] flex-1 rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
                         >
                             Delete Case
                         </button>

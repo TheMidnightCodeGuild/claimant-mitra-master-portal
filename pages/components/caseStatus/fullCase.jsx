@@ -369,7 +369,7 @@ export default function FullCase({ docId }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="ui-spinner"></div>
       </div>
     );
   }
@@ -387,7 +387,7 @@ export default function FullCase({ docId }) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="ui-content-max">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Full Case Details</h2>
         <div className="flex space-x-4">
@@ -571,7 +571,7 @@ export default function FullCase({ docId }) {
               <p className="text-sm font-medium text-gray-700">
                 Generated Verification Link
               </p>
-              <div className="bg-white border rounded-md px-3 py-2 text-sm text-gray-900 break-all">
+              <div className="ui-card-compact px-3 py-2 text-sm text-gray-900 break-all">
                 {verificationUrl}
               </div>
             </div>
@@ -658,7 +658,7 @@ export default function FullCase({ docId }) {
               return (
                 <div
                   key={`${file?.path || file?.url || "verification-file"}-${index}`}
-                  className="bg-white border rounded-md p-3 space-y-2"
+                  className="ui-card-compact p-3 space-y-2"
                 >
                   <p className="text-sm text-gray-700">
                     {file?.name || `Verification media ${index + 1}`}
@@ -738,7 +738,7 @@ export default function FullCase({ docId }) {
         </nav>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="ui-card-padded">
         {activeTab === "basic" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">

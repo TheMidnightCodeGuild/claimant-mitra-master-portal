@@ -123,7 +123,7 @@ export default function DigitalSignature() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
             </div>
         );
     }
@@ -141,7 +141,7 @@ export default function DigitalSignature() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-green-600 mb-4">Thank You!</h2>
-                    <p className="text-gray-600">Your signature has been successfully recorded.</p>
+                    <p className="text-slate-600">Your signature has been successfully recorded.</p>
                 </div>
             </div>
         );
@@ -154,8 +154,8 @@ export default function DigitalSignature() {
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="mb-6">
                     <h2 className="text-lg font-semibold mb-2">Case Details</h2>
-                    <p className="text-gray-600">Name: {caseData?.name}</p>
-                    <p className="text-gray-600">Case ID: {id}</p>
+                    <p className="text-slate-600">Name: {caseData?.name}</p>
+                    <p className="text-slate-600">Case ID: {id}</p>
                 </div>
 
                 <div className="mb-6">
@@ -164,8 +164,8 @@ export default function DigitalSignature() {
                             onClick={() => setSignatureType('draw')}
                             className={`px-4 py-2 rounded ${
                                 signatureType === 'draw' 
-                                    ? 'bg-blue-500 text-white' 
-                                    : 'bg-gray-200'
+                                    ? 'bg-indigo-600 text-white' 
+                                    : 'bg-slate-200'
                             }`}
                         >
                             Draw Signature
@@ -174,8 +174,8 @@ export default function DigitalSignature() {
                             onClick={() => setSignatureType('type')}
                             className={`px-4 py-2 rounded ${
                                 signatureType === 'type' 
-                                    ? 'bg-blue-500 text-white' 
-                                    : 'bg-gray-200'
+                                    ? 'bg-indigo-600 text-white' 
+                                    : 'bg-slate-200'
                             }`}
                         >
                             Type Signature
@@ -206,7 +206,7 @@ export default function DigitalSignature() {
                 <div className="flex gap-4">
                     <button
                         onClick={clearSignature}
-                        className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-100"
+                        className="px-4 py-2 text-slate-600 border rounded hover:bg-slate-100"
                     >
                         Clear
                     </button>
@@ -215,7 +215,7 @@ export default function DigitalSignature() {
                         disabled={isProcessing}
                         className={`px-4 py-2 ${
                             isProcessing 
-                                ? 'bg-gray-400' 
+                                ? 'bg-slate-400' 
                                 : 'bg-green-500 hover:bg-green-600'
                         } text-white rounded`}
                     >

@@ -201,8 +201,8 @@ export default function Consent() {
 
   return (
     <div className="max-w-2xl mx-auto px-2 sm:px-4 py-8">
-      <div className="bg-white rounded-xl shadow-lg p-6 sm:p-10 border border-gray-100">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-blue-700">
+      <div className="ui-card-padded !p-6 sm:!p-10 shadow-lg">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-indigo-700">
           Generate Consent Document
         </h2>
 
@@ -231,7 +231,7 @@ export default function Consent() {
             >
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-slate-700 mb-1"
               >
                 {field.label}
                 {field.required && <span className="text-red-500 ml-1">*</span>}
@@ -243,7 +243,7 @@ export default function Consent() {
                   value={formData[field.name]}
                   onChange={handleChange}
                   rows={field.rows || 3}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 resize-none"
+                  className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 resize-none"
                   required={field.required}
                   autoComplete="off"
                 />
@@ -254,7 +254,7 @@ export default function Consent() {
                   type={field.type}
                   value={formData[field.name]}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   required={field.required}
                   autoComplete="off"
                   min={field.type === "number" ? 0 : undefined}
@@ -267,7 +267,7 @@ export default function Consent() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 ${
+              className={`w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-150 ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
