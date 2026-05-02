@@ -112,6 +112,8 @@ export default function RequestVerificationPage() {
       scriptData.insuranceCompany || caseData?.companyName || "____";
     const claimNo = scriptData.claimNo || caseData?.claimNo || "N/A";
     const policyNo = scriptData.policyNo || caseData?.policyNo || "N/A";
+    const line3Intro =
+      (scriptData.line3Intro && String(scriptData.line3Intro).trim()) || "मेरा";
     const hospitalName = scriptData.hospitalName || "____";
     const claimAmount =
       scriptData.claimAmount ||
@@ -120,7 +122,7 @@ export default function RequestVerificationPage() {
       "____";
     return `1. मेरा नाम "${name}" है।
 2. मेरी ${insuranceCompany} Insurance Company की पॉलिसी है।
-3. मेरा Claim No. "${claimNo}" तथा Policy No. "${policyNo}" है।
+3. ${line3Intro} Claim No. "${claimNo}" तथा Policy No. "${policyNo}" है।
 4. बीमा कंपनी ने मेरे ${hospitalName} Hospital के ₹${claimAmount} के क्लेम को अस्वीकृत कर दिया है।
 5. मुझे क्लेम प्रक्रिया की पूरी जानकारी नहीं है।
 6. इसलिए मैं CLAIMANT MITRA को अपना अधिकृत सलाहकार नियुक्त करता/करती हूँ।

@@ -34,6 +34,7 @@ export default function FullCase({ docId }) {
   const [verificationScriptForm, setVerificationScriptForm] = useState({
     name: "",
     insuranceCompany: "",
+    line3Intro: "मेरा",
     claimNo: "",
     policyNo: "",
     caseDescription: "",
@@ -132,6 +133,7 @@ export default function FullCase({ docId }) {
   const getVerificationScriptData = () => {
     const formName = verificationScriptForm.name?.trim();
     const formInsuranceCompany = verificationScriptForm.insuranceCompany?.trim();
+    const formLine3Intro = verificationScriptForm.line3Intro?.trim();
     const formClaimNo = verificationScriptForm.claimNo?.trim();
     const formPolicyNo = verificationScriptForm.policyNo?.trim();
     const formCaseDescription = verificationScriptForm.caseDescription?.trim();
@@ -150,6 +152,10 @@ export default function FullCase({ docId }) {
     return {
       name: formName || caseData?.name || "N/A",
       insuranceCompany: formInsuranceCompany || caseData?.companyName || "____",
+      line3Intro:
+        formLine3Intro ||
+        caseData?.requestVerificationScriptData?.line3Intro?.trim() ||
+        "मेरा",
       claimNo: formClaimNo || caseData?.claimNo || "N/A",
       policyNo: formPolicyNo || caseData?.policyNo || "N/A",
       caseDescription: formCaseDescription || fallbackCaseDescription,
@@ -164,6 +170,7 @@ export default function FullCase({ docId }) {
     const {
       name,
       insuranceCompany,
+      line3Intro,
       claimNo,
       policyNo,
       caseDescription,
@@ -171,7 +178,7 @@ export default function FullCase({ docId }) {
     } = getVerificationScriptData();
     return `1. मेरा नाम "${name}" है।
 2. मेरी ${insuranceCompany} Insurance Company की पॉलिसी है।
-3. मेरा Claim No. "${claimNo}" तथा Policy No. "${policyNo}" है।
+3. ${line3Intro} Claim No. "${claimNo}" तथा Policy No. "${policyNo}" है।
 4. ${caseDescription}
 5. मुझे क्लेम प्रक्रिया की पूरी जानकारी नहीं है।
 6. इसलिए मैं CLAIMANT MITRA को अपना अधिकृत सलाहकार नियुक्त करता/करती हूँ।
@@ -198,6 +205,8 @@ export default function FullCase({ docId }) {
         setVerificationScriptForm({
           name: caseData?.name || "",
           insuranceCompany: caseData?.companyName || "",
+          line3Intro:
+            caseData?.requestVerificationScriptData?.line3Intro?.trim() || "मेरा",
           claimNo: caseData?.claimNo || "",
           policyNo: caseData?.policyNo || "",
           caseDescription:
@@ -455,6 +464,23 @@ export default function FullCase({ docId }) {
                     insuranceCompany: e.target.value,
                   }))
                 }
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Line 3 opening (before Claim No.)
+              </label>
+              <input
+                type="text"
+                value={verificationScriptForm.line3Intro}
+                onChange={(e) =>
+                  setVerificationScriptForm((prev) => ({
+                    ...prev,
+                    line3Intro: e.target.value,
+                  }))
+                }
+                placeholder="e.g. मेरा"
                 className="w-full border rounded-md px-3 py-2 text-sm"
               />
             </div>

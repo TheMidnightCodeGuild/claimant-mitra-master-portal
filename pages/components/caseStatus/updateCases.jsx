@@ -38,6 +38,7 @@ export default function FullCase({ docId }) {
   const [verificationScriptForm, setVerificationScriptForm] = useState({
     name: "",
     insuranceCompany: "",
+    line3Intro: "मेरा",
     claimNo: "",
     policyNo: "",
     caseDescription: "",
@@ -459,6 +460,7 @@ export default function FullCase({ docId }) {
   const getVerificationScriptData = () => {
     const formName = verificationScriptForm.name?.trim();
     const formInsuranceCompany = verificationScriptForm.insuranceCompany?.trim();
+    const formLine3Intro = verificationScriptForm.line3Intro?.trim();
     const formClaimNo = verificationScriptForm.claimNo?.trim();
     const formPolicyNo = verificationScriptForm.policyNo?.trim();
     const formCaseDescription = verificationScriptForm.caseDescription?.trim();
@@ -477,6 +479,10 @@ export default function FullCase({ docId }) {
     return {
       name: formName || caseData?.name || "N/A",
       insuranceCompany: formInsuranceCompany || caseData?.companyName || "____",
+      line3Intro:
+        formLine3Intro ||
+        caseData?.requestVerificationScriptData?.line3Intro?.trim() ||
+        "मेरा",
       claimNo: formClaimNo || caseData?.claimNo || "N/A",
       policyNo: formPolicyNo || caseData?.policyNo || "N/A",
       caseDescription: formCaseDescription || fallbackCaseDescription,
@@ -487,25 +493,7 @@ export default function FullCase({ docId }) {
     };
   };
 
-  const getVerificationMonologue = () => {
-    const {
-      name,
-      insuranceCompany,
-      claimNo,
-      policyNo,
-      caseDescription,
-      feePercentage,
-    } = getVerificationScriptData();
-    return `1. मेरा नाम "${name}" है।
-2. मेरी ${insuranceCompany} Insurance Company की पॉलिसी है।
-3. मेरा Claim No. "${claimNo}" तथा Policy No. "${policyNo}" है।
-4. ${caseDescription}
-5. मुझे क्लेम प्रक्रिया की पूरी जानकारी नहीं है।
-6. इसलिए मैं CLAIMANT MITRA को अपना अधिकृत सलाहकार नियुक्त करता/करती हूँ।
-7. मैं यह शपथपूर्वक स्वीकार करता/करती हूँ कि सफल क्लेम राशि प्राप्त होने पर मैं CLAIMANT MITRA को क्लेम राशि का ${feePercentage}% शुल्क प्रदान करूँगा/करूँगी।
-8. यदि प्रक्रिया के दौरान मेरी ओर से किसी दस्तावेज़ में कमी, त्रुटि या तथ्य छुपाने के कारण क्लेम अस्वीकृत होता है, तो उसकी पूर्ण जिम्मेदारी मेरी स्वयं की होगी।
-9. मैं अपनी सहमति से यह घोषणा कर रहा/रही हूँ।`;
-  };
+ c
 
   const copyVerificationUrl = async (urlToCopy) => {
     try {
@@ -525,6 +513,8 @@ export default function FullCase({ docId }) {
         setVerificationScriptForm({
           name: caseData?.name || "",
           insuranceCompany: caseData?.companyName || "",
+          line3Intro:
+            caseData?.requestVerificationScriptData?.line3Intro?.trim() || "मेरा",
           claimNo: caseData?.claimNo || "",
           policyNo: caseData?.policyNo || "",
           caseDescription:
@@ -752,6 +742,23 @@ export default function FullCase({ docId }) {
                     insuranceCompany: e.target.value,
                   }))
                 }
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Line 3 opening (before Claim No.)
+              </label>
+              <input
+                type="text"
+                value={verificationScriptForm.line3Intro}
+                onChange={(e) =>
+                  setVerificationScriptForm((prev) => ({
+                    ...prev,
+                    line3Intro: e.target.value,
+                  }))
+                }
+                placeholder="e.g. मेरा"
                 className="w-full border rounded-md px-3 py-2 text-sm"
               />
             </div>
