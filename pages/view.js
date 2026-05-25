@@ -14,6 +14,8 @@ import ViewPartners from './components/viewPartners';
 import ViewPartnerIssues from './components/viewPartnerIssues';
 import PartnerApplications from './components/partnerApplications';
 import CreatePartner from './components/createPartner';
+import CreateCustomer from './components/createCustomer';
+import LinkCustomerCases from './components/linkCustomerCases';
 import ViewCustomerEnquiries from './components/viewCustomerEnquiries';
 import Contract from './components/contract';
 import Consent from './components/consent';
@@ -76,6 +78,10 @@ export default function View() {
                 return <PartnerApplications />;
             case 'createPartner':
                 return <CreatePartner />;
+            case 'createCustomer':
+                return <CreateCustomer />;
+            case 'linkCustomerCases':
+                return <LinkCustomerCases />;
             case 'customerEnquiries':
                 return <ViewCustomerEnquiries />;
             case 'sendContract':

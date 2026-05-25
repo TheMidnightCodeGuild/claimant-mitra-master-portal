@@ -89,6 +89,14 @@ const CreatePartner = dynamic(() => import('./components/createPartner'), {
   ssr: false,
 });
 
+const CreateCustomer = dynamic(() => import('./components/createCustomer'), {
+  ssr: false,
+});
+
+const LinkCustomerCases = dynamic(() => import('./components/linkCustomerCases'), {
+  ssr: false,
+});
+
 const ViewCustomerEnquiries = dynamic(() => import('./components/viewCustomerEnquiries'), {
   ssr: false,
 });
@@ -124,6 +132,16 @@ export default function Dashboard() {
       title: "View Customer Enquiries",
       onClick: () => router.push('/view?type=customerEnquiries'),
       icon: "📝"
+    },
+    {
+      title: "Create Customer",
+      onClick: () => router.push('/view?type=createCustomer'),
+      icon: "🧑‍💼"
+    },
+    {
+      title: "Link Cases to Customer",
+      onClick: () => router.push('/view?type=linkCustomerCases'),
+      icon: "🔗"
     },
     {
       title: "View Latest Leads",
