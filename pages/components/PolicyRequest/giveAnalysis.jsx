@@ -3,15 +3,30 @@ import { db } from "../../../lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 
 export default function GiveAnalysis({ policy, onBack, onSaved }) {
-  const [insurerName, setInsurerName] = useState(policy.insurerName || "");
-  const [policyType, setPolicyType] = useState(policy.policyType || "");
-  const [coverageSummary, setCoverageSummary] = useState(policy.coverageSummary || "");
-  const [keyExclusions, setKeyExclusions] = useState(policy.keyExclusions || "");
-  const [recommendations, setRecommendations] = useState(policy.recommendations || "");
-  const [additionalNotes, setAdditionalNotes] = useState(policy.additionalNotes || "");
+  const [insurerName, setInsurerName] = useState(policy?.insurerName || "");
+  const [policyType, setPolicyType] = useState(policy?.policyType || "");
+  const [coverageSummary, setCoverageSummary] = useState(policy?.coverageSummary || "");
+  const [keyExclusions, setKeyExclusions] = useState(policy?.keyExclusions || "");
+  const [recommendations, setRecommendations] = useState(policy?.recommendations || "");
+  const [additionalNotes, setAdditionalNotes] = useState(policy?.additionalNotes || "");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  if (!policy?.id) {
+    return (
+      <div className="ui-empty-state max-w-3xl">
+        <p className="text-slate-600">
+          Open Policy Requests from the dashboard to give an analysis.
+        </p>
+        {typeof onBack === "function" && (
+          <button type="button" onClick={onBack} className="ui-btn-secondary mt-4">
+            Back
+          </button>
+        )}
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

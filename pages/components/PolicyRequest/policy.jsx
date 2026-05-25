@@ -8,13 +8,20 @@ function isPdfFileName(name) {
 
 export default function Policy({ policy, onBack, onGiveAnalysis }) {
   const [pdfUrl, setPdfUrl] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!policy?.storagePath);
   const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
 
-  const isPdf = isPdfFileName(policy.fileName);
+  const storagePath = policy?.storagePath;
+  const fileName = policy?.fileName;
+  const isPdf = isPdfFileName(fileName);
 
   useEffect(() => {
+    if (!storagePath) {
+      setLoading(false);
+      return undefined;
+    }
+
     let cancelled = false;
 
     async function loadUrl() {
@@ -22,7 +29,7 @@ export default function Policy({ policy, onBack, onGiveAnalysis }) {
       setError(null);
       setPdfUrl(null);
       try {
-        const url = await getDownloadURL(ref(storage, policy.storagePath));
+        const url = await getDownloadURL(ref(storage, storagePath));
         if (!cancelled) setPdfUrl(url);
       } catch (err) {
         console.error(err);
@@ -36,7 +43,22 @@ export default function Policy({ policy, onBack, onGiveAnalysis }) {
     return () => {
       cancelled = true;
     };
-  }, [policy.storagePath]);
+  }, [storagePath]);
+
+  if (!storagePath) {
+    return (
+      <div className="ui-empty-state w-full">
+        <p className="text-slate-600">
+          Open Policy Requests from the dashboard to view a policy document.
+        </p>
+        {typeof onBack === "function" && (
+          <button type="button" onClick={onBack} className="ui-btn-secondary mt-4">
+            Back to list
+          </button>
+        )}
+      </div>
+    );
+  }
 
   const handleDownload = async () => {
     if (!pdfUrl) return;
@@ -45,7 +67,7 @@ export default function Policy({ policy, onBack, onGiveAnalysis }) {
       const link = document.createElement("a");
       link.href = pdfUrl;
       link.target = "_blank";
-      link.download = policy.fileName || "policy-document";
+      link.download = fileName || "policy-document";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -63,10 +85,10 @@ export default function Policy({ policy, onBack, onGiveAnalysis }) {
         <div className="ui-page-intro">
           <p className="ui-section-eyebrow">Policy document</p>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-            {policy.fileName}
+            {fileName}
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Customer: {policy.customerLabel || policy.customerUserId}
+            Customer: {policy.customerLabel || policy.customerUserId || "—"}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -102,7 +124,7 @@ export default function Policy({ policy, onBack, onGiveAnalysis }) {
           {isPdf ? (
             <iframe
               src={pdfUrl}
-              title={policy.fileName}
+              title={fileName}
               className="w-full min-h-[70vh] rounded-lg border border-slate-200"
             />
           ) : (
