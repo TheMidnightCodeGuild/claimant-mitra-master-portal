@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../lib/firebase";
+import { fetchKpiData } from "../../lib/kpiCache";
 
 const RANGE_OPTIONS = [
   { id: "7d", label: "Last 7 days" },
@@ -47,22 +46,18 @@ export default function KpiDashboard() {
   const [notices, setNotices] = useState([]);
 
   useEffect(() => {
-    const fetchAll = async () => {
+    const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const [usersSnap, partnersSnap, noticesSnap] = await Promise.all([
-          getDocs(collection(db, "users")),
-          getDocs(collection(db, "partners")),
-          getDocs(collection(db, "notice")),
-        ]);
+        const { users, partners, notices, fetchedAt } = await fetchKpiData({
+          forceRefresh: refreshIndex > 0,
+        });
 
-        setUsers(usersSnap.docs.map((docItem) => ({ id: docItem.id, ...docItem.data() })));
-        setPartners(
-          partnersSnap.docs.map((docItem) => ({ id: docItem.id, ...docItem.data() }))
-        );
-        setNotices(noticesSnap.docs.map((docItem) => ({ id: docItem.id, ...docItem.data() })));
-        setLastUpdated(new Date());
+        setUsers(users);
+        setPartners(partners);
+        setNotices(notices);
+        setLastUpdated(new Date(fetchedAt));
       } catch (err) {
         console.error("Failed to load KPI data:", err);
         setError("Failed to load KPI metrics");
@@ -71,7 +66,7 @@ export default function KpiDashboard() {
       }
     };
 
-    fetchAll();
+    load();
   }, [refreshIndex]);
 
   const rangeStart = useMemo(() => {

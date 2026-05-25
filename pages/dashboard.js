@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import KpiDashboard from './components/kpiDashboard';
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -109,9 +108,14 @@ const ReimbursementCases = dynamic(() => import('./components/reimbursement'), {
   ssr: false,
 });
 
+const KpiDashboard = dynamic(() => import('./components/kpiDashboard'), {
+  ssr: false,
+});
+
 export default function Dashboard() {
   const router = useRouter();
   const [noticeCount, setNoticeCount] = useState(0);
+  const [showKpi, setShowKpi] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -247,22 +251,34 @@ export default function Dashboard() {
               </h1>
             </div>
           </div>
-          <button
-            onClick={() => router.push('/view?type=noticeBoard')}
-            className="ui-btn-primary relative shrink-0 px-5 py-2.5 text-sm shadow-lg shadow-indigo-900/40"
-          >
-            Notice Board
-            {noticeCount > 0 && (
-              <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] rounded-full bg-gradient-to-br from-rose-500 to-red-600 text-white text-xs font-semibold flex items-center justify-center px-1 ring-2 ring-white">
-                {noticeCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowKpi((v) => !v)}
+              className={`ui-btn-primary px-5 py-2.5 text-sm shadow-lg shadow-indigo-900/40 ${
+                showKpi ? "ring-2 ring-indigo-300 ring-offset-2 ring-offset-slate-900" : ""
+              }`}
+            >
+              KPI Dashboard
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/view?type=noticeBoard')}
+              className="ui-btn-primary relative px-5 py-2.5 text-sm shadow-lg shadow-indigo-900/40"
+            >
+              Notice Board
+              {noticeCount > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] rounded-full bg-gradient-to-br from-rose-500 to-red-600 text-white text-xs font-semibold flex items-center justify-center px-1 ring-2 ring-white">
+                  {noticeCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-[95%] lg:max-w-[1300px] mx-auto py-6 sm:py-8 md:py-10 px-3 sm:px-4 md:px-6 lg:px-8 space-y-8">
-        <KpiDashboard />
+        {showKpi && <KpiDashboard />}
         <div>
           <p className="ui-section-eyebrow mb-2">Modules</p>
           <h2 className="text-xl font-semibold text-slate-900 mb-4 tracking-tight">

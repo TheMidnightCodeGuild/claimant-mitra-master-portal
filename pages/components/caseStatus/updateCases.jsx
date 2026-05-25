@@ -493,6 +493,26 @@ export default function FullCase({ docId }) {
     };
   };
 
+  const getVerificationMonologue = () => {
+    const {
+      name,
+      insuranceCompany,
+      line3Intro,
+      claimNo,
+      policyNo,
+      caseDescription,
+      feePercentage,
+    } = getVerificationScriptData();
+    return `1. मेरा नाम "${name}" है।
+2. मेरी ${insuranceCompany} Insurance Company की पॉलिसी है।
+3. ${line3Intro} Claim No. "${claimNo}" तथा Policy No. "${policyNo}" है।
+4. ${caseDescription}
+5. मुझे क्लेम प्रक्रिया की पूरी जानकारी नहीं है।
+6. इसलिए मैं CLAIMANT MITRA को अपना अधिकृत सलाहकार नियुक्त करता/करती हूँ।
+7. मैं यह शपथपूर्वक स्वीकार करता/करती हूँ कि सफल क्लेम राशि प्राप्त होने पर मैं CLAIMANT MITRA को क्लेम राशि का ${feePercentage}% शुल्क प्रदान करूँगा/करूँगी।
+8. यदि प्रक्रिया के दौरान मेरी ओर से किसी दस्तावेज़ में कमी, त्रुटि या तथ्य छुपाने के कारण क्लेम अस्वीकृत होता है, तो उसकी पूर्ण जिम्मेदारी मेरी स्वयं की होगी।
+9. मैं अपनी सहमति से यह घोषणा कर रहा/रही हूँ।`;
+  };
 
   const copyVerificationUrl = async (urlToCopy) => {
     try {
