@@ -34,7 +34,142 @@ const numberValue = (value) => {
   return Number.isFinite(numeric) ? numeric : 0;
 };
 
-export default function KpiDashboard() {
+function isInRange(item, rangeStart, resolveDate) {
+  if (!rangeStart) return true;
+  const date = resolveDate(item);
+  return date ? date >= rangeStart : false;
+}
+
+function computeMetrics(users, partners, notices, rangeStart) {
+  const totalCases = users.length;
+  let newCases = 0;
+  let underReview = 0;
+  let pending = 0;
+  let igms = 0;
+  let reimbursement = 0;
+  let rejected = 0;
+  let solved = 0;
+  let verificationPending = 0;
+  let verificationUploaded = 0;
+  let verificationApproved = 0;
+  let verificationRejected = 0;
+  let verificationCompleted = 0;
+  let linksRequested = 0;
+  let allowUpload = 0;
+  let restrictedUpload = 0;
+  const claimValues = [];
+
+  for (const u of users) {
+    if (!isInRange(u, rangeStart, resolveCaseDate)) continue;
+    newCases += 1;
+
+    if (u.takenForReview === true) underReview += 1;
+    if (u.isPending === true) pending += 1;
+    if (u.igms === true) igms += 1;
+    if (u.inReimbursement === true) reimbursement += 1;
+    if (u.rejected === true) rejected += 1;
+
+    const status = String(u.status || "").toLowerCase();
+    if (status.includes("solved") || status.includes("completed")) solved += 1;
+
+    const vv = u.VideoVerification;
+    if (!vv || vv === "Verification Pending") verificationPending += 1;
+    else if (vv === "Uploaded") verificationUploaded += 1;
+    else if (vv === "Approved") verificationApproved += 1;
+    else if (vv === "Rejected") verificationRejected += 1;
+    else if (vv === "Completed") verificationCompleted += 1;
+
+    if (u.requestVerificationRequestedAt) linksRequested += 1;
+    if (u.allowUpload === "allow") allowUpload += 1;
+    if (!u.allowUpload || u.allowUpload === "restrict") restrictedUpload += 1;
+
+    const claim = numberValue(u.estimatedClaimAmount || u.claim);
+    if (claim > 0) claimValues.push(claim);
+  }
+
+  const claimTotal = claimValues.reduce((sum, v) => sum + v, 0);
+  const claimAvg = claimValues.length ? claimTotal / claimValues.length : 0;
+  const claimMin = claimValues.length ? Math.min(...claimValues) : 0;
+  const claimMax = claimValues.length ? Math.max(...claimValues) : 0;
+
+  let superCount = 0;
+  let normalCount = 0;
+  let supersWithChildren = 0;
+  let childrenSum = 0;
+
+  for (const p of partners) {
+    if (p.partnerType === "super") {
+      superCount += 1;
+      const under = Array.isArray(p.partnersUnder) ? p.partnersUnder.length : 0;
+      childrenSum += under;
+      if (under > 0) supersWithChildren += 1;
+    } else {
+      normalCount += 1;
+    }
+  }
+
+  const totalPartners = partners.length;
+  const avgChildrenPerSuper = superCount ? childrenSum / superCount : 0;
+
+  const totalNotices = notices.length;
+  let noticesRangeCount = 0;
+  let latestNotice = null;
+  const noticeUserAcc = {};
+
+  for (const n of notices) {
+    const date = resolveNoticeDate(n);
+    if (date && (!latestNotice || date > latestNotice)) {
+      latestNotice = date;
+    }
+    if (isInRange(n, rangeStart, resolveNoticeDate)) {
+      noticesRangeCount += 1;
+    }
+    const key = n.userId || "unknown";
+    if (!noticeUserAcc[key]) {
+      noticeUserAcc[key] = { count: 0, name: n.name || key };
+    }
+    noticeUserAcc[key].count += 1;
+  }
+
+  const topNoticeUsers = Object.entries(noticeUserAcc)
+    .map(([userId, info]) => ({ userId, ...info }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  return {
+    totalCases,
+    newCases,
+    underReview,
+    pending,
+    igms,
+    reimbursement,
+    solved,
+    rejected,
+    verificationPending,
+    verificationUploaded,
+    verificationApproved,
+    verificationRejected,
+    verificationCompleted,
+    linksRequested,
+    allowUpload,
+    restrictedUpload,
+    claimTotal,
+    claimAvg,
+    claimMin,
+    claimMax,
+    totalPartners,
+    superCount,
+    normalCount,
+    supersWithChildren,
+    avgChildrenPerSuper,
+    totalNotices,
+    noticesRangeCount,
+    latestNotice,
+    topNoticeUsers,
+  };
+}
+
+export default function KpiDashboard({ onClose }) {
   const [range, setRange] = useState("30d");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,27 +181,36 @@ export default function KpiDashboard() {
   const [notices, setNotices] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const { users, partners, notices, fetchedAt } = await fetchKpiData({
-          forceRefresh: refreshIndex > 0,
-        });
+        const { users: u, partners: p, notices: n, fetchedAt } =
+          await fetchKpiData({
+            forceRefresh: refreshIndex > 0,
+          });
 
-        setUsers(users);
-        setPartners(partners);
-        setNotices(notices);
+        if (cancelled) return;
+
+        setUsers(u);
+        setPartners(p);
+        setNotices(n);
         setLastUpdated(new Date(fetchedAt));
       } catch (err) {
+        if (cancelled) return;
         console.error("Failed to load KPI data:", err);
         setError("Failed to load KPI metrics");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [refreshIndex]);
 
   const rangeStart = useMemo(() => {
@@ -77,136 +221,10 @@ export default function KpiDashboard() {
     return start;
   }, [range]);
 
-  const usersInRange = useMemo(
-    () =>
-      users.filter((item) => {
-        if (!rangeStart) return true;
-        const date = resolveCaseDate(item);
-        return date ? date >= rangeStart : false;
-      }),
-    [users, rangeStart]
-  );
-
-  const noticesInRange = useMemo(
-    () =>
-      notices.filter((item) => {
-        if (!rangeStart) return true;
-        const date = resolveNoticeDate(item);
-        return date ? date >= rangeStart : false;
-      }),
-    [notices, rangeStart]
-  );
-
   const metrics = useMemo(() => {
-    const usersSource = usersInRange;
-    const totalCases = users.length;
-    const newCases = usersSource.length;
-
-    const underReview = usersSource.filter((u) => u.takenForReview === true).length;
-    const pending = usersSource.filter((u) => u.isPending === true).length;
-    const igms = usersSource.filter((u) => u.igms === true).length;
-    const reimbursement = usersSource.filter((u) => u.inReimbursement === true).length;
-    const rejected = usersSource.filter((u) => u.rejected === true).length;
-    const solved = usersSource.filter((u) => {
-      const status = String(u.status || "").toLowerCase();
-      return status.includes("solved") || status.includes("completed");
-    }).length;
-
-    const verificationPending = usersSource.filter(
-      (u) => !u.VideoVerification || u.VideoVerification === "Verification Pending"
-    ).length;
-    const verificationUploaded = usersSource.filter(
-      (u) => u.VideoVerification === "Uploaded"
-    ).length;
-    const verificationApproved = usersSource.filter(
-      (u) => u.VideoVerification === "Approved"
-    ).length;
-    const verificationRejected = usersSource.filter(
-      (u) => u.VideoVerification === "Rejected"
-    ).length;
-    const verificationCompleted = usersSource.filter(
-      (u) => u.VideoVerification === "Completed"
-    ).length;
-
-    const linksRequested = usersSource.filter((u) => !!u.requestVerificationRequestedAt).length;
-    const allowUpload = usersSource.filter((u) => u.allowUpload === "allow").length;
-    const restrictedUpload = usersSource.filter(
-      (u) => !u.allowUpload || u.allowUpload === "restrict"
-    ).length;
-
-    const claimValues = usersSource
-      .map((u) => numberValue(u.estimatedClaimAmount || u.claim))
-      .filter((value) => value > 0);
-    const claimTotal = claimValues.reduce((sum, value) => sum + value, 0);
-    const claimAvg = claimValues.length ? claimTotal / claimValues.length : 0;
-    const claimMin = claimValues.length ? Math.min(...claimValues) : 0;
-    const claimMax = claimValues.length ? Math.max(...claimValues) : 0;
-
-    const totalPartners = partners.length;
-    const superPartners = partners.filter((p) => p.partnerType === "super");
-    const superCount = superPartners.length;
-    const normalCount = totalPartners - superCount;
-    const supersWithChildren = superPartners.filter(
-      (p) => Array.isArray(p.partnersUnder) && p.partnersUnder.length > 0
-    ).length;
-    const avgChildrenPerSuper = superCount
-      ? superPartners.reduce(
-          (sum, p) => sum + (Array.isArray(p.partnersUnder) ? p.partnersUnder.length : 0),
-          0
-        ) / superCount
-      : 0;
-
-    const totalNotices = notices.length;
-    const noticesRangeCount = noticesInRange.length;
-    const latestNotice = notices
-      .map((n) => resolveNoticeDate(n))
-      .filter(Boolean)
-      .sort((a, b) => b - a)[0];
-
-    const topNoticeUsers = Object.entries(
-      notices.reduce((acc, n) => {
-        const key = n.userId || "unknown";
-        acc[key] = (acc[key] || { count: 0, name: n.name || key });
-        acc[key].count += 1;
-        return acc;
-      }, {})
-    )
-      .map(([userId, info]) => ({ userId, ...info }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
-    return {
-      totalCases,
-      newCases,
-      underReview,
-      pending,
-      igms,
-      reimbursement,
-      solved,
-      rejected,
-      verificationPending,
-      verificationUploaded,
-      verificationApproved,
-      verificationRejected,
-      verificationCompleted,
-      linksRequested,
-      allowUpload,
-      restrictedUpload,
-      claimTotal,
-      claimAvg,
-      claimMin,
-      claimMax,
-      totalPartners,
-      superCount,
-      normalCount,
-      supersWithChildren,
-      avgChildrenPerSuper,
-      totalNotices,
-      noticesRangeCount,
-      latestNotice,
-      topNoticeUsers,
-    };
-  }, [users, usersInRange, partners, notices, noticesInRange]);
+    if (loading) return null;
+    return computeMetrics(users, partners, notices, rangeStart);
+  }, [loading, users, partners, notices, rangeStart]);
 
   const currency = (value) => `₹${Math.round(value || 0).toLocaleString("en-IN")}`;
 
@@ -225,7 +243,8 @@ export default function KpiDashboard() {
           <select
             value={range}
             onChange={(e) => setRange(e.target.value)}
-            className="ui-input w-auto min-w-[160px] border-indigo-200/80 bg-white/90"
+            disabled={loading}
+            className="ui-input w-auto min-w-[160px] border-indigo-200/80 bg-white/90 disabled:opacity-50"
           >
             {RANGE_OPTIONS.map((option) => (
               <option key={option.id} value={option.id}>
@@ -236,17 +255,27 @@ export default function KpiDashboard() {
           <button
             type="button"
             onClick={() => setRefreshIndex((prev) => prev + 1)}
-            className="ui-btn-primary"
+            disabled={loading}
+            className="ui-btn-primary disabled:opacity-50"
           >
             Refresh
           </button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="ui-btn-secondary"
+            >
+              Hide
+            </button>
+          )}
         </div>
       </div>
 
       {loading && <p className="text-slate-600">Loading KPI metrics...</p>}
       {error && <p className="text-rose-600 font-medium">{error}</p>}
 
-      {!loading && !error && (
+      {!loading && !error && metrics && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
             <KpiCard label="Total Cases" value={metrics.totalCases} />

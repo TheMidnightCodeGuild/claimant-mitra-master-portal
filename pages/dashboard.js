@@ -40,82 +40,154 @@ const DashboardCard = ({ title, onClick, icon }) => (
   </div>
 );
 
-const ViewLatestLeads = dynamic(() => import('./components/viewLatestLeads'), {
-  ssr: false,
-});
-
-const ViewAllCases = dynamic(() => import('./components/viewAllCases'), {
-  ssr: false,
-});
-
-const CasesUnderReview = dynamic(() => import('./components/casesUnderReview'), {
-  ssr: false,
-});
-
-const IGMS = dynamic(() => import('./components/igms'), {
-  ssr: false,
-});
-
-const Ombudsman = dynamic(() => import('./components/ombudsman'), {
-  ssr: false,
-});
-
-const RejectedCases = dynamic(() => import('./components/rejectedCases'), {
-  ssr: false,
-});
-
-const SolvedCases = dynamic(() => import('./components/solvedCases'), {
-  ssr: false,
-});
-
-const CreateCase = dynamic(() => import('./components/createCase'), {
-  ssr: false,
-});
-
-const ViewPartners = dynamic(() => import('./components/viewPartners'), {
-  ssr: false,
-});
-
-const ViewPartnerIssues = dynamic(() => import('./components/viewPartnerIssues'), {
-  ssr: false,
-});
-
-const PartnerApplication = dynamic(() => import('./components/partnerApplications'), {
-  ssr: false,
-});
-
-const CreatePartner = dynamic(() => import('./components/createPartner'), {
-  ssr: false,
-});
-
-const CreateCustomer = dynamic(() => import('./components/createCustomer'), {
-  ssr: false,
-});
-
-const LinkCustomerCases = dynamic(() => import('./components/linkCustomerCases'), {
-  ssr: false,
-});
-
-const ViewCustomerEnquiries = dynamic(() => import('./components/viewCustomerEnquiries'), {
-  ssr: false,
-});
-
-const PendingCases = dynamic(() => import('./components/pending'), {
-  ssr: false,
-});
-
-const ReimbursementCases = dynamic(() => import('./components/reimbursement'), {
-  ssr: false,
-});
-
 const KpiDashboard = dynamic(() => import('./components/kpiDashboard'), {
   ssr: false,
+  loading: () => (
+    <div className="ui-section-indigo mb-2 p-6 text-sm text-slate-600">
+      Loading KPI dashboard…
+    </div>
+  ),
 });
+
+function buildDashboardGroups(router) {
+  return [
+    {
+      id: 'customers',
+      title: 'Customers & intake',
+      items: [
+        {
+          title: 'View Customer Enquiries',
+          onClick: () => router.push('/view?type=customerEnquiries'),
+          icon: '📝',
+        },
+        {
+          title: 'Policy Requests',
+          onClick: () => router.push('/view?type=policyRequests'),
+          icon: '📑',
+        },
+        {
+          title: 'Create Customer',
+          onClick: () => router.push('/view?type=createCustomer'),
+          icon: '🧑‍💼',
+        },
+        {
+          title: 'Link Cases to Customer',
+          onClick: () => router.push('/view?type=linkCustomerCases'),
+          icon: '🔗',
+        },
+        {
+          title: 'View Latest Leads',
+          onClick: () => router.push('/view?type=latestLeads'),
+          icon: '📊',
+        },
+        {
+          title: 'Create Case',
+          onClick: () => router.push('/view?type=createCase'),
+          icon: '➕',
+        },
+        {
+          title: 'Invoice Generator',
+          onClick: () => router.push('/view?type=invoices'),
+          icon: '🧾',
+        },
+      ],
+    },
+    {
+      id: 'cases',
+      title: 'Cases',
+      items: [
+        {
+          title: 'View All Cases',
+          onClick: () => router.push('/view?type=allCases'),
+          icon: '📁',
+        },
+        {
+          title: 'Cases Under Review',
+          onClick: () => router.push('/view?type=casesUnderReview'),
+          icon: '🔍',
+        },
+        {
+          title: 'Reimbursement Cases',
+          onClick: () => router.push('/view?type=reimbursementCases'),
+          icon: '🔍',
+        },
+        {
+          title: 'Pending Cases',
+          onClick: () => router.push('/view?type=pendingCases'),
+          icon: '🔍',
+        },
+        {
+          title: 'Send Consent',
+          onClick: () => router.push('/view?type=sendConsent'),
+          icon: '📨',
+        },
+        {
+          title: 'IGMS',
+          onClick: () => router.push('/view?type=igms'),
+          icon: '📋',
+        },
+        {
+          title: 'Send Contract',
+          onClick: () => router.push('/view?type=sendContract'),
+          icon: '📄',
+        },
+        {
+          title: 'Ombudsman',
+          onClick: () => router.push('/view?type=ombudsman'),
+          icon: '⚖️',
+        },
+        {
+          title: 'Solved Cases',
+          onClick: () => router.push('/view?type=solvedCases'),
+          icon: '✅',
+        },
+        {
+          title: 'Rejected Cases',
+          onClick: () => router.push('/view?type=rejectedCases'),
+          icon: '❌',
+        },
+      ],
+    },
+    {
+      id: 'partners',
+      title: 'Partners',
+      items: [
+        {
+          title: 'New Partner Application',
+          onClick: () => router.push('/view?type=partnerApplications'),
+          icon: '🤝',
+        },
+        {
+          title: 'Create Partner',
+          onClick: () => router.push('/view?type=createPartner'),
+          icon: '👥',
+        },
+        {
+          title: 'View Partner Issues',
+          onClick: () => router.push('/view?type=partnerIssues'),
+          icon: '⚠️',
+        },
+        {
+          title: 'View Partners',
+          onClick: () => router.push('/view?type=viewPartners'),
+          icon: '👥',
+        },
+        {
+          title: 'View Super Partners',
+          onClick: () => router.push('/view?type=viewSuperPartners'),
+          icon: '👥',
+        },
+      ],
+    },
+  ];
+}
 
 export default function Dashboard() {
   const router = useRouter();
   const [noticeCount, setNoticeCount] = useState(0);
+  const [kpiActivated, setKpiActivated] = useState(false);
   const [showKpi, setShowKpi] = useState(false);
+  const dashboardGroups = buildDashboardGroups(router);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -130,111 +202,6 @@ export default function Dashboard() {
 
     return () => unsubscribe();
   }, []);
-
-  const dashboardItems = [
-    {
-      title: "View Customer Enquiries",
-      onClick: () => router.push('/view?type=customerEnquiries'),
-      icon: "📝"
-    },
-    {
-      title: "Create Customer",
-      onClick: () => router.push('/view?type=createCustomer'),
-      icon: "🧑‍💼"
-    },
-    {
-      title: "Link Cases to Customer",
-      onClick: () => router.push('/view?type=linkCustomerCases'),
-      icon: "🔗"
-    },
-    {
-      title: "View Latest Leads",
-      onClick: () => router.push('/view?type=latestLeads'),
-      icon: "📊"
-    },
-    {
-      title: "Create Case",
-      onClick: () => router.push('/view?type=createCase'),
-      icon: "➕"
-    },
-    {
-      title: "View All Cases",
-      onClick: () => router.push('/view?type=allCases'),
-      icon: "📁"
-    },
-    {
-      title: "Cases Under Review",
-      onClick: () => router.push('/view?type=casesUnderReview'),
-      icon: "🔍"
-    },
-    {
-      title: "Reimbursement Cases",
-      onClick: () => router.push('/view?type=reimbursementCases'),
-      icon: "🔍"
-    },
-    {
-      title: "Pending Cases",
-      onClick: () => router.push('/view?type=pendingCases'),
-      icon: "🔍"
-    },
-    {
-      title: "Send Consent",
-      onClick: () => router.push('/view?type=sendConsent'),
-      icon: "📨"
-    },
-    {
-      title: "IGMS",
-      onClick: () => router.push('/view?type=igms'),
-      icon: "📋"
-    },
-    {
-      title: "Send Contract",
-      onClick: () => router.push('/view?type=sendContract'), 
-      icon: "📄"
-    },
-    {
-      title: "Ombudsman",
-      onClick: () => router.push('/view?type=ombudsman'),
-      icon: "⚖️"
-    },
-    {
-      title: "Solved Cases",
-      onClick: () => router.push('/view?type=solvedCases'),
-      icon: "✅"
-    },
-    {
-      title: "Rejected Cases",
-      onClick: () => router.push('/view?type=rejectedCases'),
-      icon: "❌"
-    },
-
-
-    {
-      title: "New Partner Application",
-      onClick: () => router.push('/view?type=partnerApplications'),
-      icon: "🤝"
-    },
-    {
-      title: "Create Partner",
-      onClick: () => router.push('/view?type=createPartner'),
-      icon: "👥"
-    },
-    {
-      title: "View Partner Issues",
-      onClick: () => router.push('/view?type=partnerIssues'),
-      icon: "⚠️"
-    },
-    {
-      title: "View Partners",
-      onClick: () => router.push('/view?type=viewPartners'),
-      icon: "👥"
-    },
-    {
-      title: "View Super Partners",
-      onClick: () => router.push('/view?type=viewSuperPartners'),
-      icon: "👥"
-    },
-  ];
 
   return (
     <div className="min-h-screen">
@@ -254,9 +221,12 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => setShowKpi((v) => !v)}
+              onClick={() => {
+                setKpiActivated(true);
+                setShowKpi((v) => !v);
+              }}
               className={`ui-btn-primary px-5 py-2.5 text-sm shadow-lg shadow-indigo-900/40 ${
-                showKpi ? "ring-2 ring-indigo-300 ring-offset-2 ring-offset-slate-900" : ""
+                showKpi ? 'ring-2 ring-indigo-300 ring-offset-2 ring-offset-slate-900' : ''
               }`}
             >
               KPI Dashboard
@@ -277,23 +247,37 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-[95%] lg:max-w-[1300px] mx-auto py-6 sm:py-8 md:py-10 px-3 sm:px-4 md:px-6 lg:px-8 space-y-8">
-        {showKpi && <KpiDashboard />}
+      <main className="max-w-[95%] lg:max-w-[1300px] mx-auto py-6 sm:py-8 md:py-10 px-3 sm:px-4 md:px-6 lg:px-8 space-y-10">
+        {kpiActivated && showKpi && (
+          <KpiDashboard onClose={() => setShowKpi(false)} />
+        )}
         <div>
           <p className="ui-section-eyebrow mb-2">Modules</p>
-          <h2 className="text-xl font-semibold text-slate-900 mb-4 tracking-tight">
+          <h2 className="text-xl font-semibold text-slate-900 tracking-tight">
             Choose a workflow
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-          {dashboardItems.map((item, index) => (
-            <DashboardCard
-              key={index}
-              title={item.title}
-              onClick={item.onClick}
-              icon={item.icon}
-            />
+          {dashboardGroups.map((group, index) => (
+            <section
+              key={group.id}
+              className={
+                index > 0
+                  ? 'mt-10 pt-8 border-t border-indigo-100/80'
+                  : 'mt-6'
+              }
+            >
+              <h3 className="ui-section-eyebrow mb-4">{group.title}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+                {group.items.map((item) => (
+                  <DashboardCard
+                    key={`${group.id}-${item.title}`}
+                    title={item.title}
+                    onClick={item.onClick}
+                    icon={item.icon}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
-          </div>
         </div>
       </main>
     </div>

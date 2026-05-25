@@ -23,6 +23,8 @@ import PendingCases from './components/pending';
 import ReimbursementCases from './components/reimbursement';
 import ViewSuperPartners from './components/viewSuperPartners';
 import NoticeBoard from './components/noticeBoard';
+import PolicyRequests from './components/PolicyRequest/policyRequests';
+import InvoiceGenerator from './components/invoice/InvoiceGenerator';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
@@ -94,6 +96,10 @@ export default function View() {
                 return <ReimbursementCases />;
             case 'noticeBoard':
                 return <NoticeBoard />;
+            case 'policyRequests':
+                return <PolicyRequests />;
+            case 'invoices':
+                return <InvoiceGenerator />;
             default:
                 return <div>Invalid component type</div>;
         }
