@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../../lib/firebase";
 import {
+  arrayRemove,
   arrayUnion,
   collection,
   doc,
@@ -18,6 +19,32 @@ function parseIds(text) {
     .split(/[\s,]+/)
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function filterCustomersBySearch(customers, searchQuery, searchField) {
+  if (!searchQuery) return customers;
+  const q = searchQuery.toLowerCase();
+  return customers.filter((customer) => {
+    switch (searchField) {
+      case "name":
+        return customer.name?.toLowerCase().includes(q);
+      case "email":
+        return customer.email?.toLowerCase().includes(q);
+      case "mobile":
+        return customer.mobile?.toString().includes(q);
+      case "id":
+        return customer.id?.toLowerCase().includes(q);
+      case "all":
+        return (
+          customer.name?.toLowerCase().includes(q) ||
+          customer.email?.toLowerCase().includes(q) ||
+          customer.mobile?.toString().includes(q) ||
+          customer.id?.toLowerCase().includes(q)
+        );
+      default:
+        return true;
+    }
+  });
 }
 
 /** Same filtering rules as `viewAllCases.jsx`. */
@@ -61,6 +88,10 @@ export default function LinkCustomerCases() {
   const [cases, setCases] = useState([]);
   const [loadingCases, setLoadingCases] = useState(true);
   const [casesFetchError, setCasesFetchError] = useState(null);
+  const [customerSearchQuery, setCustomerSearchQuery] = useState("");
+  const [customerSearchField, setCustomerSearchField] = useState("name");
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [linkedCaseDetails, setLinkedCaseDetails] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [searchField, setSearchField] = useState("name");
   const [filteredCases, setFilteredCases] = useState([]);
@@ -127,6 +158,12 @@ export default function LinkCustomerCases() {
   }, []);
 
   useEffect(() => {
+    setFilteredCustomers(
+      filterCustomersBySearch(customers, customerSearchQuery, customerSearchField)
+    );
+  }, [customerSearchQuery, customerSearchField, customers]);
+
+  useEffect(() => {
     setFilteredCases(filterCasesBySearch(cases, searchQuery, searchField));
   }, [searchQuery, searchField, cases]);
 
@@ -135,15 +172,40 @@ export default function LinkCustomerCases() {
     async function loadSelected() {
       if (!selectedUid) {
         setCustomerSnap(null);
+        setLinkedCaseDetails({});
         return;
       }
       try {
         const ref = doc(db, "customers", selectedUid);
         const snap = await getDoc(ref);
         if (!cancelled && snap.exists()) {
-          setCustomerSnap({ id: snap.id, ...snap.data() });
+          const data = { id: snap.id, ...snap.data() };
+          setCustomerSnap(data);
+
+          const caseIds = Array.isArray(data.cases) ? data.cases : [];
+          const details = {};
+          await Promise.all(
+            caseIds.map(async (caseId) => {
+              try {
+                const caseSnap = await getDoc(doc(db, "users", caseId));
+                if (caseSnap.exists()) {
+                  const caseData = caseSnap.data();
+                  details[caseId] = {
+                    name: caseData.name || "—",
+                    email: caseData.email || "—",
+                  };
+                } else {
+                  details[caseId] = { name: "—", email: "—", missing: true };
+                }
+              } catch {
+                details[caseId] = { name: "—", email: "—" };
+              }
+            })
+          );
+          if (!cancelled) setLinkedCaseDetails(details);
         } else if (!cancelled) {
           setCustomerSnap(null);
+          setLinkedCaseDetails({});
         }
       } catch (e) {
         if (!cancelled) setError(e.message);
@@ -158,7 +220,73 @@ export default function LinkCustomerCases() {
   const refreshSelectedCustomer = async () => {
     if (!selectedUid) return;
     const snap = await getDoc(doc(db, "customers", selectedUid));
-    if (snap.exists()) setCustomerSnap({ id: snap.id, ...snap.data() });
+    if (snap.exists()) {
+      const data = { id: snap.id, ...snap.data() };
+      setCustomerSnap(data);
+      const caseIds = Array.isArray(data.cases) ? data.cases : [];
+      const details = {};
+      await Promise.all(
+        caseIds.map(async (caseId) => {
+          try {
+            const caseSnap = await getDoc(doc(db, "users", caseId));
+            if (caseSnap.exists()) {
+              const caseData = caseSnap.data();
+              details[caseId] = {
+                name: caseData.name || "—",
+                email: caseData.email || "—",
+              };
+            } else {
+              details[caseId] = { name: "—", email: "—", missing: true };
+            }
+          } catch {
+            details[caseId] = { name: "—", email: "—" };
+          }
+        })
+      );
+      setLinkedCaseDetails(details);
+    }
+  };
+
+  const delinkCaseFromCustomer = async (caseId) => {
+    if (!selectedUid) {
+      setError("Select a customer first");
+      return;
+    }
+    const label = linkedCaseDetails[caseId]?.name || caseId;
+    const ok = window.confirm(
+      `Delink case "${label}" from this customer?\n\nThis removes the case from the customer's list and clears customerUserId on the case.`
+    );
+    if (!ok) return;
+
+    setLoadingAction(true);
+    setError(null);
+    setInfo(null);
+
+    try {
+      const userRef = doc(db, "users", caseId);
+      const userSnap = await getDoc(userRef);
+      let warning = null;
+      if (!userSnap.exists()) {
+        warning = `Case document ${caseId} was not found; removed from customer only.`;
+      }
+
+      await updateDoc(doc(db, "customers", selectedUid), {
+        cases: arrayRemove(caseId),
+      });
+
+      if (userSnap.exists()) {
+        await updateDoc(userRef, {
+          customerUserId: "",
+        });
+      }
+
+      setInfo(warning || `Delinked case ${caseId}.`);
+      await refreshSelectedCustomer();
+    } catch (e) {
+      setError(e.message || "Failed to delink case");
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   const linkIdsToCustomer = async (ids) => {
@@ -288,51 +416,166 @@ export default function LinkCustomerCases() {
           </p>
         </div>
 
-        {loadingList ? (
-          <p className="text-center text-gray-600">Loading customers…</p>
-        ) : (
-          <div>
-            <label
-              htmlFor="customer-select"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
-              Customer
-            </label>
-            <select
-              id="customer-select"
-              value={selectedUid}
-              onChange={(e) => setSelectedUid(e.target.value)}
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">— Select customer —</option>
-              {customers.map((c) => (
-                <option key={c.id} value={c.id} title={c.id}>
-                  {(c.name || "—") + " · " + (c.email || c.id)}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-gray-500">
-              Document ID (Auth UID):{" "}
-              <span className="font-mono">{selectedUid || "—"}</span>
-            </p>
-          </div>
-        )}
+        <div className="border-b border-gray-200 pb-6">
+          <h3 className="mb-2 text-lg font-semibold text-gray-900">
+            Search customers
+          </h3>
+          <p className="mb-4 text-sm text-gray-600">
+            Find a customer and click Select. Same search pattern as cases below.
+          </p>
+
+          {loadingList ? (
+            <p className="text-center text-gray-600">Loading customers…</p>
+          ) : (
+            <>
+              <div className="ui-search-panel mb-4">
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={customerSearchQuery}
+                      onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                      placeholder="Search customers..."
+                      className="ui-input w-full"
+                    />
+                  </div>
+                  <div className="sm:w-48">
+                    <select
+                      value={customerSearchField}
+                      onChange={(e) => setCustomerSearchField(e.target.value)}
+                      className="ui-input w-full sm:w-48"
+                    >
+                      <option value="all">All Fields</option>
+                      <option value="name">Name</option>
+                      <option value="email">Email</option>
+                      <option value="mobile">Mobile</option>
+                      <option value="id">Customer ID</option>
+                    </select>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600">
+                  Found {filteredCustomers.length} customers
+                  {customerSearchQuery && ` matching "${customerSearchQuery}"`}
+                </p>
+              </div>
+
+              <div className="max-h-64 overflow-y-auto overflow-x-auto rounded-lg border border-gray-200">
+                <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
+                  <thead className="sticky top-0 bg-slate-100">
+                    <tr>
+                      <th className="px-3 py-2 font-semibold text-slate-700">
+                        Name
+                      </th>
+                      <th className="px-3 py-2 font-semibold text-slate-700">
+                        Email
+                      </th>
+                      <th className="hidden px-3 py-2 font-semibold text-slate-700 sm:table-cell">
+                        Mobile
+                      </th>
+                      <th className="px-3 py-2 font-semibold text-slate-700">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 bg-white">
+                    {filteredCustomers.map((c) => (
+                      <tr
+                        key={c.id}
+                        className={
+                          selectedUid === c.id
+                            ? "bg-indigo-50 hover:bg-indigo-50"
+                            : "hover:bg-slate-50"
+                        }
+                      >
+                        <td className="max-w-[10rem] truncate px-3 py-2 text-slate-900">
+                          {c.name || "—"}
+                        </td>
+                        <td className="max-w-[12rem] truncate px-3 py-2 text-slate-700">
+                          {c.email || "—"}
+                        </td>
+                        <td className="hidden px-3 py-2 text-slate-700 sm:table-cell">
+                          {c.mobile ?? "—"}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedUid(c.id);
+                              setInfo(`Selected ${c.name || c.email || c.id}`);
+                            }}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-medium text-white ${
+                              selectedUid === c.id
+                                ? "bg-indigo-800"
+                                : "bg-indigo-600 hover:bg-indigo-700"
+                            }`}
+                          >
+                            {selectedUid === c.id ? "Selected" : "Select"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {customerSnap && (
+            <div className="mt-4 rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 text-sm">
+              <p className="font-semibold text-gray-900">Selected customer</p>
+              <p className="mt-1 text-gray-800">
+                {customerSnap.name || "—"} · {customerSnap.email || "—"}
+              </p>
+              <p className="mt-1 font-mono text-xs text-gray-600">
+                UID: {customerSnap.id}
+              </p>
+            </div>
+          )}
+        </div>
 
         {customerSnap && (
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm">
             <p className="font-semibold text-gray-800">
               Linked cases: {casesArray.length}
             </p>
-            {casesArray.length > 0 && (
-              <ul className="mt-2 max-h-32 overflow-y-auto font-mono text-xs text-gray-700">
-                {casesArray.slice(0, 50).map((id) => (
-                  <li key={id}>{id}</li>
-                ))}
-                {casesArray.length > 50 && (
-                  <li className="text-gray-500">
-                    …and {casesArray.length - 50} more
-                  </li>
-                )}
+            {casesArray.length === 0 ? (
+              <p className="mt-2 text-gray-600">No cases linked yet.</p>
+            ) : (
+              <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto">
+                {casesArray.map((id) => {
+                  const meta = linkedCaseDetails[id] || {};
+                  return (
+                    <li
+                      key={id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-900">
+                          {meta.name || "—"}
+                          {meta.missing && (
+                            <span className="ml-2 text-xs text-amber-700">
+                              (case doc missing)
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-slate-600">
+                          {meta.email || "—"}
+                        </p>
+                        <p className="font-mono text-[10px] text-slate-500">
+                          {id}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={loadingAction}
+                        onClick={() => delinkCaseFromCustomer(id)}
+                        className="shrink-0 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-700 disabled:opacity-50"
+                      >
+                        Delink
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -343,8 +586,8 @@ export default function LinkCustomerCases() {
             Search cases
           </h3>
           <p className="mb-4 text-sm text-gray-600">
-            Same search as &quot;View All Cases&quot;. Select a customer above,
-            then find a case and click Link.
+            Same search as &quot;View All Cases&quot;. Select a customer in the
+            search above, then find a case and click Link.
           </p>
           {!selectedUid && (
             <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">

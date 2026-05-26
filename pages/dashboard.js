@@ -71,6 +71,11 @@ function buildDashboardGroups(router) {
           icon: '🧑‍💼',
         },
         {
+          title: 'View All Customers',
+          onClick: () => router.push('/view?type=allCustomers'),
+          icon: '👥',
+        },
+        {
           title: 'Link Cases to Customer',
           onClick: () => router.push('/view?type=linkCustomerCases'),
           icon: '🔗',
