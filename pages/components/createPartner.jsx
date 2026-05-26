@@ -9,6 +9,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
+import { invalidateCollection } from "../../lib/collectionCache";
 
 function CreateAccount() {
   const [email, setEmail] = useState("");
@@ -76,6 +77,7 @@ function CreateAccount() {
         createdAt: new Date().toISOString(),
         userId: user.uid,
       });
+      invalidateCollection("partners");
 
       setError("Account created successfully!");
       setEmail("");

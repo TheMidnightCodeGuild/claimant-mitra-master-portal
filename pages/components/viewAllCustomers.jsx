@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
-import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { useCallback, useEffect, useState } from "react";
+import { deleteDoc, doc } from "firebase/firestore";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { db } from "../../lib/firebase";
+import {
+  fetchCollectionCached,
+  invalidateCollection,
+} from "../../lib/collectionCache";
 
 function filterCustomersBySearch(customers, searchQuery, searchField) {
   if (!searchQuery) return customers;
@@ -55,32 +59,31 @@ export default function ViewAllCustomers() {
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  useEffect(() => {
-    async function fetchCustomers() {
-      try {
-        const snap = await getDocs(collection(db, "customers"));
-        const rows = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
-        rows.sort((a, b) =>
-          String(a.name || a.email || "").localeCompare(
-            String(b.name || b.email || ""),
-            undefined,
-            { sensitivity: "base" }
-          )
-        );
-        setCustomers(rows);
-        setFilteredCustomers(rows);
-      } catch (err) {
-        console.error("Error fetching customers:", err);
-        setError("Failed to fetch customers");
-      } finally {
-        setLoading(false);
-      }
+  const loadCustomers = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await fetchCollectionCached("customers", { forceRefresh });
+      rows.sort((a, b) =>
+        String(a.name || a.email || "").localeCompare(
+          String(b.name || b.email || ""),
+          undefined,
+          { sensitivity: "base" }
+        )
+      );
+      setCustomers(rows);
+      setFilteredCustomers(rows);
+    } catch (err) {
+      console.error("Error fetching customers:", err);
+      setError("Failed to fetch customers");
+    } finally {
+      setLoading(false);
     }
-    fetchCustomers();
   }, []);
+
+  useEffect(() => {
+    loadCustomers();
+  }, [loadCustomers]);
 
   useEffect(() => {
     setFilteredCustomers(
@@ -103,6 +106,7 @@ export default function ViewAllCustomers() {
     setError(null);
     try {
       await deleteDoc(doc(db, "customers", customer.id));
+      invalidateCollection("customers");
       setCustomers((prev) => prev.filter((c) => c.id !== customer.id));
       showSuccess("Customer profile deleted");
     } catch (err) {
@@ -167,9 +171,20 @@ export default function ViewAllCustomers() {
             CCM.
           </p>
         </div>
-        <span className="ui-stat-pill">
-          {customers.length} {customers.length === 1 ? "Customer" : "Customers"}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => loadCustomers(true)}
+            disabled={loading}
+            className="ui-btn-secondary text-sm"
+          >
+            Refresh
+          </button>
+          <span className="ui-stat-pill">
+            {customers.length}{" "}
+            {customers.length === 1 ? "Customer" : "Customers"}
+          </span>
+        </div>
       </div>
 
       <div className="ui-search-panel mb-6">

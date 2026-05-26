@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { db } from "../../../lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
+import { invalidateCollection } from "../../../lib/collectionCache";
 
 export default function GiveAnalysis({ policy, onBack, onSaved }) {
   const [insurerName, setInsurerName] = useState(policy?.insurerName || "");
@@ -58,6 +59,7 @@ export default function GiveAnalysis({ policy, onBack, onSaved }) {
         analyzed: true,
         completedAt: new Date().toISOString(),
       });
+      invalidateCollection("policyAnalysis");
       setSuccess(true);
       if (typeof onSaved === "function") {
         setTimeout(() => onSaved(), 800);

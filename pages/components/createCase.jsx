@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
+import { invalidateCollection } from "../../lib/collectionCache";
 import { db } from "../../lib/firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import DocumentViewer from "./DocumentViewer";
@@ -114,6 +115,7 @@ export default function CreateCase() {
       };
 
       await addDoc(collection(db, "users"), caseData);
+      invalidateCollection("users");
       setSuccess(true);
       setFormData(initialFormState);
       setFiles([]);

@@ -8,8 +8,8 @@ import {
   serverTimestamp,
   updateDoc,
   doc,
-  getDocs,
 } from "firebase/firestore";
+import { fetchCollectionCached } from "../../../lib/collectionCache";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../lib/firebase";
 import {
@@ -76,8 +76,8 @@ export default function InvoiceGenerator() {
   useEffect(() => {
     async function loadCases() {
       try {
-        const snap = await getDocs(collection(db, "users"));
-        setCases(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const rows = await fetchCollectionCached("users");
+        setCases(rows);
       } catch (e) {
         console.error("Failed to load cases", e);
       }

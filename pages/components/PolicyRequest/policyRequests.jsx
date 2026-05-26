@@ -1,28 +1,23 @@
 import { useEffect, useState } from "react";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
+import { fetchCollectionCached } from "../../../lib/collectionCache";
 import Policy from "./policy";
 import GiveAnalysis from "./giveAnalysis";
 
-async function loadAllPolicyAnalyses() {
-  const snap = await getDocs(collection(db, "PolicyAnalysis"));
-  const rows = snap.docs.map((d) => {
-    const data = d.data();
-    return {
-      id: d.id,
-      customerUserId: data.customerUserId,
-      storagePath: data.policyStoragePath,
-      fileName: data.policyFileName,
-      status: data.status || "pending",
-      insurerName: data.insurerName || "",
-      policyType: data.policyType || "",
-      coverageSummary: data.coverageSummary || "",
-      keyExclusions: data.keyExclusions || "",
-      recommendations: data.recommendations || "",
-      additionalNotes: data.additionalNotes || "",
-      createdAt: data.createdAt,
-    };
-  });
+function mapPolicyRows(docs) {
+  const rows = docs.map((d) => ({
+    id: d.id,
+    customerUserId: d.customerUserId,
+    storagePath: d.policyStoragePath,
+    fileName: d.policyFileName,
+    status: d.status || "pending",
+    insurerName: d.insurerName || "",
+    policyType: d.policyType || "",
+    coverageSummary: d.coverageSummary || "",
+    keyExclusions: d.keyExclusions || "",
+    recommendations: d.recommendations || "",
+    additionalNotes: d.additionalNotes || "",
+    createdAt: d.createdAt,
+  }));
 
   rows.sort((a, b) => {
     const ta = new Date(a.createdAt || 0).getTime();
@@ -33,25 +28,16 @@ async function loadAllPolicyAnalyses() {
   return rows;
 }
 
-async function enrichWithCustomerLabels(rows) {
-  const uniqueIds = [...new Set(rows.map((r) => r.customerUserId))];
-  const labelById = {};
+async function loadAllPolicyAnalyses() {
+  const docs = await fetchCollectionCached("policyAnalysis");
+  return mapPolicyRows(docs);
+}
 
-  await Promise.all(
-    uniqueIds.map(async (uid) => {
-      try {
-        const snap = await getDoc(doc(db, "customers", uid));
-        if (snap.exists()) {
-          const data = snap.data();
-          labelById[uid] = data.name || data.email || uid;
-        } else {
-          labelById[uid] = uid;
-        }
-      } catch {
-        labelById[uid] = uid;
-      }
-    })
-  );
+function enrichWithCustomerLabels(rows, customers) {
+  const labelById = {};
+  for (const customer of customers) {
+    labelById[customer.id] = customer.name || customer.email || customer.id;
+  }
 
   return rows.map((row) => ({
     ...row,
@@ -85,8 +71,11 @@ export default function PolicyRequests() {
     setLoading(true);
     setError(null);
     try {
-      const rows = await loadAllPolicyAnalyses();
-      const enriched = await enrichWithCustomerLabels(rows);
+      const [rows, customers] = await Promise.all([
+        loadAllPolicyAnalyses(),
+        fetchCollectionCached("customers"),
+      ]);
+      const enriched = enrichWithCustomerLabels(rows, customers);
       setPolicies(enriched);
     } catch (err) {
       console.error(err);
@@ -117,8 +106,11 @@ export default function PolicyRequests() {
   };
 
   const handleAnalysisSaved = async () => {
-    const rows = await loadAllPolicyAnalyses();
-    const enriched = await enrichWithCustomerLabels(rows);
+    const [rows, customers] = await Promise.all([
+      loadAllPolicyAnalyses(),
+      fetchCollectionCached("customers"),
+    ]);
+    const enriched = enrichWithCustomerLabels(rows, customers);
     setPolicies(enriched);
     if (selected?.id) {
       const updated = enriched.find((p) => p.id === selected.id);

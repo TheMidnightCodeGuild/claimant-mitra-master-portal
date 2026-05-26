@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { useState, useEffect, useCallback } from 'react';
+import { fetchCollectionCached } from '../../lib/collectionCache';
 import FullCase from './caseStatus/updateCases';
 
 export default function ViewAllCases() {
@@ -12,26 +11,24 @@ export default function ViewAllCases() {
     const [searchField, setSearchField] = useState('name');
     const [filteredCases, setFilteredCases] = useState([]);
 
-    useEffect(() => {
-        async function fetchCases() {
-            try {
-                const querySnapshot = await getDocs(collection(db, 'users'));
-                const casesData = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setCases(casesData);
-                setFilteredCases(casesData);
-            } catch (err) {
-                console.error('Error fetching cases:', err);
-                setError('Failed to fetch cases');
-            } finally {
-                setLoading(false);
-            }
+    const loadCases = useCallback(async (forceRefresh = false) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const casesData = await fetchCollectionCached('users', { forceRefresh });
+            setCases(casesData);
+            setFilteredCases(casesData);
+        } catch (err) {
+            console.error('Error fetching cases:', err);
+            setError('Failed to fetch cases');
+        } finally {
+            setLoading(false);
         }
-
-        fetchCases();
     }, []);
+
+    useEffect(() => {
+        loadCases();
+    }, [loadCases]);
 
     useEffect(() => {
         if (!searchQuery) {
@@ -107,9 +104,19 @@ export default function ViewAllCases() {
                     <p className="ui-section-eyebrow">Registry</p>
                     <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 text-center sm:text-left">All Cases</h2>
                 </div>
-                <span className="ui-stat-pill justify-center">
-                    {cases.length} {cases.length === 1 ? 'Case' : 'Cases'}
-                </span>
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+                    <button
+                        type="button"
+                        onClick={() => loadCases(true)}
+                        disabled={loading}
+                        className="ui-btn-secondary text-sm"
+                    >
+                        Refresh
+                    </button>
+                    <span className="ui-stat-pill justify-center">
+                        {cases.length} {cases.length === 1 ? 'Case' : 'Cases'}
+                    </span>
+                </div>
             </div>
 
             <div className="mb-6">

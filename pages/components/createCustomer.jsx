@@ -9,6 +9,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
+import { invalidateCollection } from "../../lib/collectionCache";
 
 function CreateCustomer() {
   const [email, setEmail] = useState("");
@@ -86,6 +87,7 @@ function CreateCustomer() {
         cases: [],
         createdAt: new Date().toISOString(),
       });
+      invalidateCollection("customers");
 
       setError("Customer created successfully! You may need to sign in again as master if your session switched to the new account.");
       setEmail("");

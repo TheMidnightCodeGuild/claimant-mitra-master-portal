@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 
 import {
-  collection,
-  getDocs,
   doc,
   updateDoc,
   arrayUnion,
   arrayRemove,
-  query,
-  where,
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import {
+  fetchCollectionCached,
+  computePartnerReferralStats,
+  invalidateCollection,
+} from "../../lib/collectionCache";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
 export default function ViewSuperPartners() {
@@ -36,46 +37,13 @@ export default function ViewSuperPartners() {
   useEffect(() => {
     async function fetchPartners() {
       try {
-        const partnersRef = collection(db, "partners");
-        const querySnapshot = await getDocs(partnersRef);
-        const partnersData = querySnapshot.docs.map((docItem) => ({
-          id: docItem.id,
-          ...docItem.data(),
-        }));
+        const [partnersData, usersData] = await Promise.all([
+          fetchCollectionCached("partners"),
+          fetchCollectionCached("users"),
+        ]);
         setPartners(partnersData);
         setFilteredPartners(partnersData);
-
-        const statsPromises = partnersData.map(async (partner) => {
-          if (partner.partnerRef) {
-            const usersRef = collection(db, "users");
-            const usersQuery = query(
-              usersRef,
-              where("partnerRef", "==", partner.partnerRef)
-            );
-            const usersSnapshot = await getDocs(usersQuery);
-
-            let totalCommission = 0;
-            usersSnapshot.forEach((docItem) => {
-              const userData = docItem.data();
-              totalCommission += userData.partnerCommision || 0;
-            });
-
-            return {
-              id: partner.id,
-              casesReferred: usersSnapshot.size,
-              totalEarnings: totalCommission,
-            };
-          }
-          return { id: partner.id, casesReferred: 0, totalEarnings: 0 };
-        });
-
-        const stats = await Promise.all(statsPromises);
-        const statsMap = {};
-        stats.forEach((stat) => {
-          statsMap[stat.id] = stat;
-        });
-
-        setPartnerStats(statsMap);
+        setPartnerStats(computePartnerReferralStats(partnersData, usersData));
       } catch (err) {
         console.error("Error fetching partners:", err);
         setError("Failed to fetch partners");
@@ -141,6 +109,7 @@ export default function ViewSuperPartners() {
     try {
       const partnerRef = doc(db, "partners", id);
       await updateDoc(partnerRef, editValues);
+      invalidateCollection("partners");
       setPartners((prev) => prev.map((p) => (p.id === id ? { ...p, ...editValues } : p)));
       setEditingId(null);
     } catch (err) {
@@ -180,6 +149,7 @@ export default function ViewSuperPartners() {
     try {
       setDeleting(true);
       await deleteDoc(doc(db, "partners", id));
+      invalidateCollection("partners");
       setPartners((prev) => prev.filter((p) => p.id !== id));
       setFilteredPartners((prev) => prev.filter((p) => p.id !== id));
       setShowDeleteMessage(true);
@@ -217,6 +187,7 @@ export default function ViewSuperPartners() {
     await updateDoc(doc(db, "partners", childPartner.id), {
       superPartner: targetSuperId,
     });
+    invalidateCollection("partners");
 
     setPartners((prev) =>
       prev.map((item) => {

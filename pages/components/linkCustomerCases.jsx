@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { db } from "../../lib/firebase";
 import {
+  fetchCollectionCached,
+  invalidateCollections,
+} from "../../lib/collectionCache";
+import {
   arrayRemove,
   arrayUnion,
   collection,
@@ -101,11 +105,7 @@ export default function LinkCustomerCases() {
     async function loadCustomers() {
       setLoadingList(true);
       try {
-        const snap = await getDocs(collection(db, "customers"));
-        const rows = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
+        const rows = await fetchCollectionCached("customers");
         rows.sort((a, b) =>
           String(a.name || a.email || "").localeCompare(
             String(b.name || b.email || ""),
@@ -132,11 +132,7 @@ export default function LinkCustomerCases() {
       setLoadingCases(true);
       setCasesFetchError(null);
       try {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        const casesData = querySnapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
+        const casesData = await fetchCollectionCached("users");
         if (!cancelled) {
           setCases(casesData);
         }
@@ -280,6 +276,7 @@ export default function LinkCustomerCases() {
         });
       }
 
+      invalidateCollections(["customers", "users"]);
       setInfo(warning || `Delinked case ${caseId}.`);
       await refreshSelectedCustomer();
     } catch (e) {
@@ -322,6 +319,7 @@ export default function LinkCustomerCases() {
         });
       }
 
+      invalidateCollections(["customers", "users"]);
       setInfo(`Linked ${unique.length} case(s).`);
       setSingleId("");
       setBulkIds("");
