@@ -266,7 +266,7 @@ export default function InvoiceGenerator() {
         <p className="ui-section-eyebrow">Billing</p>
         <h2 className="ui-section-title mt-1">Invoice Generator</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Success fee 20% plus 18% GST on the fee. PDFs are stored in Firebase
+          Success fee is 20% of the claim amount. PDFs are stored in Firebase
           and can be emailed to customers.
         </p>
       </div>
@@ -378,12 +378,6 @@ export default function InvoiceGenerator() {
                 <dt className="text-sm text-slate-600">Success fee (20%)</dt>
                 <dd className="text-sm font-semibold text-slate-900">
                   {formatInr(breakdown.successFee)}
-                </dd>
-              </div>
-              <div className="flex flex-wrap justify-between gap-2">
-                <dt className="text-sm text-slate-600">GST (18%)</dt>
-                <dd className="text-sm font-semibold text-slate-900">
-                  {formatInr(breakdown.gstAmount)}
                 </dd>
               </div>
               <div className="flex flex-wrap justify-between gap-2 border-t border-indigo-200/80 pt-3">
