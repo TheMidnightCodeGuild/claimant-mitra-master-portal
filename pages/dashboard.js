@@ -95,6 +95,16 @@ function buildDashboardGroups(router) {
           onClick: () => router.push('/view?type=invoices'),
           icon: '🧾',
         },
+        {
+          title: 'Customer Reviews',
+          onClick: () => router.push('/view?type=manageCustomerReviews'),
+          icon: '⭐',
+        },
+        {
+          title: 'Testimonial Videos',
+          onClick: () => router.push('/view?type=manageTestimonialVideos'),
+          icon: '🎬',
+        },
       ],
     },
     {

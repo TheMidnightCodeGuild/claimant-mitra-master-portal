@@ -204,6 +204,12 @@ export default function CasesUnderReview() {
                                     <span className="font-medium">Review Date:</span> {new Date(case_.reviewDate).toLocaleString()}
                                 </p>
                             )}
+                            {typeof case_.claimScore === 'number' && !Number.isNaN(case_.claimScore) && (
+                                <p className="text-gray-600">
+                                    <span className="font-medium">Claim score:</span>{' '}
+                                    {case_.claimScore}%
+                                </p>
+                            )}
                             {case_.reviewDate && (
                                 <div className="mt-2 bg-blue-50 p-2 rounded-md text-sm text-blue-700">
                                     Days in Review: {calculateDaysElapsed(case_.reviewDate)}

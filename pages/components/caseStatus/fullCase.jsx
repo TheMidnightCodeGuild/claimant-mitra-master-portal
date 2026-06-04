@@ -832,6 +832,24 @@ export default function FullCase({ docId }) {
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
+                Claim score
+              </label>
+              <p className="mt-1 text-gray-900">
+                {typeof caseData?.claimScore === "number" &&
+                !Number.isNaN(caseData.claimScore)
+                  ? `${caseData.claimScore}%`
+                  : "Not set"}
+              </p>
+              {caseData?.claimScoreUpdatedAt && (
+                <p className="text-xs text-gray-500">
+                  Updated:{" "}
+                  {new Date(caseData.claimScoreUpdatedAt).toLocaleString()}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Document Short
               </label>
               <p className="mt-1 text-gray-900">

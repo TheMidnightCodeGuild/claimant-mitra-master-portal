@@ -26,6 +26,8 @@ import ViewSuperPartners from './components/viewSuperPartners';
 import NoticeBoard from './components/noticeBoard';
 import PolicyRequests from './components/PolicyRequest/policyRequests';
 import InvoiceGenerator from './components/invoice/InvoiceGenerator';
+import ManageCustomerReviews from './components/manageCustomerReviews';
+import ManageTestimonialVideos from './components/manageTestimonialVideos';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
@@ -103,6 +105,10 @@ export default function View() {
                 return <PolicyRequests />;
             case 'invoices':
                 return <InvoiceGenerator />;
+            case 'manageCustomerReviews':
+                return <ManageCustomerReviews />;
+            case 'manageTestimonialVideos':
+                return <ManageTestimonialVideos />;
             default:
                 return <div>Invalid component type</div>;
         }
