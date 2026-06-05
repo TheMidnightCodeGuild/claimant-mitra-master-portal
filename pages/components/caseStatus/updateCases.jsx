@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import DocumentViewer from "../DocumentViewer";
+import ClaimScoreEditor from "./ClaimScoreEditor";
 import { storage } from "../../../lib/firebase";
 import {
   ref,
@@ -988,6 +989,8 @@ export default function FullCase({ docId }) {
           </div>
         )}
       </div>
+
+      <ClaimScoreEditor docId={docId} className="mb-6" />
 
       {/* Tab Navigation */}
       <div className="mb-6 border-b">

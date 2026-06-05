@@ -28,6 +28,9 @@ import PolicyRequests from './components/PolicyRequest/policyRequests';
 import InvoiceGenerator from './components/invoice/InvoiceGenerator';
 import ManageCustomerReviews from './components/manageCustomerReviews';
 import ManageTestimonialVideos from './components/manageTestimonialVideos';
+import ManageParigyan from './components/manageParigyan';
+import ManageGalleryImages from './components/manageGalleryImages';
+import ManageFromClaimantMitraVideos from './components/manageFromClaimantMitraVideos';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
@@ -109,6 +112,12 @@ export default function View() {
                 return <ManageCustomerReviews />;
             case 'manageTestimonialVideos':
                 return <ManageTestimonialVideos />;
+            case 'manageParigyan':
+                return <ManageParigyan />;
+            case 'manageGalleryImages':
+                return <ManageGalleryImages />;
+            case 'manageFromClaimantMitraVideos':
+                return <ManageFromClaimantMitraVideos />;
             default:
                 return <div>Invalid component type</div>;
         }

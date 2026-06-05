@@ -105,6 +105,21 @@ function buildDashboardGroups(router) {
           onClick: () => router.push('/view?type=manageTestimonialVideos'),
           icon: '🎬',
         },
+        {
+          title: 'Gallery',
+          onClick: () => router.push('/view?type=manageGalleryImages'),
+          icon: '🖼️',
+        },
+        {
+          title: 'From Claimant Mitra',
+          onClick: () => router.push('/view?type=manageFromClaimantMitraVideos'),
+          icon: '📹',
+        },
+        {
+          title: 'Parigyan',
+          onClick: () => router.push('/view?type=manageParigyan'),
+          icon: '📚',
+        },
       ],
     },
     {

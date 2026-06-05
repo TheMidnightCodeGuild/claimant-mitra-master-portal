@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, deleteDoc, deleteField } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
+import ClaimScoreEditor from './ClaimScoreEditor';
 import { sendConsent } from '../consent';
 import DocumentViewer from '../DocumentViewer';
 
@@ -21,8 +22,6 @@ export default function SendToIGMS({ docId, onComplete }) {
     const [isAddingInternalLog, setIsAddingInternalLog] = useState(false);
     const [showFullCase, setShowFullCase] = useState(false);
     const [sendingConsent, setSendingConsent] = useState(false);
-    const [claimScoreInput, setClaimScoreInput] = useState('');
-    const [savingClaimScore, setSavingClaimScore] = useState(false);
     const videoVerificationStatus = caseData?.VideoVerification || 'Verification Pending';
     const canProceedToIGMS = videoVerificationStatus === 'Completed';
 
@@ -40,11 +39,6 @@ export default function SendToIGMS({ docId, onComplete }) {
                     setStatus(data.status || '');
                     setCaseRejectionReason(data.caseRejectionReason || '');
                     setDocumentShort(data.documentShort || '');
-                    setClaimScoreInput(
-                        typeof data.claimScore === 'number' && !Number.isNaN(data.claimScore)
-                            ? String(data.claimScore)
-                            : ''
-                    );
                 } else {
                     setError('Case not found');
                 }
@@ -58,65 +52,6 @@ export default function SendToIGMS({ docId, onComplete }) {
 
         fetchCase();
     }, [docId]);
-
-    const handleSaveClaimScore = async () => {
-        const raw = claimScoreInput.trim();
-        if (raw === '') {
-            alert('Enter a claim score between 0 and 100.');
-            return;
-        }
-        const score = Number(raw);
-        if (!Number.isInteger(score) || score < 0 || score > 100) {
-            alert('Claim score must be a whole number from 0 to 100.');
-            return;
-        }
-
-        try {
-            setSavingClaimScore(true);
-            const docRef = doc(db, 'users', docId);
-            const updatedAt = new Date().toISOString();
-            await updateDoc(docRef, {
-                claimScore: score,
-                claimScoreUpdatedAt: updatedAt,
-            });
-            setCaseData((prev) => ({
-                ...prev,
-                claimScore: score,
-                claimScoreUpdatedAt: updatedAt,
-            }));
-            alert('Claim score saved successfully');
-        } catch (err) {
-            console.error('Error saving claim score:', err);
-            alert('Failed to save claim score');
-        } finally {
-            setSavingClaimScore(false);
-        }
-    };
-
-    const handleClearClaimScore = async () => {
-        if (!window.confirm('Clear the claim score for this case?')) return;
-
-        try {
-            setSavingClaimScore(true);
-            const docRef = doc(db, 'users', docId);
-            await updateDoc(docRef, {
-                claimScore: deleteField(),
-                claimScoreUpdatedAt: deleteField(),
-            });
-            setClaimScoreInput('');
-            setCaseData((prev) => ({
-                ...prev,
-                claimScore: undefined,
-                claimScoreUpdatedAt: undefined,
-            }));
-            alert('Claim score cleared');
-        } catch (err) {
-            console.error('Error clearing claim score:', err);
-            alert('Failed to clear claim score');
-        } finally {
-            setSavingClaimScore(false);
-        }
-    };
 
     const handleFieldUpdate = async (field, value) => {
         try {
@@ -463,54 +398,7 @@ export default function SendToIGMS({ docId, onComplete }) {
                         <p className="mt-1 text-gray-900">{videoVerificationStatus}</p>
                     </div>
 
-                    <div className="col-span-1 md:col-span-2 space-y-2 rounded-lg border border-indigo-200/60 bg-indigo-50/40 p-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Claim score
-                        </label>
-                        <p className="text-xs text-gray-600">
-                            Estimated % chance this case will be solved (shown to customer in CCM).
-                        </p>
-                        <div className="mt-2 flex flex-wrap items-end gap-3">
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={100}
-                                    step={1}
-                                    value={claimScoreInput}
-                                    onChange={(e) => setClaimScoreInput(e.target.value)}
-                                    className="ui-input w-24"
-                                    placeholder="0–100"
-                                    disabled={savingClaimScore}
-                                />
-                                <span className="text-sm text-gray-600">%</span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={handleSaveClaimScore}
-                                disabled={savingClaimScore}
-                                className="ui-btn-primary px-4 py-2 text-sm"
-                            >
-                                {savingClaimScore ? 'Saving…' : 'Save score'}
-                            </button>
-                            {typeof caseData?.claimScore === 'number' && (
-                                <button
-                                    type="button"
-                                    onClick={handleClearClaimScore}
-                                    disabled={savingClaimScore}
-                                    className="ui-btn-secondary px-4 py-2 text-sm"
-                                >
-                                    Clear score
-                                </button>
-                            )}
-                        </div>
-                        {caseData?.claimScoreUpdatedAt && (
-                            <p className="text-xs text-gray-500">
-                                Last updated:{' '}
-                                {new Date(caseData.claimScoreUpdatedAt).toLocaleString()}
-                            </p>
-                        )}
-                    </div>
+                    <ClaimScoreEditor docId={docId} />
 
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">Policy Number</label>
