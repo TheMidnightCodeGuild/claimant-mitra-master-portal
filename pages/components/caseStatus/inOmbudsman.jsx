@@ -1,8 +1,30 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import {
+    deleteObject,
+    getDownloadURL,
+    ref,
+    uploadBytes,
+} from 'firebase/storage';
+import { db, storage } from '../../../lib/firebase';
 import FullCase from './fullCase';
 import DocumentViewer from '../DocumentViewer';
+
+const MAX_GUIDE_PDF_BYTES = 10 * 1024 * 1024;
+
+function safeStorageFileName(originalName) {
+    const base = (originalName || 'guide.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
+    return base.length > 80 ? base.slice(-80) : base;
+}
+
+function formatGuideDate(value) {
+    if (!value) return '—';
+    try {
+        return new Date(value).toLocaleString('en-IN');
+    } catch {
+        return '—';
+    }
+}
 
 export default function InOmbudsman({ docId, onComplete }) {
     const [caseData, setCaseData] = useState(null);
@@ -26,6 +48,9 @@ export default function InOmbudsman({ docId, onComplete }) {
     const [ombudsmanMode, setOmbudsmanMode] = useState('');
     const [ombudsmanRejectionReason, setOmbudsmanRejectionReason] = useState('');
     const [showFullCase, setShowFullCase] = useState(false);
+    const [guideTitle, setGuideTitle] = useState('');
+    const [uploadingGuide, setUploadingGuide] = useState(false);
+    const [deletingGuideId, setDeletingGuideId] = useState('');
 
     useEffect(() => {
         async function fetchCase() {
@@ -60,6 +85,83 @@ export default function InOmbudsman({ docId, onComplete }) {
     // Helper for confirmation
     const confirmAction = (message = "Are you sure?") => {
         return window.confirm(message);
+    };
+
+    const handleGuideUpload = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+
+        if (file.type !== 'application/pdf') {
+            alert('Only PDF files are allowed.');
+            return;
+        }
+
+        if (file.size > MAX_GUIDE_PDF_BYTES) {
+            alert('PDF must be under 10 MB.');
+            return;
+        }
+
+        try {
+            setUploadingGuide(true);
+            const storagePath = `cases/${docId}/ombudsman-guides/${Date.now()}-${safeStorageFileName(file.name)}`;
+            const storageRef = ref(storage, storagePath);
+            await uploadBytes(storageRef, file, { contentType: 'application/pdf' });
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            const newGuide = {
+                id: `${Date.now()}`,
+                fileName: file.name,
+                title: guideTitle.trim() || file.name,
+                storagePath,
+                downloadUrl,
+                uploadedAt: new Date().toISOString(),
+            };
+
+            const updatedGuides = [...(caseData?.ombudsmanGuides || []), newGuide];
+            const docRef = doc(db, 'users', docId);
+            await updateDoc(docRef, { ombudsmanGuides: updatedGuides });
+
+            setCaseData((prev) => ({
+                ...prev,
+                ombudsmanGuides: updatedGuides,
+            }));
+            setGuideTitle('');
+            alert('Ombudsman guide uploaded successfully.');
+        } catch (err) {
+            console.error('Error uploading ombudsman guide:', err);
+            alert('Failed to upload ombudsman guide.');
+        } finally {
+            setUploadingGuide(false);
+        }
+    };
+
+    const handleGuideDelete = async (guide) => {
+        if (!confirmAction(`Delete guide "${guide.title || guide.fileName}"?`)) return;
+
+        try {
+            setDeletingGuideId(guide.id);
+            if (guide.storagePath) {
+                await deleteObject(ref(storage, guide.storagePath));
+            }
+
+            const updatedGuides = (caseData?.ombudsmanGuides || []).filter(
+                (item) => item.id !== guide.id
+            );
+            const docRef = doc(db, 'users', docId);
+            await updateDoc(docRef, { ombudsmanGuides: updatedGuides });
+
+            setCaseData((prev) => ({
+                ...prev,
+                ombudsmanGuides: updatedGuides,
+            }));
+            alert('Guide deleted.');
+        } catch (err) {
+            console.error('Error deleting ombudsman guide:', err);
+            alert('Failed to delete guide.');
+        } finally {
+            setDeletingGuideId('');
+        }
     };
 
     const handleAddMainLog = async () => {
@@ -399,6 +501,91 @@ export default function InOmbudsman({ docId, onComplete }) {
                             <h3 className="text-lg font-medium">Case Documents</h3>
                         </div>
                         <DocumentViewer files={caseData?.fileBucket || []} />
+                    </div>
+
+                    <div className="col-span-2 space-y-4 mt-6 border-t border-slate-200 pt-4">
+                        <div>
+                            <h3 className="text-lg font-medium">Ombudsman Guide</h3>
+                            <p className="mt-1 text-sm text-slate-600">
+                                Upload PDF guides for the customer to view in CCM Complaint Status.
+                            </p>
+                        </div>
+
+                        <div className="space-y-3 rounded-lg border border-indigo-100 bg-indigo-50/40 p-4">
+                            <div>
+                                <label htmlFor="guideTitle" className="block text-sm font-medium text-slate-700">
+                                    Title (optional)
+                                </label>
+                                <input
+                                    id="guideTitle"
+                                    type="text"
+                                    value={guideTitle}
+                                    onChange={(e) => setGuideTitle(e.target.value)}
+                                    placeholder="e.g. How to file with Ombudsman"
+                                    className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="guidePdf" className="block text-sm font-medium text-slate-700">
+                                    PDF file
+                                </label>
+                                <input
+                                    id="guidePdf"
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={handleGuideUpload}
+                                    disabled={uploadingGuide}
+                                    className="mt-1 block w-full text-sm text-slate-600"
+                                />
+                                <p className="mt-1 text-xs text-slate-500">PDF only, max 10 MB.</p>
+                            </div>
+                            {uploadingGuide && (
+                                <p className="text-sm font-medium text-indigo-700">Uploading…</p>
+                            )}
+                        </div>
+
+                        {(caseData?.ombudsmanGuides || []).length === 0 ? (
+                            <div className="ui-empty-state py-6 text-sm">No ombudsman guides uploaded yet.</div>
+                        ) : (
+                            <div className="space-y-3">
+                                {(caseData?.ombudsmanGuides || []).map((guide) => (
+                                    <div
+                                        key={guide.id}
+                                        className="ui-card-compact flex flex-wrap items-center justify-between gap-3 p-4 shadow-sm border-indigo-100/80"
+                                    >
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-medium text-slate-900 truncate">
+                                                {guide.title || guide.fileName}
+                                            </p>
+                                            <p className="text-sm text-slate-600 truncate">{guide.fileName}</p>
+                                            <p className="text-xs text-slate-500">
+                                                Added {formatGuideDate(guide.uploadedAt)}
+                                            </p>
+                                        </div>
+                                        <div className="flex shrink-0 items-center gap-3">
+                                            {guide.downloadUrl && (
+                                                <a
+                                                    href={guide.downloadUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                                                >
+                                                    View
+                                                </a>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleGuideDelete(guide)}
+                                                disabled={deletingGuideId === guide.id}
+                                                className="text-sm font-medium text-rose-600 hover:text-rose-800 disabled:text-slate-400"
+                                            >
+                                                {deletingGuideId === guide.id ? 'Deleting…' : 'Delete'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Ombudsman Status Update Section */}
