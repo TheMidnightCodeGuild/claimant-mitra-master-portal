@@ -1,3 +1,5 @@
+/* KPI Dashboard — temporarily disabled (do not delete). Uncomment to re-enable.
+
 import { useEffect, useMemo, useState } from "react";
 import { fetchKpiData } from "../../lib/kpiCache";
 
@@ -367,3 +369,5 @@ function KpiCard({ label, value }) {
     </div>
   );
 }
+
+*/

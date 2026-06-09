@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+// import dynamic from 'next/dynamic'; // KPI Dashboard disabled
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { collection, onSnapshot } from 'firebase/firestore';
@@ -40,6 +40,8 @@ const DashboardCard = ({ title, onClick, icon }) => (
   </div>
 );
 
+// KPI Dashboard disabled
+/*
 const KpiDashboard = dynamic(() => import('./components/kpiDashboard'), {
   ssr: false,
   loading: () => (
@@ -48,6 +50,7 @@ const KpiDashboard = dynamic(() => import('./components/kpiDashboard'), {
     </div>
   ),
 });
+*/
 
 function buildDashboardGroups(router) {
   return [
@@ -215,8 +218,9 @@ function buildDashboardGroups(router) {
 export default function Dashboard() {
   const router = useRouter();
   const [noticeCount, setNoticeCount] = useState(0);
-  const [kpiActivated, setKpiActivated] = useState(false);
-  const [showKpi, setShowKpi] = useState(false);
+  // KPI Dashboard disabled
+  // const [kpiActivated, setKpiActivated] = useState(false);
+  // const [showKpi, setShowKpi] = useState(false);
   const dashboardGroups = buildDashboardGroups(router);
 
   useEffect(() => {
@@ -249,6 +253,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {/* KPI Dashboard disabled
             <button
               type="button"
               onClick={() => {
@@ -261,6 +266,7 @@ export default function Dashboard() {
             >
               KPI Dashboard
             </button>
+            */}
             <button
               type="button"
               onClick={() => router.push('/view?type=noticeBoard')}
@@ -278,9 +284,11 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-[95%] lg:max-w-[1300px] mx-auto py-6 sm:py-8 md:py-10 px-3 sm:px-4 md:px-6 lg:px-8 space-y-10">
+        {/* KPI Dashboard disabled
         {kpiActivated && showKpi && (
           <KpiDashboard onClose={() => setShowKpi(false)} />
         )}
+        */}
         <div>
           <p className="ui-section-eyebrow mb-2">Modules</p>
           <h2 className="text-xl font-semibold text-slate-900 tracking-tight">
