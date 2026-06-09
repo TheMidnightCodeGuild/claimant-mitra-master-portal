@@ -12,8 +12,11 @@ import {
 } from "firebase/storage";
 import Image from "next/image";
 import Link from "next/link";
+import usePartnerRefNameMap from "../../../lib/usePartnerRefNameMap";
+import { resolvePartnerDisplayName } from "../../../lib/partnerLookup";
 
 export default function FullCase({ docId }) {
+  const { partnerMap } = usePartnerRefNameMap();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -383,7 +386,9 @@ export default function FullCase({ docId }) {
             ? caseData?.[field]
               ? "Yes"
               : "No"
-            : prefix + (caseData?.[field] || "Not set")}
+            : field === "partnerRef"
+              ? resolvePartnerDisplayName(caseData?.partnerRef, partnerMap)
+              : prefix + (caseData?.[field] || "Not set")}
         </div>
       )}
     </div>
@@ -1041,7 +1046,7 @@ export default function FullCase({ docId }) {
                 "number",
                 "₹"
               )}
-              {renderField("Partner Reference", "partnerRef")}
+              {renderField("Partner", "partnerRef")}
               {renderField("Mobile", "mobile", "tel")}
               {renderField("Email", "email", "email")}
               {renderField("Aadhar Number", "aadharNo")}

@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import SendToReview from "./caseStatus/sendToReview";
+import usePartnerRefNameMap from "../../lib/usePartnerRefNameMap";
+import { resolvePartnerDisplayName } from "../../lib/partnerLookup";
 
 export default function ViewLatestLeads() {
+  const { partnerMap } = usePartnerRefNameMap();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -206,8 +209,8 @@ export default function ViewLatestLeads() {
 
               {lead.partnerRef && (
                 <p className="text-slate-700 flex items-center gap-2 text-sm sm:text-base">
-                  <span className="font-medium">Partner Ref:</span>
-                  <span className="break-all">{lead.partnerRef}</span>
+                  <span className="font-medium">Partner:</span>
+                  <span className="break-all">{resolvePartnerDisplayName(lead.partnerRef, partnerMap)}</span>
                 </p>
               )}
 

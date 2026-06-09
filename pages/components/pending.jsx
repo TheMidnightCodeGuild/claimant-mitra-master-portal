@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import SendFromPending from './caseStatus/sendFromPending';
+import usePartnerRefNameMap from '../../lib/usePartnerRefNameMap';
+import { resolvePartnerDisplayName } from '../../lib/partnerLookup';
 
 export default function Pending() {
+    const { partnerMap } = usePartnerRefNameMap();
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -185,7 +188,7 @@ export default function Pending() {
                                     {case_.name || 'No Name'}
                                 </h3>
                                 <span className="text-sm text-slate-500">
-                                    Ref: {case_.partnerRef || 'N/A'}
+                                    Partner: {resolvePartnerDisplayName(case_.partnerRef, partnerMap)}
                                 </span>
                             </div>
 

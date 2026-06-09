@@ -3,8 +3,11 @@ import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import FullCase from './fullCase';
 import DocumentViewer from '../DocumentViewer';
+import usePartnerRefNameMap from '../../../lib/usePartnerRefNameMap';
+import { resolvePartnerDisplayName } from '../../../lib/partnerLookup';
 
 export default function SendToReview({ docId, onComplete }) {
+    const { partnerMap } = usePartnerRefNameMap();
     const [caseData, setCaseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -161,7 +164,7 @@ export default function SendToReview({ docId, onComplete }) {
                         { label: "Name", value: caseData?.name },
                         { label: "Complaint Date", value: caseData?.complaintDate?.toLocaleString() },
                         { label: "Estimated Claim Amount", value: caseData?.estimatedClaimAmount ? `₹${caseData.estimatedClaimAmount}` : null },
-                        { label: "Partner Reference", value: caseData?.partnerRef },
+                        { label: "Partner", value: resolvePartnerDisplayName(caseData?.partnerRef, partnerMap) },
                         { label: "Mobile", value: caseData?.mobile },
                         { label: "Email", value: caseData?.email },
                         { label: "Claim Number", value: caseData?.claimNo },

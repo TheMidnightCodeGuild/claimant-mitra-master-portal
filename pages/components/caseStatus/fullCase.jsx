@@ -12,8 +12,11 @@ import { useRouter } from "next/router";
 import UpdateCase from "../caseStatus/updateCases";
 import Image from "next/image";
 import Link from "next/link";
+import usePartnerRefNameMap from "../../../lib/usePartnerRefNameMap";
+import { resolvePartnerDisplayName } from "../../../lib/partnerLookup";
 
 export default function FullCase({ docId }) {
+  const { partnerMap } = usePartnerRefNameMap();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -775,10 +778,10 @@ export default function FullCase({ docId }) {
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                Partner Reference
+                Partner
               </label>
               <p className="mt-1 text-gray-900">
-                {caseData?.parnerRef || "N/A"}
+                {resolvePartnerDisplayName(caseData?.partnerRef, partnerMap)}
               </p>
             </div>
 

@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import SendToIGMS from './caseStatus/sendToIGMS';
+import usePartnerRefNameMap from '../../lib/usePartnerRefNameMap';
+import { resolvePartnerDisplayName } from '../../lib/partnerLookup';
 
 export default function CasesUnderReview() {
+    const { partnerMap } = usePartnerRefNameMap();
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -191,7 +194,7 @@ export default function CasesUnderReview() {
                             )}
                             {case_.partnerRef && (
                                 <p className="text-gray-600">
-                                    <span className="font-medium">Ref:</span> {case_.partnerRef}
+                                    <span className="font-medium">Partner:</span> {resolvePartnerDisplayName(case_.partnerRef, partnerMap)}
                                 </p>
                             )}
                             {case_.mobile && (

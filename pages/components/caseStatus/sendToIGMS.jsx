@@ -5,8 +5,11 @@ import FullCase from './fullCase';
 import ClaimScoreEditor from './ClaimScoreEditor';
 import { sendConsent } from '../consent';
 import DocumentViewer from '../DocumentViewer';
+import usePartnerRefNameMap from '../../../lib/usePartnerRefNameMap';
+import { resolvePartnerDisplayName } from '../../../lib/partnerLookup';
 
 export default function SendToIGMS({ docId, onComplete }) {
+    const { partnerMap } = usePartnerRefNameMap();
     const [caseData, setCaseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -369,8 +372,8 @@ export default function SendToIGMS({ docId, onComplete }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Partner Reference</label>
-                        <p className="mt-1 text-gray-900">{caseData?.partnerRef || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-gray-700">Partner</label>
+                        <p className="mt-1 text-gray-900">{resolvePartnerDisplayName(caseData?.partnerRef, partnerMap)}</p>
                     </div>
 
                     <div className="space-y-2">

@@ -9,6 +9,8 @@ import {
 import { db, storage } from '../../../lib/firebase';
 import FullCase from './fullCase';
 import DocumentViewer from '../DocumentViewer';
+import usePartnerRefNameMap from '../../../lib/usePartnerRefNameMap';
+import { resolvePartnerDisplayName } from '../../../lib/partnerLookup';
 
 const MAX_GUIDE_PDF_BYTES = 10 * 1024 * 1024;
 
@@ -27,6 +29,7 @@ function formatGuideDate(value) {
 }
 
 export default function InOmbudsman({ docId, onComplete }) {
+    const { partnerMap } = usePartnerRefNameMap();
     const [caseData, setCaseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -473,8 +476,8 @@ export default function InOmbudsman({ docId, onComplete }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-slate-700">Partner Reference</label>
-                        <p className="mt-1 text-slate-900">{caseData?.partnerRef || 'N/A'}</p>
+                        <label className="block text-sm font-medium text-slate-700">Partner</label>
+                        <p className="mt-1 text-slate-900">{resolvePartnerDisplayName(caseData?.partnerRef, partnerMap)}</p>
                     </div>
 
                     <div className="space-y-2">
