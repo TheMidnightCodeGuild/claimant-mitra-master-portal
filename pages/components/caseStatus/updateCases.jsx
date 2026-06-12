@@ -386,8 +386,18 @@ export default function FullCase({ docId }) {
             ? caseData?.[field]
               ? "Yes"
               : "No"
-            : field === "partnerRef"
-              ? resolvePartnerDisplayName(caseData?.partnerRef, partnerMap)
+            : field === "partnerRef" ? (
+              <div>
+                <div>
+                  {resolvePartnerDisplayName(caseData?.partnerRef, partnerMap)}
+                </div>
+                {caseData?.partnerRef && (
+                  <div className="text-sm text-gray-500 mt-0.5">
+                    Ref: {caseData.partnerRef}
+                  </div>
+                )}
+              </div>
+            )
               : prefix + (caseData?.[field] || "Not set")}
         </div>
       )}
