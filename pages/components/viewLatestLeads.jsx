@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import SendToReview from "./caseStatus/sendToReview";
 import usePartnerRefNameMap from "../../lib/usePartnerRefNameMap";
@@ -11,6 +11,7 @@ export default function ViewLatestLeads() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     async function fetchLatestLeads() {
@@ -91,6 +92,24 @@ export default function ViewLatestLeads() {
 
     fetchLatestLeads();
   }, []);
+
+  const handleDeleteLead = async (e, lead) => {
+    e.stopPropagation();
+    const ok = window.confirm(
+      `Delete case "${lead.name || "Unnamed Lead"}"? This cannot be undone.`
+    );
+    if (!ok) return;
+    try {
+      setDeletingId(lead.id);
+      await deleteDoc(doc(db, "users", lead.id));
+      setLeads((prev) => prev.filter((l) => l.id !== lead.id));
+      if (selectedLeadId === lead.id) setSelectedLeadId(null);
+    } catch (err) {
+      alert("Failed to delete lead: " + err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -220,6 +239,15 @@ export default function ViewLatestLeads() {
                   <span>{lead.mobile}</span>
                 </p>
               )}
+
+              <button
+                type="button"
+                onClick={(e) => handleDeleteLead(e, lead)}
+                disabled={deletingId === lead.id}
+                className="ui-btn-danger text-sm mt-2 disabled:opacity-50"
+              >
+                {deletingId === lead.id ? "Deleting…" : "Delete"}
+              </button>
             </div>
           </div>
         ))}

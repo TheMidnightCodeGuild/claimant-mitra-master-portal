@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { db } from '../../lib/firebase';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore';
 
 function ViewCustomerEnquiries() {
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [processingId, setProcessingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const fetchEnquiries = async () => {
@@ -109,6 +110,22 @@ function ViewCustomerEnquiries() {
     }
   };
 
+  const handleDeleteEnquiry = async (enquiry) => {
+    const ok = window.confirm(
+      `Delete this enquiry from ${enquiry.fullName || 'this customer'}? This cannot be undone.`
+    );
+    if (!ok) return;
+    try {
+      setDeletingId(enquiry.id);
+      await deleteDoc(doc(db, 'enquiries', enquiry.id));
+      setEnquiries((prev) => prev.filter((e) => e.id !== enquiry.id));
+    } catch (err) {
+      alert('Failed to delete enquiry: ' + err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) return <div className="flex min-h-[30vh] items-center justify-center"><div className="ui-spinner" /></div>;
   if (error) return <div className="ui-empty-state border-rose-200 text-rose-700">{error}</div>;
 
@@ -159,14 +176,22 @@ function ViewCustomerEnquiries() {
                   <h3 className="font-semibold">Message</h3>
                   <p className="whitespace-pre-wrap">{enquiry.message}</p>
                 </div>
-                <div className="col-span-2 mt-4">
+                <div className="col-span-2 mt-4 flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => handleTakeAsComplaint(enquiry)}
-                    disabled={processingId === enquiry.id}
+                    disabled={processingId === enquiry.id || deletingId === enquiry.id}
                     className="ui-btn-primary disabled:opacity-50"
                   >
                     {processingId === enquiry.id ? 'Converting...' : 'Take as Complaint'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteEnquiry(enquiry)}
+                    disabled={deletingId === enquiry.id || processingId === enquiry.id}
+                    className="ui-btn-danger disabled:opacity-50"
+                  >
+                    {deletingId === enquiry.id ? 'Deleting…' : 'Delete'}
                   </button>
                 </div>
               </div>
