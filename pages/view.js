@@ -31,6 +31,7 @@ import ManageTestimonialVideos from './components/manageTestimonialVideos';
 import ManageParigyan from './components/manageParigyan';
 import ManageGalleryImages from './components/manageGalleryImages';
 import ManageFromClaimantMitraVideos from './components/manageFromClaimantMitraVideos';
+import RecycleCases from './components/recycleCases';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
@@ -118,6 +119,8 @@ export default function View() {
                 return <ManageGalleryImages />;
             case 'manageFromClaimantMitraVideos':
                 return <ManageFromClaimantMitraVideos />;
+            case 'recycleCases':
+                return <RecycleCases />;
             default:
                 return <div>Invalid component type</div>;
         }

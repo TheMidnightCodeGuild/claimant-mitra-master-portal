@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { doc, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
+import { moveCaseToRecycle } from "../../../lib/caseRecycle";
 import DocumentViewer from "../DocumentViewer";
 import {
   getStorage,
@@ -104,7 +105,7 @@ export default function FullCase({ docId }) {
   const handleDelete = async () => {
     if (
       !window.confirm(
-        "Are you sure you want to delete this case? This action cannot be undone."
+        "Move this case to Recycle? You can restore it later from the Recycle Bin."
       )
     ) {
       return;
@@ -112,14 +113,12 @@ export default function FullCase({ docId }) {
 
     setIsDeleting(true);
     try {
-      const docRef = doc(db, "users", docId);
-      await deleteDoc(docRef);
-      alert("Case deleted successfully");
-      // Redirect or handle post-deletion as needed
-      window.location.href = "/"; // Or your desired redirect path
+      await moveCaseToRecycle(docId);
+      alert("Case moved to Recycle");
+      window.location.href = "/";
     } catch (err) {
-      console.error("Error deleting case:", err);
-      alert("Failed to delete case");
+      console.error("Error moving case to recycle:", err);
+      alert("Failed to move case to Recycle");
     } finally {
       setIsDeleting(false);
     }
@@ -420,10 +419,10 @@ export default function FullCase({ docId }) {
             {isDeleting ? (
               <>
                 <span className="animate-spin mr-2">⌛</span>
-                Deleting...
+                Moving to Recycle...
               </>
             ) : (
-              "Delete Case"
+              "Move to Recycle"
             )}
           </button>
         </div>

@@ -176,6 +176,11 @@ function buildDashboardGroups(router) {
           onClick: () => router.push('/view?type=rejectedCases'),
           icon: '❌',
         },
+        {
+          title: 'Recycle Bin',
+          onClick: () => router.push('/view?type=recycleCases'),
+          icon: '🗑️',
+        },
       ],
     },
     {

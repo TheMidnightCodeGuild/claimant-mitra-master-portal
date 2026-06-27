@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import { moveCaseToRecycle } from '../../../lib/caseRecycle';
 import FullCase from './fullCase';
 import { sendConsent } from '../consent';
 import DocumentViewer from '../DocumentViewer';
@@ -137,20 +138,19 @@ export default function SendFromReimbursement({ docId, onComplete }) {
 
     const handleDeleteCase = async () => {
         await confirmAction(
-            'You are about to delete this case. This action cannot be undone.',
+            'Move this case to Recycle? You can restore it later from the Recycle Bin.',
             async () => {
                 try {
                     if (!docId) return;
-                    
-                    const docRef = doc(db, 'users', docId);
-                    await deleteDoc(docRef);
-                    alert('Case deleted successfully');
+
+                    await moveCaseToRecycle(docId);
+                    alert('Case moved to Recycle');
                     if (onComplete) {
                         onComplete();
                     }
                 } catch (err) {
-                    console.error('Error deleting case:', err);
-                    alert('Failed to delete case');
+                    console.error('Error moving case to recycle:', err);
+                    alert('Failed to move case to Recycle');
                 }
             }
         );
@@ -700,7 +700,7 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                             onClick={handleDeleteCase}
                             className="min-h-[42px] min-w-[120px] flex-1 rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
                         >
-                            Delete Case
+                            Move to Recycle
                         </button>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import {
     deleteObject,
     getDownloadURL,
@@ -7,6 +7,7 @@ import {
     uploadBytes,
 } from 'firebase/storage';
 import { db, storage } from '../../../lib/firebase';
+import { moveCaseToRecycle } from '../../../lib/caseRecycle';
 import FullCase from './fullCase';
 import DocumentViewer from '../DocumentViewer';
 import usePartnerRefNameMap from '../../../lib/usePartnerRefNameMap';
@@ -343,17 +344,16 @@ export default function InOmbudsman({ docId, onComplete }) {
     };
 
     const handleDeleteCase = async () => {
-        if (!confirmAction('Are you sure you want to delete this case? This action cannot be undone.')) return;
+        if (!confirmAction('Move this case to Recycle? You can restore it later from the Recycle Bin.')) return;
         try {
-            const docRef = doc(db, 'users', docId);
-            await deleteDoc(docRef);
-            alert('Case deleted successfully');
+            await moveCaseToRecycle(docId);
+            alert('Case moved to Recycle');
             if (onComplete) {
                 onComplete();
             }
         } catch (err) {
-            console.error('Error deleting case:', err);
-            alert('Failed to delete case');
+            console.error('Error moving case to recycle:', err);
+            alert('Failed to move case to Recycle');
         }
     };
 
@@ -433,7 +433,7 @@ export default function InOmbudsman({ docId, onComplete }) {
                         onClick={handleDeleteCase}
                         className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-rose-700"
                     >
-                        Delete Case
+                        Move to Recycle
                     </button>
                 </div>
             </div>

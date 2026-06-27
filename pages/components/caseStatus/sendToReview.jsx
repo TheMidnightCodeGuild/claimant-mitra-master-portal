@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import { moveCaseToRecycle } from '../../../lib/caseRecycle';
 import FullCase from './fullCase';
 import DocumentViewer from '../DocumentViewer';
 import usePartnerRefNameMap from '../../../lib/usePartnerRefNameMap';
@@ -67,20 +68,20 @@ export default function SendToReview({ docId, onComplete }) {
     };
 
     const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
+        if (!window.confirm('Move this case to Recycle? You can restore it later from the Recycle Bin.')) {
             return;
         }
 
         try {
             setDeleting(true);
-            const docRef = doc(db, 'users', docId);
-            await deleteDoc(docRef);
+            await moveCaseToRecycle(docId);
+            alert('Case moved to Recycle');
             if (onComplete) {
                 onComplete();
             }
         } catch (err) {
-            console.error('Error deleting case:', err);
-            setError('Failed to delete case');
+            console.error('Error moving case to recycle:', err);
+            setError('Failed to move case to Recycle');
         } finally {
             setDeleting(false);
         }
@@ -144,14 +145,14 @@ export default function SendToReview({ docId, onComplete }) {
                         {deleting ? (
                             <>
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
-                                <span>Deleting...</span>
+                                <span>Moving to Recycle...</span>
                             </>
                         ) : (
                             <>
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                                 </svg>
-                                Delete Case
+                                Move to Recycle
                             </>
                         )}
                     </button>

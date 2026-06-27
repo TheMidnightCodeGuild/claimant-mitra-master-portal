@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import { moveCaseToRecycle } from '../../../lib/caseRecycle';
 import FullCase from './fullCase';
 import { sendConsent } from '../consent';
 import DocumentViewer from '../DocumentViewer';
@@ -126,18 +127,17 @@ export default function SendFromPending({ docId, onComplete }) {
     };
 
     const handleDeleteCase = async () => {
-        await confirmAction('Are you sure you want to delete this case? This action cannot be undone.', async () => {
+        await confirmAction('Move this case to Recycle? You can restore it later from the Recycle Bin.', async () => {
             try {
                 if (!docId) return;
-                const docRef = doc(db, 'users', docId);
-                await deleteDoc(docRef);
-                alert('Case deleted successfully');
+                await moveCaseToRecycle(docId);
+                alert('Case moved to Recycle');
                 if (onComplete) {
                     onComplete();
                 }
             } catch (err) {
-                console.error('Error deleting case:', err);
-                alert('Failed to delete case');
+                console.error('Error moving case to recycle:', err);
+                alert('Failed to move case to Recycle');
             }
         });
     };
@@ -596,7 +596,7 @@ export default function SendFromPending({ docId, onComplete }) {
                             onClick={handleDeleteCase}
                             className="flex-1 bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                         >
-                            Delete Case
+                            Move to Recycle
                         </button>
                     </div>
                 </div>
