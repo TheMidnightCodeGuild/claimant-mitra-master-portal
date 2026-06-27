@@ -1,5 +1,8 @@
 import { requireSession } from "../../../lib/apiAuth";
-import { calculateSuccessFees } from "../../../lib/successFees";
+import {
+  calculateSuccessFees,
+  parseSuccessFeePercent,
+} from "../../../lib/successFees";
 import { generateInvoicePdf } from "../../../lib/invoicePdf";
 import { allocateInvoiceNumber } from "../../../lib/invoiceNumber";
 
@@ -22,6 +25,7 @@ export default async function handler(req, res) {
       caseId,
       claimNo,
       policyNo,
+      successFeePercent,
     } = req.body;
 
     if (!billTo?.name?.trim() || !billTo?.email?.trim()) {
@@ -33,7 +37,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Valid claim amount is required" });
     }
 
-    const fees = calculateSuccessFees(amount);
+    const feePercent = parseSuccessFeePercent(successFeePercent);
+    if (feePercent == null) {
+      return res.status(400).json({ error: "Valid success fee percentage is required" });
+    }
+
+    const fees = calculateSuccessFees(amount, feePercent);
     if (!fees) {
       return res.status(400).json({ error: "Could not calculate fees" });
     }
@@ -55,6 +64,7 @@ export default async function handler(req, res) {
       },
       claimAmount: amount,
       successFee: fees.successFee,
+      successFeePercent: fees.successFeePercent,
       total: fees.total,
       claimNo: claimNo || undefined,
       policyNo: policyNo || undefined,
@@ -76,6 +86,7 @@ export default async function handler(req, res) {
       policyNo: policyNo || null,
       claimAmount: amount,
       successFee: fees.successFee,
+      successFeePercent: fees.successFeePercent,
       total: fees.total,
       createdBy: session,
       pdfFileName: `${safeNumber}.pdf`,

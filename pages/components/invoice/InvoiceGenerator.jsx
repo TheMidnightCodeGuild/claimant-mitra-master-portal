@@ -14,6 +14,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../lib/firebase";
 import {
   parseClaimAmount,
+  parseSuccessFeePercent,
   calculateSuccessFees,
   formatInr,
 } from "../../../lib/successFees";
@@ -38,6 +39,7 @@ export default function InvoiceGenerator() {
   const [caseSearch, setCaseSearch] = useState("");
   const [selectedCaseId, setSelectedCaseId] = useState("");
   const [claimInput, setClaimInput] = useState("");
+  const [successFeePercent, setSuccessFeePercent] = useState("20");
   const [billTo, setBillTo] = useState({ name: "", email: "", address: "" });
   const [claimNo, setClaimNo] = useState("");
   const [policyNo, setPolicyNo] = useState("");
@@ -49,9 +51,16 @@ export default function InvoiceGenerator() {
   const [sendingEmail, setSendingEmail] = useState(false);
 
   const claimAmount = useMemo(() => parseClaimAmount(claimInput), [claimInput]);
+  const parsedSuccessFeePercent = useMemo(
+    () => parseSuccessFeePercent(successFeePercent),
+    [successFeePercent]
+  );
   const breakdown = useMemo(
-    () => (claimAmount != null ? calculateSuccessFees(claimAmount) : null),
-    [claimAmount]
+    () =>
+      claimAmount != null && parsedSuccessFeePercent != null
+        ? calculateSuccessFees(claimAmount, parsedSuccessFeePercent)
+        : null,
+    [claimAmount, parsedSuccessFeePercent]
   );
 
   useEffect(() => {
@@ -138,6 +147,7 @@ export default function InvoiceGenerator() {
         credentials: "include",
         body: JSON.stringify({
           claimAmount,
+          successFeePercent: parsedSuccessFeePercent,
           billTo,
           caseId: selectedCaseId || undefined,
           claimNo: claimNo || undefined,
@@ -170,6 +180,7 @@ export default function InvoiceGenerator() {
       setSuccess(`Invoice ${invoiceDraft.invoiceNumber} saved.`);
       setTab("list");
       setClaimInput("");
+      setSuccessFeePercent("20");
       setBillTo({ name: "", email: "", address: "" });
       setClaimNo("");
       setPolicyNo("");
@@ -266,8 +277,8 @@ export default function InvoiceGenerator() {
         <p className="ui-section-eyebrow">Billing</p>
         <h2 className="ui-section-title mt-1">Invoice Generator</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Success fee is 20% of the claim amount. PDFs are stored in Firebase
-          and can be emailed to customers.
+          Success fee is configurable (% of claim amount). Default is 20%. PDFs
+          are stored in Firebase and can be emailed to customers.
         </p>
       </div>
 
@@ -372,10 +383,29 @@ export default function InvoiceGenerator() {
             />
           </div>
 
+          <div>
+            <label htmlFor="successFeePercent" className="mb-1 block text-sm font-medium text-slate-700">
+              Success fee (%)
+            </label>
+            <input
+              id="successFeePercent"
+              type="number"
+              min="0.01"
+              max="100"
+              step="0.01"
+              value={successFeePercent}
+              onChange={(e) => setSuccessFeePercent(e.target.value)}
+              className={inputClass}
+              required
+            />
+          </div>
+
           {breakdown && (
             <dl className="ui-section-indigo space-y-3">
               <div className="flex flex-wrap justify-between gap-2">
-                <dt className="text-sm text-slate-600">Success fee (20%)</dt>
+                <dt className="text-sm text-slate-600">
+                  Success fee ({breakdown.successFeePercent}%)
+                </dt>
                 <dd className="text-sm font-semibold text-slate-900">
                   {formatInr(breakdown.successFee)}
                 </dd>

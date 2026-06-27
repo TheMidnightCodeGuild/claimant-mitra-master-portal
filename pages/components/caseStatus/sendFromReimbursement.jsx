@@ -18,10 +18,13 @@ export default function SendFromReimbursement({ docId, onComplete }) {
     const [editingField, setEditingField] = useState(null);
     const [showAllMainLogs, setShowAllMainLogs] = useState(false);
     const [showAllInternalLogs, setShowAllInternalLogs] = useState(false);
+    const [showAllIGMSLogs, setShowAllIGMSLogs] = useState(false);
     const [newMainLogRemark, setNewMainLogRemark] = useState('');
     const [newInternalLogRemark, setNewInternalLogRemark] = useState('');
+    const [newIGMSLogRemark, setNewIGMSLogRemark] = useState('');
     const [isAddingMainLog, setIsAddingMainLog] = useState(false);
     const [isAddingInternalLog, setIsAddingInternalLog] = useState(false);
+    const [isAddingIGMSLog, setIsAddingIGMSLog] = useState(false);
     const [showFullCase, setShowFullCase] = useState(false);
     const [sendingConsent, setSendingConsent] = useState(false);
 
@@ -237,6 +240,35 @@ export default function SendFromReimbursement({ docId, onComplete }) {
         }
     };
 
+    const handleAddIGMSLog = async () => {
+        try {
+            if (!newIGMSLogRemark.trim()) return;
+
+            const newLog = {
+                date: new Date().toISOString(),
+                remark: newIGMSLogRemark.trim()
+            };
+
+            const updatedLogs = [...(caseData.igmsLogs || []), newLog];
+
+            const docRef = doc(db, 'users', docId);
+            await updateDoc(docRef, {
+                igmsLogs: updatedLogs
+            });
+
+            setCaseData(prev => ({
+                ...prev,
+                igmsLogs: updatedLogs
+            }));
+            setNewIGMSLogRemark('');
+            setIsAddingIGMSLog(false);
+            alert('IGMS log added successfully');
+        } catch (err) {
+            console.error('Error adding IGMS log:', err);
+            alert('Failed to add IGMS log');
+        }
+    };
+
     const handleSendConsent = async () => {
         await confirmAction(
             'You are about to send a consent document to the user.',
@@ -279,7 +311,7 @@ export default function SendFromReimbursement({ docId, onComplete }) {
         );
     };
 
-    const renderLogs = (logs, isMainLog = true) => {
+    const renderLogs = (logs, isMainLog = true, isIGMSLog = false) => {
         if (!logs || logs.length === 0) return 'No logs available';
 
         const sortedLogs = [...logs].sort((a, b) => 
@@ -288,6 +320,8 @@ export default function SendFromReimbursement({ docId, onComplete }) {
 
         const logsToShow = isMainLog ? 
             (showAllMainLogs ? sortedLogs : [sortedLogs[0]]) :
+            isIGMSLog ?
+            (showAllIGMSLogs ? sortedLogs : [sortedLogs[0]]) :
             (showAllInternalLogs ? sortedLogs : [sortedLogs[0]]);
 
         return (
@@ -578,6 +612,56 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                                 </div>
                             )}
                             {renderLogs(caseData?.internalLogs, false)}
+                        </div>
+                    </div>
+
+                    <div className="col-span-2 space-y-2">
+                        <div className="flex justify-between items-center">
+                            <label className="block text-sm font-medium text-slate-700">IGMS Logs</label>
+                            <div className="space-x-2">
+                                {caseData?.igmsLogs?.length > 1 && (
+                                    <button
+                                        onClick={() => setShowAllIGMSLogs(!showAllIGMSLogs)}
+                                        className="text-sm text-indigo-600 hover:text-indigo-800"
+                                    >
+                                        {showAllIGMSLogs ? 'Show Latest' : 'View All'}
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setIsAddingIGMSLog(!isAddingIGMSLog)}
+                                    className="text-sm text-emerald-600 hover:text-emerald-800"
+                                >
+                                    + Add Log
+                                </button>
+                            </div>
+                        </div>
+                        <div className="mt-1 rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                            {isAddingIGMSLog && (
+                                <div className="mb-3 space-y-2">
+                                    <textarea
+                                        value={newIGMSLogRemark}
+                                        onChange={(e) => setNewIGMSLogRemark(e.target.value)}
+                                        className="w-full p-2 border rounded-md"
+                                        placeholder="Enter new log remark..."
+                                        rows="2"
+                                    />
+                                    <div className="flex justify-end space-x-2">
+                                        <button
+                                            onClick={() => setIsAddingIGMSLog(false)}
+                                            className="px-3 py-1 text-sm text-slate-600 hover:text-slate-800"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleAddIGMSLog}
+                                            className="rounded-md bg-indigo-600 px-3 py-1 text-sm text-white transition-colors hover:bg-indigo-700"
+                                        >
+                                            Add Log
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            {renderLogs(caseData?.igmsLogs, false, true)}
                         </div>
                     </div>
 
