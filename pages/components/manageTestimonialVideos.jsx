@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
-  onSnapshot,
-  orderBy,
-  query,
 } from "firebase/firestore";
 import {
   deleteObject,
@@ -15,6 +12,8 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { db, storage } from "../../lib/firebase";
+import { invalidateCollection } from "../../lib/collectionCache";
+import { loadCachedListSorted } from "../../lib/loadCachedList";
 import {
   compressVideoForUpload,
   formatBytes,
@@ -48,31 +47,23 @@ export default function ManageTestimonialVideos() {
   const [statusText, setStatusText] = useState("");
   const [deletingId, setDeletingId] = useState("");
 
-  useEffect(() => {
-    const q = query(
-      collection(db, "testimonialVideos"),
-      orderBy("createdAt", "desc")
-    );
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        setVideos(
-          snapshot.docs.map((docItem) => ({
-            id: docItem.id,
-            ...docItem.data(),
-          }))
-        );
-        setLoading(false);
-        setError(null);
-      },
-      (err) => {
-        console.error("Error loading testimonial videos:", err);
-        setError("Failed to load testimonial videos.");
-        setLoading(false);
-      }
-    );
-    return () => unsubscribe();
+  const loadVideos = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await loadCachedListSorted("testimonialVideos", { forceRefresh });
+      setVideos(rows);
+    } catch (err) {
+      console.error("Error loading testimonial videos:", err);
+      setError("Failed to load testimonial videos.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadVideos();
+  }, [loadVideos]);
 
   const showSuccess = (msg) => {
     setSuccessMessage(msg);
@@ -126,6 +117,9 @@ export default function ManageTestimonialVideos() {
       setTitle("");
       setFile(null);
 
+      invalidateCollection("testimonialVideos");
+      await loadVideos(true);
+
       if (result.compressionFailed) {
         showSuccess(
           `Video uploaded without compression (${formatBytes(result.sizeBytes)}). Keep originals under ${formatBytes(MAX_FALLBACK_BYTES)} when compression fails.`
@@ -158,6 +152,8 @@ export default function ManageTestimonialVideos() {
         await deleteObject(ref(storage, video.storagePath));
       }
       await deleteDoc(doc(db, "testimonialVideos", video.id));
+      invalidateCollection("testimonialVideos");
+      await loadVideos(true);
       showSuccess("Video deleted.");
     } catch (err) {
       console.error(err);

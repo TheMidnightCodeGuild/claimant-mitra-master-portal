@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../lib/firebase";
+import { useState, useEffect, useCallback } from "react";
+import { fetchCollectionCached } from "../../lib/collectionCache";
 import { restoreCaseFromRecycle } from "../../lib/caseRecycle";
 import usePartnerRefNameMap from "../../lib/usePartnerRefNameMap";
 import { resolvePartnerDisplayName } from "../../lib/partnerLookup";
@@ -15,31 +14,27 @@ export default function RecycleCases() {
   const [filteredCases, setFilteredCases] = useState([]);
   const [restoringId, setRestoringId] = useState(null);
 
-  useEffect(() => {
-    async function fetchRecycledCases() {
-      try {
-        const querySnapshot = await getDocs(collection(db, "recycle"));
-        const casesData = querySnapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
-
-        casesData.sort(
-          (a, b) => new Date(b.recycledAt || 0) - new Date(a.recycledAt || 0)
-        );
-
-        setCases(casesData);
-        setFilteredCases(casesData);
-      } catch (err) {
-        console.error("Error fetching recycled cases:", err);
-        setError("Failed to fetch recycled cases: " + err.message);
-      } finally {
-        setLoading(false);
-      }
+  const loadRecycledCases = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const casesData = await fetchCollectionCached("recycle", { forceRefresh });
+      casesData.sort(
+        (a, b) => new Date(b.recycledAt || 0) - new Date(a.recycledAt || 0)
+      );
+      setCases(casesData);
+      setFilteredCases(casesData);
+    } catch (err) {
+      console.error("Error fetching recycled cases:", err);
+      setError("Failed to fetch recycled cases: " + err.message);
+    } finally {
+      setLoading(false);
     }
-
-    fetchRecycledCases();
   }, []);
+
+  useEffect(() => {
+    loadRecycledCases();
+  }, [loadRecycledCases]);
 
   useEffect(() => {
     if (!searchQuery) {

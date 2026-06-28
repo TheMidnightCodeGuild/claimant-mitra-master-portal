@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useNoticeCount } from '../lib/NoticeCountContext';
 
 export async function getServerSideProps(context) {
   const { req } = context;
@@ -219,24 +218,10 @@ function buildDashboardGroups(router) {
 
 export default function Dashboard() {
   const router = useRouter();
-  const [noticeCount, setNoticeCount] = useState(0);
+  const { noticeCount } = useNoticeCount();
   const [kpiActivated, setKpiActivated] = useState(false);
   const [showKpi, setShowKpi] = useState(false);
   const dashboardGroups = buildDashboardGroups(router);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, 'notice'),
-      (snapshot) => {
-        setNoticeCount(snapshot.size);
-      },
-      (err) => {
-        console.error('Error listening notice count:', err);
-      }
-    );
-
-    return () => unsubscribe();
-  }, []);
 
   return (
     <div className="min-h-screen">

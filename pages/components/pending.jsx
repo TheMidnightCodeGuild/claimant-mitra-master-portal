@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { fetchCollectionCached } from '../../lib/collectionCache';
+import { filterCasesByKey } from '../../lib/caseFilters';
 import SendFromPending from './caseStatus/sendFromPending';
 import usePartnerRefNameMap from '../../lib/usePartnerRefNameMap';
 import { resolvePartnerDisplayName } from '../../lib/partnerLookup';
@@ -18,17 +18,8 @@ export default function Pending() {
     useEffect(() => {
         async function fetchCases() {
             try {
-                const q = query(
-                    collection(db, 'users'),
-                    where('rejected', '==', false),
-                    where('isPending', '==', true)
-
-                );
-                const querySnapshot = await getDocs(q);
-                const casesData = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const allCases = await fetchCollectionCached('users');
+                const casesData = filterCasesByKey(allCases, 'pending');
                 setCases(casesData);
                 setFilteredCases(casesData);
             } catch (err) {

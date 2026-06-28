@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { fetchCollectionCached } from '../../lib/collectionCache';
+import { filterCasesByKey } from '../../lib/caseFilters';
 import SendToIGMS from './caseStatus/sendToIGMS';
 import usePartnerRefNameMap from '../../lib/usePartnerRefNameMap';
 import { resolvePartnerDisplayName } from '../../lib/partnerLookup';
@@ -18,18 +18,8 @@ export default function CasesUnderReview() {
     useEffect(() => {
         async function fetchCases() {
             try {
-                const q = query(
-                    collection(db, 'users'),
-                    where('takenForReview', '==', true),
-                    where('igms', '==', false),
-                    where('inReimbursement', '==', false),
-                    where('rejected', '==', false),
-                );
-                const querySnapshot = await getDocs(q);
-                const casesData = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const allCases = await fetchCollectionCached('users');
+                const casesData = filterCasesByKey(allCases, 'underReview');
                 setCases(casesData);
                 setFilteredCases(casesData);
             } catch (err) {

@@ -1,6 +1,10 @@
-import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { useState, useEffect, useCallback } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import {
+  fetchCollectionCached,
+  invalidateCollection,
+} from '../../lib/collectionCache';
 
 export default function ViewPartnerIssues() {
     const [issues, setIssues] = useState([]);
@@ -8,26 +12,23 @@ export default function ViewPartnerIssues() {
     const [error, setError] = useState(null);
     const [editingId, setEditingId] = useState(null);
 
-    useEffect(() => {
-        async function fetchIssues() {
-            try {
-                const issuesRef = collection(db, 'issues');
-                const querySnapshot = await getDocs(issuesRef);
-                const issuesData = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setIssues(issuesData);
-            } catch (err) {
-                console.error('Error fetching issues:', err);
-                setError('Failed to fetch issues');
-            } finally {
-                setLoading(false);
-            }
+    const loadIssues = useCallback(async (forceRefresh = false) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const issuesData = await fetchCollectionCached('issues', { forceRefresh });
+            setIssues(issuesData);
+        } catch (err) {
+            console.error('Error fetching issues:', err);
+            setError('Failed to fetch issues');
+        } finally {
+            setLoading(false);
         }
-
-        fetchIssues();
     }, []);
+
+    useEffect(() => {
+        loadIssues();
+    }, [loadIssues]);
 
     const handleStatusUpdate = async (id, newStatus) => {
         try {
@@ -35,8 +36,9 @@ export default function ViewPartnerIssues() {
             await updateDoc(issueRef, {
                 status: newStatus
             });
+            invalidateCollection('issues');
             
-            setIssues(issues.map(issue => 
+            setIssues(issues.map(issue =>
                 issue.id === id ? { ...issue, status: newStatus } : issue
             ));
             setEditingId(null);

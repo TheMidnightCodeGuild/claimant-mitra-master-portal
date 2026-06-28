@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
-  onSnapshot,
-  orderBy,
-  query,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import {
+  invalidateCollection,
+} from "../../lib/collectionCache";
+import { loadCachedListSorted } from "../../lib/loadCachedList";
 
 function clampRating(value) {
   const n = Math.round(Number(value));
@@ -63,31 +64,23 @@ export default function ManageCustomerReviews() {
   const [reviewText, setReviewText] = useState("");
   const [googleReviewUrl, setGoogleReviewUrl] = useState("");
 
-  useEffect(() => {
-    const q = query(
-      collection(db, "customerReviews"),
-      orderBy("createdAt", "desc")
-    );
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        setReviews(
-          snapshot.docs.map((docItem) => ({
-            id: docItem.id,
-            ...docItem.data(),
-          }))
-        );
-        setLoading(false);
-        setError(null);
-      },
-      (err) => {
-        console.error("Error loading reviews:", err);
-        setError("Failed to load reviews");
-        setLoading(false);
-      }
-    );
-    return () => unsubscribe();
+  const loadReviews = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await loadCachedListSorted("customerReviews", { forceRefresh });
+      setReviews(rows);
+    } catch (err) {
+      console.error("Error loading reviews:", err);
+      setError("Failed to load reviews");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
 
   const showSuccess = (msg) => {
     setSuccessMessage(msg);
@@ -125,6 +118,8 @@ export default function ManageCustomerReviews() {
       setReviewText("");
       setGoogleReviewUrl("");
       showSuccess("Review added successfully.");
+      invalidateCollection("customerReviews");
+      await loadReviews(true);
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to add review.");
@@ -141,6 +136,8 @@ export default function ManageCustomerReviews() {
     try {
       setDeletingId(review.id);
       await deleteDoc(doc(db, "customerReviews", review.id));
+      invalidateCollection("customerReviews");
+      await loadReviews(true);
       showSuccess("Review deleted.");
     } catch (err) {
       console.error(err);

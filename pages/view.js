@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useNoticeCount } from '../lib/NoticeCountContext';
 import ViewLatestLeads from './components/viewLatestLeads';
 import ViewAllCases from './components/viewAllCases';
 import CasesUnderReview from './components/casesUnderReview';
@@ -35,21 +34,7 @@ import RecycleCases from './components/recycleCases';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
-    const [noticeCount, setNoticeCount] = useState(0);
-
-    useEffect(() => {
-        const unsubscribe = onSnapshot(
-            collection(db, 'notice'),
-            (snapshot) => {
-                setNoticeCount(snapshot.size);
-            },
-            (err) => {
-                console.error('Error listening notice count:', err);
-            }
-        );
-
-        return () => unsubscribe();
-    }, []);
+    const { noticeCount } = useNoticeCount();
 
     // Handle back button click
     const handleBack = () => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { fetchCollectionCached } from '../../lib/collectionCache';
+import { filterCasesByKey, sortRejectedCases } from '../../lib/caseFilters';
 import FullCase from './caseStatus/fullCase';
 import usePartnerRefNameMap from '../../lib/usePartnerRefNameMap';
 import { resolvePartnerDisplayName } from '../../lib/partnerLookup';
@@ -18,30 +18,8 @@ export default function RejectedCases() {
     useEffect(() => {
         async function fetchRejectedCases() {
             try {
-                const usersRef = collection(db, 'users');
-                const q = query(
-                    usersRef,
-                    where('rejected', '==', true)
-                );
-
-                const querySnapshot = await getDocs(q);
-                const casesData = [];
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    casesData.push({
-                        id: doc.id,
-                        ...data
-                    });
-                });
-
-                console.log('Fetched rejected cases:', casesData.length);
-                
-                // Sort by rejectionDate in descending order
-                casesData.sort((a, b) => {
-                    return new Date(b.rejectionDate) - new Date(a.rejectionDate);
-                });
-
+                const allCases = await fetchCollectionCached('users');
+                const casesData = sortRejectedCases(filterCasesByKey(allCases, 'rejected'));
                 setCases(casesData);
                 setFilteredCases(casesData);
             } catch (err) {

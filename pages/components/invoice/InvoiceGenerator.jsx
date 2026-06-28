@@ -2,14 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   addDoc,
   collection,
-  onSnapshot,
-  orderBy,
-  query,
   serverTimestamp,
   updateDoc,
   doc,
 } from "firebase/firestore";
-import { fetchCollectionCached } from "../../../lib/collectionCache";
+import {
+  fetchCollectionCached,
+  invalidateCollection,
+} from "../../../lib/collectionCache";
+import { loadCachedListSorted } from "../../../lib/loadCachedList";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../lib/firebase";
 import {
@@ -63,24 +64,23 @@ export default function InvoiceGenerator() {
     [claimAmount, parsedSuccessFeePercent]
   );
 
-  useEffect(() => {
-    const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        setInvoices(
-          snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        );
-        setLoadingList(false);
-      },
-      (err) => {
-        console.error(err);
-        setLoadingList(false);
-        setError("Failed to load invoices");
-      }
-    );
-    return () => unsub();
+  const loadInvoices = useCallback(async (forceRefresh = false) => {
+    setLoadingList(true);
+    try {
+      const rows = await loadCachedListSorted("invoices", { forceRefresh });
+      setInvoices(rows);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load invoices");
+    } finally {
+      setLoadingList(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadInvoices();
+  }, [loadInvoices]);
 
   useEffect(() => {
     async function loadCases() {
@@ -177,6 +177,8 @@ export default function InvoiceGenerator() {
 
       await updateDoc(doc(db, "invoices", docRef.id), { storagePath });
 
+      invalidateCollection("invoices");
+      await loadInvoices(true);
       setSuccess(`Invoice ${invoiceDraft.invoiceNumber} saved.`);
       setTab("list");
       setClaimInput("");

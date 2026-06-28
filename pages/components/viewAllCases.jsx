@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchCollectionCached } from '../../lib/collectionCache';
+import { fetchCollectionCached, fetchUsersPage } from '../../lib/collectionCache';
 import FullCase from './caseStatus/updateCases';
 
 function parseDateValue(value) {
@@ -97,6 +97,7 @@ function formatDateFilterSummary(dateFrom, dateTo) {
 export default function ViewAllCases() {
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState(null);
     const [selectedCaseId, setSelectedCaseId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -104,13 +105,43 @@ export default function ViewAllCases() {
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
     const [filteredCases, setFilteredCases] = useState([]);
+    const [hasMore, setHasMore] = useState(false);
+    const [lastPageId, setLastPageId] = useState(null);
+    const [useFullList, setUseFullList] = useState(false);
 
-    const loadCases = useCallback(async (forceRefresh = false) => {
+    const hasActiveFilters = Boolean(searchQuery || dateFrom || dateTo);
+
+    const loadPagedCases = useCallback(async (startAfterId = null, append = false) => {
+        if (append) setLoadingMore(true);
+        else setLoading(true);
+        setError(null);
+        try {
+            const result = await fetchUsersPage({
+                startAfterId,
+                forceRefresh: false,
+            });
+            setCases((prev) => (append ? [...prev, ...result.data] : result.data));
+            setHasMore(Boolean(result.hasMore));
+            setLastPageId(result.lastId);
+            setUseFullList(false);
+        } catch (err) {
+            console.error('Error fetching cases page:', err);
+            setError('Failed to fetch cases');
+        } finally {
+            setLoading(false);
+            setLoadingMore(false);
+        }
+    }, []);
+
+    const loadFullCases = useCallback(async (forceRefresh = false) => {
         setLoading(true);
         setError(null);
         try {
             const casesData = await fetchCollectionCached('users', { forceRefresh });
             setCases(casesData);
+            setHasMore(false);
+            setLastPageId(null);
+            setUseFullList(true);
         } catch (err) {
             console.error('Error fetching cases:', err);
             setError('Failed to fetch cases');
@@ -120,8 +151,12 @@ export default function ViewAllCases() {
     }, []);
 
     useEffect(() => {
-        loadCases();
-    }, [loadCases]);
+        if (hasActiveFilters) {
+            loadFullCases();
+        } else {
+            loadPagedCases();
+        }
+    }, [hasActiveFilters, loadFullCases, loadPagedCases]);
 
     useEffect(() => {
         setFilteredCases(
@@ -180,7 +215,16 @@ export default function ViewAllCases() {
     }
 
     const displayCases = dateRangeInvalid ? [] : filteredCases;
-    const hasActiveFilters = searchQuery || dateFrom || dateTo;
+    const showLoadMore = !hasActiveFilters && !useFullList && hasMore && !dateRangeInvalid;
+
+    const handleRefresh = () => {
+        if (hasActiveFilters) loadFullCases(true);
+        else loadPagedCases(null, false);
+    };
+
+    const handleLoadMore = () => {
+        if (lastPageId) loadPagedCases(lastPageId, true);
+    };
 
     return (
         <div className="w-full lg:max-w-[1300px] mx-auto px-3 sm:px-0 py-4 sm:py-0">
@@ -192,14 +236,16 @@ export default function ViewAllCases() {
                 <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
                     <button
                         type="button"
-                        onClick={() => loadCases(true)}
+                        onClick={handleRefresh}
                         disabled={loading}
                         className="ui-btn-secondary text-sm"
                     >
                         Refresh
                     </button>
                     <span className="ui-stat-pill justify-center">
-                        {cases.length} {cases.length === 1 ? 'Case' : 'Cases'}
+                        {useFullList || hasActiveFilters
+                            ? `${filteredCases.length} shown`
+                            : `${cases.length}${hasMore ? '+' : ''} loaded`}
                     </span>
                 </div>
             </div>
@@ -342,6 +388,19 @@ export default function ViewAllCases() {
                     </div>
                 ))}
             </div>
+
+            {showLoadMore && (
+                <div className="mt-8 flex justify-center">
+                    <button
+                        type="button"
+                        onClick={handleLoadMore}
+                        disabled={loadingMore}
+                        className="ui-btn-secondary"
+                    >
+                        {loadingMore ? 'Loading…' : 'Load more cases'}
+                    </button>
+                </div>
+            )}
 
             {displayCases.length === 0 && (
                 <div className="ui-empty-state py-8">

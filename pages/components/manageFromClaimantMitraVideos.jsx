@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
-  onSnapshot,
-  orderBy,
-  query,
 } from "firebase/firestore";
 import {
   deleteObject,
@@ -15,6 +12,8 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { db, storage } from "../../lib/firebase";
+import { invalidateCollection } from "../../lib/collectionCache";
+import { loadCachedListSorted } from "../../lib/loadCachedList";
 import {
   compressVideoForUpload,
   formatBytes,
@@ -48,31 +47,25 @@ export default function ManageFromClaimantMitraVideos() {
   const [statusText, setStatusText] = useState("");
   const [deletingId, setDeletingId] = useState("");
 
-  useEffect(() => {
-    const q = query(
-      collection(db, "fromClaimantMitraVideos"),
-      orderBy("createdAt", "desc")
-    );
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        setVideos(
-          snapshot.docs.map((docItem) => ({
-            id: docItem.id,
-            ...docItem.data(),
-          }))
-        );
-        setLoading(false);
-        setError(null);
-      },
-      (err) => {
-        console.error("Error loading From Claimant Mitra videos:", err);
-        setError("Failed to load From Claimant Mitra videos.");
-        setLoading(false);
-      }
-    );
-    return () => unsubscribe();
+  const loadVideos = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await loadCachedListSorted("fromClaimantMitraVideos", {
+        forceRefresh,
+      });
+      setVideos(rows);
+    } catch (err) {
+      console.error("Error loading From Claimant Mitra videos:", err);
+      setError("Failed to load From Claimant Mitra videos.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadVideos();
+  }, [loadVideos]);
 
   const showSuccess = (msg) => {
     setSuccessMessage(msg);
@@ -126,6 +119,9 @@ export default function ManageFromClaimantMitraVideos() {
       setTitle("");
       setFile(null);
 
+      invalidateCollection("fromClaimantMitraVideos");
+      await loadVideos(true);
+
       if (result.compressionFailed) {
         showSuccess(
           `Video uploaded without compression (${formatBytes(result.sizeBytes)}). Keep originals under ${formatBytes(MAX_FALLBACK_BYTES)} when compression fails.`
@@ -158,6 +154,8 @@ export default function ManageFromClaimantMitraVideos() {
         await deleteObject(ref(storage, video.storagePath));
       }
       await deleteDoc(doc(db, "fromClaimantMitraVideos", video.id));
+      invalidateCollection("fromClaimantMitraVideos");
+      await loadVideos(true);
       showSuccess("Video deleted.");
     } catch (err) {
       console.error(err);

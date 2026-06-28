@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
-  onSnapshot,
-  orderBy,
-  query,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { invalidateCollection } from "../../lib/collectionCache";
+import { loadCachedListSorted } from "../../lib/loadCachedList";
 
 function formatCreatedAt(value) {
   if (!value) return "—";
@@ -32,28 +31,23 @@ export default function ManageParigyan() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
 
-  useEffect(() => {
-    const q = query(collection(db, "parigyan"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        setItems(
-          snapshot.docs.map((docItem) => ({
-            id: docItem.id,
-            ...docItem.data(),
-          }))
-        );
-        setLoading(false);
-        setError(null);
-      },
-      (err) => {
-        console.error("Error loading parigyan:", err);
-        setError("Failed to load Parigyan entries");
-        setLoading(false);
-      }
-    );
-    return () => unsubscribe();
+  const loadItems = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await loadCachedListSorted("parigyan", { forceRefresh });
+      setItems(rows);
+    } catch (err) {
+      console.error("Error loading parigyan:", err);
+      setError("Failed to load Parigyan entries");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
 
   const showSuccess = (msg) => {
     setSuccessMessage(msg);
@@ -81,6 +75,8 @@ export default function ManageParigyan() {
       });
       setQuestion("");
       setAnswer("");
+      invalidateCollection("parigyan");
+      await loadItems(true);
       showSuccess("Parigyan entry added successfully.");
     } catch (err) {
       console.error(err);
@@ -98,6 +94,8 @@ export default function ManageParigyan() {
     try {
       setDeletingId(item.id);
       await deleteDoc(doc(db, "parigyan", item.id));
+      invalidateCollection("parigyan");
+      await loadItems(true);
       showSuccess("Entry deleted.");
     } catch (err) {
       console.error(err);

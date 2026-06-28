@@ -51,7 +51,6 @@ function filterCustomersBySearch(customers, searchQuery, searchField) {
   });
 }
 
-/** Same filtering rules as `viewAllCases.jsx`. */
 function filterCasesBySearch(cases, searchQuery, searchField) {
   if (!searchQuery) {
     return cases;
@@ -75,6 +74,23 @@ function filterCasesBySearch(cases, searchQuery, searchField) {
         return true;
     }
   });
+}
+
+function resolveLinkedCaseDetails(caseIds, cases) {
+  const byId = new Map(cases.map((c) => [c.id, c]));
+  const details = {};
+  for (const caseId of caseIds) {
+    const caseData = byId.get(caseId);
+    if (caseData) {
+      details[caseId] = {
+        name: caseData.name || "—",
+        email: caseData.email || "—",
+      };
+    } else {
+      details[caseId] = { name: "—", email: "—", missing: true };
+    }
+  }
+  return details;
 }
 
 export default function LinkCustomerCases() {
@@ -179,26 +195,9 @@ export default function LinkCustomerCases() {
           setCustomerSnap(data);
 
           const caseIds = Array.isArray(data.cases) ? data.cases : [];
-          const details = {};
-          await Promise.all(
-            caseIds.map(async (caseId) => {
-              try {
-                const caseSnap = await getDoc(doc(db, "users", caseId));
-                if (caseSnap.exists()) {
-                  const caseData = caseSnap.data();
-                  details[caseId] = {
-                    name: caseData.name || "—",
-                    email: caseData.email || "—",
-                  };
-                } else {
-                  details[caseId] = { name: "—", email: "—", missing: true };
-                }
-              } catch {
-                details[caseId] = { name: "—", email: "—" };
-              }
-            })
-          );
-          if (!cancelled) setLinkedCaseDetails(details);
+          if (!cancelled) {
+            setLinkedCaseDetails(resolveLinkedCaseDetails(caseIds, cases));
+          }
         } else if (!cancelled) {
           setCustomerSnap(null);
           setLinkedCaseDetails({});
@@ -211,7 +210,7 @@ export default function LinkCustomerCases() {
     return () => {
       cancelled = true;
     };
-  }, [selectedUid]);
+  }, [selectedUid, cases]);
 
   const refreshSelectedCustomer = async () => {
     if (!selectedUid) return;
@@ -220,26 +219,7 @@ export default function LinkCustomerCases() {
       const data = { id: snap.id, ...snap.data() };
       setCustomerSnap(data);
       const caseIds = Array.isArray(data.cases) ? data.cases : [];
-      const details = {};
-      await Promise.all(
-        caseIds.map(async (caseId) => {
-          try {
-            const caseSnap = await getDoc(doc(db, "users", caseId));
-            if (caseSnap.exists()) {
-              const caseData = caseSnap.data();
-              details[caseId] = {
-                name: caseData.name || "—",
-                email: caseData.email || "—",
-              };
-            } else {
-              details[caseId] = { name: "—", email: "—", missing: true };
-            }
-          } catch {
-            details[caseId] = { name: "—", email: "—" };
-          }
-        })
-      );
-      setLinkedCaseDetails(details);
+      setLinkedCaseDetails(resolveLinkedCaseDetails(caseIds, cases));
     }
   };
 

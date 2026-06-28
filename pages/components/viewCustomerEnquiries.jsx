@@ -1,6 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { db } from '../../lib/firebase';
-import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, deleteDoc } from 'firebase/firestore';
+import {
+  fetchCollectionCached,
+  invalidateCollections,
+} from '../../lib/collectionCache';
 
 function ViewCustomerEnquiries() {
   const [enquiries, setEnquiries] = useState([]);
@@ -9,25 +13,22 @@ function ViewCustomerEnquiries() {
   const [processingId, setProcessingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
-  useEffect(() => {
-    const fetchEnquiries = async () => {
-      try {
-        const enquiriesCollection = collection(db, 'enquiries');
-        const enquiriesSnapshot = await getDocs(enquiriesCollection);
-        const enquiriesList = enquiriesSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setEnquiries(enquiriesList);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch enquiries');
-        setLoading(false);
-      }
-    };
-
-    fetchEnquiries();
+  const loadEnquiries = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const enquiriesList = await fetchCollectionCached('enquiries', { forceRefresh });
+      setEnquiries(enquiriesList);
+    } catch (err) {
+      setError('Failed to fetch enquiries');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadEnquiries();
+  }, [loadEnquiries]);
 
   const handleTakeAsComplaint = async (enquiry) => {
     setProcessingId(enquiry.id);
@@ -99,9 +100,8 @@ function ViewCustomerEnquiries() {
       };
 
       await addDoc(collection(db, 'users'), caseData);
+      invalidateCollections(['users', 'enquiries']);
       alert('Enquiry successfully converted to case!');
-      
-      // Optionally, you could remove this enquiry from the list
       setEnquiries(prev => prev.filter(e => e.id !== enquiry.id));
     } catch (err) {
       alert('Failed to convert enquiry to case: ' + err.message);
@@ -118,6 +118,7 @@ function ViewCustomerEnquiries() {
     try {
       setDeletingId(enquiry.id);
       await deleteDoc(doc(db, 'enquiries', enquiry.id));
+      invalidateCollections(['enquiries']);
       setEnquiries((prev) => prev.filter((e) => e.id !== enquiry.id));
     } catch (err) {
       alert('Failed to delete enquiry: ' + err.message);

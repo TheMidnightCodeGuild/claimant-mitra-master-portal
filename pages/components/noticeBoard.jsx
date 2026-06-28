@@ -1,41 +1,37 @@
-import { useEffect, useState } from "react";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
+import { useEffect, useState, useCallback } from "react";
+import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { fetchCollectionCached, invalidateCollection } from "../../lib/collectionCache";
+import { useNoticeCount } from "../../lib/NoticeCountContext";
+import { toSortTimestamp } from "../../lib/loadCachedList";
 
 export default function NoticeBoard() {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState("");
+  const { refreshNoticeCount } = useNoticeCount();
+
+  const loadNotices = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await fetchCollectionCached("notice", { forceRefresh });
+      rows.sort(
+        (a, b) => toSortTimestamp(b.uploadedAt) - toSortTimestamp(a.uploadedAt)
+      );
+      setNotices(rows);
+    } catch (err) {
+      console.error("Error loading notices:", err);
+      setError("Failed to load notices");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const noticesQuery = query(collection(db, "notice"), orderBy("uploadedAt", "desc"));
-    const unsubscribe = onSnapshot(
-      noticesQuery,
-      (snapshot) => {
-        const noticeList = snapshot.docs.map((docItem) => ({
-          id: docItem.id,
-          ...docItem.data(),
-        }));
-        setNotices(noticeList);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Error loading notices:", err);
-        setError("Failed to load notices");
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, []);
+    loadNotices();
+  }, [loadNotices]);
 
   const handleDeleteNotice = async (noticeId) => {
     const shouldDelete = window.confirm("Delete this notice?");
@@ -44,6 +40,9 @@ export default function NoticeBoard() {
     try {
       setDeletingId(noticeId);
       await deleteDoc(doc(db, "notice", noticeId));
+      invalidateCollection("notice");
+      await loadNotices(true);
+      refreshNoticeCount();
       alert("Notice deleted successfully");
     } catch (err) {
       console.error("Error deleting notice:", err);
@@ -78,12 +77,21 @@ export default function NoticeBoard() {
 
   return (
     <div className="w-full">
-      <div className="mb-8">
-        <p className="ui-section-eyebrow">Alerts</p>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
-          Notice Board{" "}
-          <span className="text-lg font-semibold text-indigo-600">({notices.length})</span>
-        </h2>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="ui-section-eyebrow">Alerts</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
+            Notice Board{" "}
+            <span className="text-lg font-semibold text-indigo-600">({notices.length})</span>
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={() => loadNotices(true)}
+          className="ui-btn-secondary text-sm"
+        >
+          Refresh
+        </button>
       </div>
 
       {notices.length === 0 ? (
@@ -98,25 +106,24 @@ export default function NoticeBoard() {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2">
                   <p className="text-base font-semibold text-slate-900">
-                    {notice.name || "Unknown User"}
+                    {notice.name || notice.title || "Notice"}
                   </p>
-                  <p className="text-sm leading-relaxed text-slate-600">{notice.message || "No message"}</p>
+                  {(notice.message || notice.content) && (
+                    <p className="text-sm text-slate-600 whitespace-pre-wrap">
+                      {notice.message || notice.content}
+                    </p>
+                  )}
                   <p className="text-xs text-slate-500">
-                    <span className="font-medium text-slate-700">User ID:</span> {notice.userId || "N/A"}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    <span className="font-medium text-slate-700">Uploaded At:</span>{" "}
-                    {formatDate(notice.uploadedAt)}
+                    Posted: {formatDate(notice.uploadedAt)}
                   </p>
                 </div>
-
                 <button
                   type="button"
                   onClick={() => handleDeleteNotice(notice.id)}
                   disabled={deletingId === notice.id}
-                  className="ui-btn-danger shrink-0 text-sm"
+                  className="ui-btn-danger text-sm shrink-0"
                 >
-                  {deletingId === notice.id ? "Deleting..." : "Delete"}
+                  {deletingId === notice.id ? "Deleting…" : "Delete"}
                 </button>
               </div>
             </div>

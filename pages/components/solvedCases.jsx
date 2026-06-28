@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { fetchCollectionCached } from '../../lib/collectionCache';
+import { filterCasesByKey, sortSolvedCases } from '../../lib/caseFilters';
 import FullCase from './caseStatus/fullCase';
 import usePartnerRefNameMap from '../../lib/usePartnerRefNameMap';
 import { resolvePartnerDisplayName } from '../../lib/partnerLookup';
@@ -18,30 +18,8 @@ export default function SolvedCases() {
     useEffect(() => {
         async function fetchSolvedCases() {
             try {
-                const usersRef = collection(db, 'users');
-                const q = query(
-                    usersRef,
-                    where('solved', '==', true)
-                );
-
-                const querySnapshot = await getDocs(q);
-                const casesData = [];
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    casesData.push({
-                        id: doc.id,
-                        ...data
-                    });
-                });
-
-                console.log('Fetched solved cases:', casesData.length);
-                
-                // Sort by most recently solved first
-                casesData.sort((a, b) => {
-                    return new Date(b.solvedDate) - new Date(a.solvedDate);
-                });
-
+                const allCases = await fetchCollectionCached('users');
+                const casesData = sortSolvedCases(filterCasesByKey(allCases, 'solved'));
                 setCases(casesData);
                 setFilteredCases(casesData);
             } catch (err) {

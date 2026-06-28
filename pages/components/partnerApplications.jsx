@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
-import { db } from "../../lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { useState, useEffect, useCallback } from "react";
+import { fetchCollectionCached } from "../../lib/collectionCache";
 
 function PartnerApplications() {
   const [applications, setApplications] = useState([]);
@@ -9,26 +8,24 @@ function PartnerApplications() {
   const [searchField, setSearchField] = useState("source");
   const [filteredApplications, setFilteredApplications] = useState([]);
 
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const requestsCollection = collection(db, "requests");
-        const querySnapshot = await getDocs(requestsCollection);
-        const applicationsList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setApplications(applicationsList);
-        setFilteredApplications(applicationsList);
-      } catch (error) {
-        console.error("Error fetching applications:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchApplications();
+  const loadApplications = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    try {
+      const applicationsList = await fetchCollectionCached("partnerApplications", {
+        forceRefresh,
+      });
+      setApplications(applicationsList);
+      setFilteredApplications(applicationsList);
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadApplications();
+  }, [loadApplications]);
 
   useEffect(() => {
     if (!searchQuery) {

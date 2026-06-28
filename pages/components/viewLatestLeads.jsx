@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../lib/firebase";
+import { fetchCollectionCached } from "../../lib/collectionCache";
+import { filterCasesByKey, sortLatestLeads } from "../../lib/caseFilters";
 import { moveCaseToRecycle } from "../../lib/caseRecycle";
 import SendToReview from "./caseStatus/sendToReview";
 import usePartnerRefNameMap from "../../lib/usePartnerRefNameMap";
@@ -17,71 +17,8 @@ export default function ViewLatestLeads() {
   useEffect(() => {
     async function fetchLatestLeads() {
       try {
-        const twoDaysAgo = new Date();
-        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-        twoDaysAgo.setHours(0, 0, 0, 0);
-        const twoDaysAgoStr = twoDaysAgo.toISOString();
-
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        yesterday.setHours(0, 0, 0, 0);
-        const yesterdayStr = yesterday.toISOString();
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayStr = today.toISOString();
-
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-        const tomorrowStr = tomorrow.toISOString();
-
-        const usersRef = collection(db, "users");
-        
-        const twoDaysAgoQuery = query(
-          usersRef,
-          where("complaintDate", ">=", twoDaysAgoStr),
-          where("complaintDate", "<", yesterdayStr)
-        );
-
-        const yesterdayQuery = query(
-          usersRef,
-          where("complaintDate", ">=", yesterdayStr),
-          where("complaintDate", "<", todayStr)
-        );
-
-        const todayQuery = query(
-          usersRef,
-          where("complaintDate", ">=", todayStr),
-          where("complaintDate", "<", tomorrowStr)
-        );
-
-        const [twoDaysAgoSnapshot, yesterdaySnapshot, todaySnapshot] = await Promise.all([
-          getDocs(twoDaysAgoQuery),
-          getDocs(yesterdayQuery),
-          getDocs(todayQuery)
-        ]);
-
-        const twoDaysAgoLeads = twoDaysAgoSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        const yesterdayLeads = yesterdaySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        const todayLeads = todaySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        const allLeads = [...twoDaysAgoLeads, ...yesterdayLeads, ...todayLeads];
-        allLeads.sort(
-          (a, b) => new Date(b.complaintDate) - new Date(a.complaintDate)
-        );
-
+        const allCases = await fetchCollectionCached("users");
+        const allLeads = sortLatestLeads(filterCasesByKey(allCases, "latestLeads"));
         setLeads(allLeads);
       } catch (err) {
         console.error("Error fetching leads:", err);

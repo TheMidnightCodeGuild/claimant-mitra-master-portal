@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
-  onSnapshot,
-  orderBy,
-  query,
 } from "firebase/firestore";
 import {
   deleteObject,
@@ -15,6 +12,8 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { db, storage } from "../../lib/firebase";
+import { invalidateCollection } from "../../lib/collectionCache";
+import { loadCachedListSorted } from "../../lib/loadCachedList";
 import { formatBytes } from "../../lib/compressVideo";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -50,31 +49,23 @@ export default function ManageGalleryImages() {
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState("");
 
-  useEffect(() => {
-    const q = query(
-      collection(db, "galleryImages"),
-      orderBy("createdAt", "desc")
-    );
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        setImages(
-          snapshot.docs.map((docItem) => ({
-            id: docItem.id,
-            ...docItem.data(),
-          }))
-        );
-        setLoading(false);
-        setError(null);
-      },
-      (err) => {
-        console.error("Error loading gallery images:", err);
-        setError("Failed to load gallery images.");
-        setLoading(false);
-      }
-    );
-    return () => unsubscribe();
+  const loadImages = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await loadCachedListSorted("galleryImages", { forceRefresh });
+      setImages(rows);
+    } catch (err) {
+      console.error("Error loading gallery images:", err);
+      setError("Failed to load gallery images.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadImages();
+  }, [loadImages]);
 
   const showSuccess = (msg) => {
     setSuccessMessage(msg);
@@ -124,6 +115,8 @@ export default function ManageGalleryImages() {
 
       setTitle("");
       setFile(null);
+      invalidateCollection("galleryImages");
+      await loadImages(true);
       showSuccess(`Image uploaded (${formatBytes(file.size)}).`);
     } catch (err) {
       console.error(err);
@@ -145,6 +138,8 @@ export default function ManageGalleryImages() {
         await deleteObject(ref(storage, image.storagePath));
       }
       await deleteDoc(doc(db, "galleryImages", image.id));
+      invalidateCollection("galleryImages");
+      await loadImages(true);
       showSuccess("Image deleted.");
     } catch (err) {
       console.error(err);
