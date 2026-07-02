@@ -262,10 +262,10 @@ export default function SendFromReimbursement({ docId, onComplete }) {
             }));
             setNewIGMSLogRemark('');
             setIsAddingIGMSLog(false);
-            alert('IGMS log added successfully');
+            alert('Reimbursement log added successfully');
         } catch (err) {
-            console.error('Error adding IGMS log:', err);
-            alert('Failed to add IGMS log');
+            console.error('Error adding Reimbursement log:', err);
+            alert('Failed to add Reimbursement log');
         }
     };
 
@@ -617,7 +617,7 @@ export default function SendFromReimbursement({ docId, onComplete }) {
 
                     <div className="col-span-2 space-y-2">
                         <div className="flex justify-between items-center">
-                            <label className="block text-sm font-medium text-slate-700">IGMS Logs</label>
+                            <label className="block text-sm font-medium text-slate-700">Reimbursement Logs</label>
                             <div className="space-x-2">
                                 {caseData?.igmsLogs?.length > 1 && (
                                     <button
