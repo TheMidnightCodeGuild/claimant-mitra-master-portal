@@ -183,6 +183,22 @@ function buildDashboardGroups(router) {
       ],
     },
     {
+      id: 'serviceCases',
+      title: 'Loan & other cases',
+      items: [
+        {
+          title: 'Create Loan / Mailing Case',
+          onClick: () => router.push('/view?type=createServiceCase'),
+          icon: '➕',
+        },
+        {
+          title: 'View Loan & Mailing Cases',
+          onClick: () => router.push('/view?type=serviceCases'),
+          icon: '🏦',
+        },
+      ],
+    },
+    {
       id: 'partners',
       title: 'Partners',
       items: [

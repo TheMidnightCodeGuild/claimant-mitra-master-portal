@@ -16,6 +16,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import LinkServiceCases from "../../components/serviceCases/LinkServiceCases";
 
 function parseIds(text) {
   if (!text || !String(text).trim()) return [];
@@ -558,6 +559,8 @@ export default function LinkCustomerCases() {
             )}
           </div>
         )}
+
+        {customerSnap && <LinkServiceCases key={customerSnap.id} customerId={customerSnap.id} />}
 
         <div className="border-t border-gray-200 pt-6">
           <h3 className="mb-2 text-lg font-semibold text-gray-900">

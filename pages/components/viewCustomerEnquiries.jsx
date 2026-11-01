@@ -5,6 +5,40 @@ import {
   fetchCollectionCached,
   invalidateCollections,
 } from '../../lib/collectionCache';
+import { CASE_TYPES, SERVICE_CASE_COLLECTION, caseTypeLabel } from '../../lib/serviceCaseTypes';
+
+/** A loan / credit / mailing enquiry becomes a serviceCases document, not an insurance case. */
+function serviceCaseFromEnquiry(enquiry) {
+  const now = new Date().toISOString();
+  const data = {
+    caseType: enquiry.caseType,
+    stage: 'under_review',
+    source: 'website',
+    name: enquiry.fullName || '',
+    mobile: String(enquiry.phone || ''),
+    email: String(enquiry.email || '').trim().toLowerCase(),
+    address: enquiry.address || '',
+    aadharNo: enquiry.aadharNo || '',
+    partnerRef: '',
+    complaintDate: now,
+    createdAt: new Date(),
+    stageDates: { under_review: now },
+    fileBucket: enquiry.fileBucket || [],
+    mainLogs: [
+      {
+        date: now,
+        remark: `Case created from customer enquiry.${enquiry.message ? ` Original message: ${enquiry.message}` : ''}`,
+      },
+    ],
+    internalLogs: [],
+    correspondence: [],
+    originalEnquiryId: enquiry.id,
+  };
+  for (const field of CASE_TYPES[enquiry.caseType].fields) {
+    data[field.name] = enquiry[field.name] ?? '';
+  }
+  return data;
+}
 
 function ViewCustomerEnquiries() {
   const [enquiries, setEnquiries] = useState([]);
@@ -33,6 +67,17 @@ function ViewCustomerEnquiries() {
   const handleTakeAsComplaint = async (enquiry) => {
     setProcessingId(enquiry.id);
     try {
+      if (enquiry.caseType) {
+        if (!CASE_TYPES[enquiry.caseType]) {
+          throw new Error(`Unknown case type "${enquiry.caseType}"`);
+        }
+        await addDoc(collection(db, SERVICE_CASE_COLLECTION), serviceCaseFromEnquiry(enquiry));
+        invalidateCollections(['serviceCases', 'enquiries']);
+        alert('Enquiry successfully converted to case! Find it under Loan & Mailing Cases.');
+        setEnquiries(prev => prev.filter(e => e.id !== enquiry.id));
+        return;
+      }
+
       // Create initial case data using enquiry information
       const caseData = {
         // Basic Information
@@ -90,6 +135,12 @@ function ViewCustomerEnquiries() {
         igmsLogs: [],
         ombudsmanLogs: [],
         
+        // Carried over so they are not lost on conversion
+        fileBucket: enquiry.fileBucket || [],
+        aadharNo: enquiry.aadharNo || '',
+        address: enquiry.address || '',
+        policyHolder: enquiry.policyHolder || '',
+
         // Additional Information from Enquiry
         insuranceType: enquiry.insuranceType,
         policyType: enquiry.policyType,
@@ -153,18 +204,27 @@ function ViewCustomerEnquiries() {
                   <h3 className="font-semibold">Phone</h3>
                   <p>{enquiry.phone}</p>
                 </div>
-                <div>
-                  <h3 className="font-semibold">Insurance Type</h3>
-                  <p>{enquiry.insuranceType}</p>
-                </div>
+                {enquiry.caseType ? (
+                  <div>
+                    <h3 className="font-semibold">Case Type</h3>
+                    <p>{caseTypeLabel(enquiry.caseType)}</p>
+                  </div>
+                ) : (
+                  <div>
+                    <h3 className="font-semibold">Insurance Type</h3>
+                    <p>{enquiry.insuranceType}</p>
+                  </div>
+                )}
                 {/* <div>
                   <h3 className="font-semibold">Policy Type</h3>
                   <p>{enquiry.policyType}</p>
                 </div> */}
-                <div>
-                  <h3 className="font-semibold">Complaint Type</h3>
-                  <p>{enquiry.complaintType}</p>
-                </div>
+                {!enquiry.caseType && (
+                  <div>
+                    <h3 className="font-semibold">Complaint Type</h3>
+                    <p>{enquiry.complaintType}</p>
+                  </div>
+                )}
                 <div>
                   <h3 className="font-semibold">Status</h3>
                   <p className="capitalize">{enquiry.status}</p>

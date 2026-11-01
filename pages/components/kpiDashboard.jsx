@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchKpiData } from "../../lib/kpiCache";
+import ServiceCaseKpis from "../../components/serviceCases/serviceCaseKpis";
 
 const RANGE_OPTIONS = [
   { id: "7d", label: "Last 7 days" },
@@ -351,6 +352,8 @@ export default function KpiDashboard({ onClose }) {
               </div>
             </div>
           </div>
+
+          <ServiceCaseKpis rangeStart={rangeStart} refreshIndex={refreshIndex} />
         </div>
       )}
     </section>

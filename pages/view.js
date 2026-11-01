@@ -31,6 +31,8 @@ import ManageParigyan from './components/manageParigyan';
 import ManageGalleryImages from './components/manageGalleryImages';
 import ManageFromClaimantMitraVideos from './components/manageFromClaimantMitraVideos';
 import RecycleCases from './components/recycleCases';
+import CreateServiceCase from './components/serviceCases/createServiceCase';
+import ServiceCaseBoard from './components/serviceCases/serviceCaseBoard';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
@@ -106,6 +108,10 @@ export default function View() {
                 return <ManageFromClaimantMitraVideos />;
             case 'recycleCases':
                 return <RecycleCases />;
+            case 'createServiceCase':
+                return <CreateServiceCase />;
+            case 'serviceCases':
+                return <ServiceCaseBoard />;
             default:
                 return <div>Invalid component type</div>;
         }

@@ -1,0 +1,34 @@
+// Merge into Firebase Console rules (not deployed from this repo).
+// serviceCases = loan dispute / loan settlement / credit score / mailing cases.
+//
+// WHAT THE RULE HAS TO LET THROUGH (all from the browser, with NO Firebase login):
+//   - master portal staff    create, read, update, delete   (createServiceCase, serviceCaseDetail, ...)
+//   - ccm customers          create; read by id
+//   - partner portal         create; read where partnerRef == their ref
+//   - website visitors       read where email == ...  ("Track complaint")
+//
+// WHY IT CANNOT CHECK request.auth: every app signs people in on the SERVER (/api/.../signIn) and
+// hands the browser only a session cookie. The browser's Firebase client therefore has
+// request.auth == null for staff, customers and partners alike (ccm/firestore-snippets/customers.rules
+// says the same). A rule that demands a signed-in staff user would refuse every staff action.
+// `users`, `enquiries`, `customers` and `partners` must already be open to unauthenticated
+// clients for the same reason.
+//
+// SO: give serviceCases the SAME rule you already have on `users`. If you cannot see it, this is
+// the rule that matches how the apps work today:
+
+// --- firestore.rules ---
+//
+//   match /serviceCases/{caseId} {
+//     allow read, write: if true;
+//   }
+//
+// This is exactly as open as insurance cases are today. It is NOT a good end state: anyone who
+// has the project's public web config can read or edit every case. Tightening it means moving
+// sign-in to the client (Firebase Auth in the browser) or putting a server API in front of
+// these reads and writes. That is a separate piece of work and affects `users` too.
+
+// --- storage.rules ---
+// ccm uploads to customer-case-files/{uid}/..., the partner portal to case-files/..., the website
+// to complaints/..., staff to serviceCases/... . Add serviceCases/ to the same rule that allows
+// staff uploads under cases/ today.
