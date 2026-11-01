@@ -176,6 +176,21 @@ function buildDashboardGroups(router) {
           icon: '❌',
         },
         {
+          title: 'Additional Compensation',
+          onClick: () => router.push('/view?type=additionalCompensation'),
+          icon: '💰',
+        },
+        {
+          title: 'RTI',
+          onClick: () => router.push('/view?type=rti'),
+          icon: '📨',
+        },
+        {
+          title: 'Consumer Court',
+          onClick: () => router.push('/view?type=consumerCourt'),
+          icon: '🏛️',
+        },
+        {
           title: 'Recycle Bin',
           onClick: () => router.push('/view?type=recycleCases'),
           icon: '🗑️',

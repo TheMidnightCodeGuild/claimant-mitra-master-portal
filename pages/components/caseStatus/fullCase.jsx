@@ -15,6 +15,13 @@ import Image from "next/image";
 import Link from "next/link";
 import usePartnerRefNameMap from "../../../lib/usePartnerRefNameMap";
 import { resolvePartnerDisplayName } from "../../../lib/partnerLookup";
+import { solvedDateOf } from "../../../lib/caseFilters";
+import {
+  POST_OUTCOME_KEYS,
+  POST_OUTCOME_STAGES,
+  isStageActive,
+  outcomeLabel,
+} from "../../../lib/postOutcomeStages";
 
 export default function FullCase({ docId }) {
   const { partnerMap } = usePartnerRefNameMap();
@@ -1042,9 +1049,47 @@ export default function FullCase({ docId }) {
                 Solved Date
               </label>
               <p className="mt-1 text-gray-900">
-                {formatDate(caseData?.solvedDate)}
+                {formatDate(solvedDateOf(caseData))}
               </p>
             </div>
+
+            {POST_OUTCOME_KEYS.filter((key) => caseData?.[key] === true).map((key) => (
+              <div key={key} className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  {POST_OUTCOME_STAGES[key].label}
+                </label>
+                <p className="mt-1 text-gray-900">
+                  {isStageActive(caseData, key)
+                    ? "In progress"
+                    : outcomeLabel(key, caseData[`${key}Outcome`]) || "Closed"}
+                  {" · started "}
+                  {formatDate(caseData[`${key}Date`])}
+                  {caseData[`${key}ClosedDate`]
+                    ? ` · closed ${formatDate(caseData[`${key}ClosedDate`])}`
+                    : ""}
+                </p>
+                {key === "additionalCompensation" && (
+                  <p className="text-gray-900">
+                    Extra claimed ₹{caseData.additionalCompensationClaimed || "N/A"} · received ₹
+                    {caseData.additionalCompensationReceived || "N/A"}
+                  </p>
+                )}
+                {key === "consumerCourt" && caseData.consumerCourtAmountReceived ? (
+                  <p className="text-gray-900">
+                    Amount received ₹{caseData.consumerCourtAmountReceived}
+                  </p>
+                ) : null}
+                {Array.isArray(caseData[`${key}Logs`]) && caseData[`${key}Logs`].length > 0 && (
+                  <ul className="space-y-1 text-sm text-gray-700">
+                    {caseData[`${key}Logs`].map((log, i) => (
+                      <li key={i}>
+                        {formatDate(log.date)}: {log.remark}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">

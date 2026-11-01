@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { fetchCollectionCached } from '../../lib/collectionCache';
 import { filterCasesByKey, sortRejectedCases } from '../../lib/caseFilters';
+import { badgesFor } from '../../lib/postOutcomeStages';
 import FullCase from './caseStatus/fullCase';
+import PostOutcomePanel from '../../components/postOutcome/PostOutcomePanel';
 import usePartnerRefNameMap from '../../lib/usePartnerRefNameMap';
 import { resolvePartnerDisplayName } from '../../lib/partnerLookup';
 
@@ -14,6 +16,7 @@ export default function RejectedCases() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchField, setSearchField] = useState('name');
     const [filteredCases, setFilteredCases] = useState([]);
+    const [reloadKey, setReloadKey] = useState(0);
 
     useEffect(() => {
         async function fetchRejectedCases() {
@@ -31,7 +34,7 @@ export default function RejectedCases() {
         }
 
         fetchRejectedCases();
-    }, []);
+    }, [reloadKey]);
 
     useEffect(() => {
         if (!searchQuery) {
@@ -66,8 +69,11 @@ export default function RejectedCases() {
         setSelectedCaseId(caseId);
     };
 
+    // Coming back reloads the list, because a case may have moved on to RTI or Consumer Court.
     const handleBackToCases = () => {
         setSelectedCaseId(null);
+        setLoading(true);
+        setReloadKey((n) => n + 1);
     };
 
     if (loading) {
@@ -95,6 +101,7 @@ export default function RejectedCases() {
                 >
                     ← Back to Rejected Cases
                 </button>
+                <PostOutcomePanel docId={selectedCaseId} onStarted={handleBackToCases} />
                 <FullCase docId={selectedCaseId} />
             </div>
         );
@@ -207,6 +214,16 @@ export default function RejectedCases() {
                                     {formatDate(case_.caseRejectionDate)}
                                 </p>
                             </div>
+
+                            {badgesFor(case_).length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                    {badgesFor(case_).map((badge) => (
+                                        <span key={badge.key} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                                            {badge.text}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
 
                             {case_.rejectionReason && (
                                 <div className="mt-2 bg-red-50 p-2 rounded-md">

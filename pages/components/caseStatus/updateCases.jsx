@@ -1120,6 +1120,21 @@ export default function FullCase({ docId }) {
                 "number",
                 "₹"
               )}
+              {renderField("Additional Compensation", "additionalCompensation", "checkbox")}
+              {renderField("Additional Compensation Date", "additionalCompensationDate", "date")}
+              {renderField("Additional Compensation Closed", "additionalCompensationClosed", "checkbox")}
+              {renderField("Additional Compensation Outcome", "additionalCompensationOutcome")}
+              {renderField("Extra Compensation Claimed", "additionalCompensationClaimed", "number", "₹")}
+              {renderField("Extra Compensation Received", "additionalCompensationReceived", "number", "₹")}
+              {renderField("RTI", "rti", "checkbox")}
+              {renderField("RTI Date", "rtiDate", "date")}
+              {renderField("RTI Closed", "rtiClosed", "checkbox")}
+              {renderField("RTI Outcome", "rtiOutcome")}
+              {renderField("Consumer Court", "consumerCourt", "checkbox")}
+              {renderField("Consumer Court Date", "consumerCourtDate", "date")}
+              {renderField("Consumer Court Closed", "consumerCourtClosed", "checkbox")}
+              {renderField("Consumer Court Outcome", "consumerCourtOutcome")}
+              {renderField("Consumer Court Amount Received", "consumerCourtAmountReceived", "number", "₹")}
             </div>
 
             <div className="col-span-2 space-y-4 mt-6">

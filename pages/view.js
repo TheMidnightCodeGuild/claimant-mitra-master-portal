@@ -33,6 +33,9 @@ import ManageFromClaimantMitraVideos from './components/manageFromClaimantMitraV
 import RecycleCases from './components/recycleCases';
 import CreateServiceCase from './components/serviceCases/createServiceCase';
 import ServiceCaseBoard from './components/serviceCases/serviceCaseBoard';
+import AdditionalCompensation from './components/additionalCompensation';
+import Rti from './components/rti';
+import ConsumerCourt from './components/consumerCourt';
 export default function View() {
     const router = useRouter();
     const { type } = router.query;
@@ -60,6 +63,12 @@ export default function View() {
                 return <Ombudsman />;
             case 'rejectedCases':
                 return <RejectedCases />;
+            case 'additionalCompensation':
+                return <AdditionalCompensation />;
+            case 'rti':
+                return <Rti />;
+            case 'consumerCourt':
+                return <ConsumerCourt />;
             case 'solvedCases':
                 return <SolvedCases />;
             case 'createCase':

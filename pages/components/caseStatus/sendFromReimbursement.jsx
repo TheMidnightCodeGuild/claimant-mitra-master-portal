@@ -166,7 +166,7 @@ export default function SendFromReimbursement({ docId, onComplete }) {
                     const docRef = doc(db, 'users', docId);
                     await updateDoc(docRef, {
                         status: 'Resolved',
-                        resolvedDate: new Date().toISOString(),
+                        solvedDate: new Date().toISOString(),
                         solved: true
                     });
 

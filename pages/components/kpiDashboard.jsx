@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchKpiData } from "../../lib/kpiCache";
 import ServiceCaseKpis from "../../components/serviceCases/serviceCaseKpis";
+import { isStageActive } from "../../lib/postOutcomeStages";
 
 const RANGE_OPTIONS = [
   { id: "7d", label: "Last 7 days" },
@@ -50,6 +51,9 @@ function computeMetrics(users, partners, notices, rangeStart) {
   let reimbursement = 0;
   let rejected = 0;
   let solved = 0;
+  let additionalCompensation = 0;
+  let rti = 0;
+  let consumerCourt = 0;
   let verificationPending = 0;
   let verificationUploaded = 0;
   let verificationApproved = 0;
@@ -71,7 +75,17 @@ function computeMetrics(users, partners, notices, rangeStart) {
     if (u.rejected === true) rejected += 1;
 
     const status = String(u.status || "").toLowerCase();
-    if (status.includes("solved") || status.includes("completed")) solved += 1;
+    // A solved case that has moved on to Additional Compensation no longer says "Resolved" in its status.
+    if (
+      status.includes("solved") ||
+      status.includes("completed") ||
+      (u.solved === true && u.additionalCompensation === true)
+    ) {
+      solved += 1;
+    }
+    if (isStageActive(u, "additionalCompensation")) additionalCompensation += 1;
+    if (isStageActive(u, "rti")) rti += 1;
+    if (isStageActive(u, "consumerCourt")) consumerCourt += 1;
 
     const vv = u.VideoVerification;
     if (!vv || vv === "Verification Pending") verificationPending += 1;
@@ -145,6 +159,9 @@ function computeMetrics(users, partners, notices, rangeStart) {
     igms,
     reimbursement,
     solved,
+    additionalCompensation,
+    rti,
+    consumerCourt,
     rejected,
     verificationPending,
     verificationUploaded,
@@ -287,6 +304,9 @@ export default function KpiDashboard({ onClose }) {
             <KpiCard label="Reimbursement" value={metrics.reimbursement} />
             <KpiCard label="Solved/Completed" value={metrics.solved} />
             <KpiCard label="Rejected" value={metrics.rejected} />
+            <KpiCard label="Additional Compensation" value={metrics.additionalCompensation} />
+            <KpiCard label="RTI" value={metrics.rti} />
+            <KpiCard label="Consumer Court" value={metrics.consumerCourt} />
             <KpiCard label="Verification Completed" value={metrics.verificationCompleted} />
             <KpiCard label="Links Requested" value={metrics.linksRequested} />
             <KpiCard label="Upload Allowed" value={metrics.allowUpload} />

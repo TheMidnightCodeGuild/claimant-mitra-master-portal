@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { fetchCollectionCached } from '../../lib/collectionCache';
-import { filterCasesByKey, sortSolvedCases } from '../../lib/caseFilters';
+import { filterCasesByKey, sortSolvedCases, solvedDateOf } from '../../lib/caseFilters';
+import { badgesFor } from '../../lib/postOutcomeStages';
 import FullCase from './caseStatus/fullCase';
+import PostOutcomePanel from '../../components/postOutcome/PostOutcomePanel';
 import usePartnerRefNameMap from '../../lib/usePartnerRefNameMap';
 import { resolvePartnerDisplayName } from '../../lib/partnerLookup';
 
@@ -14,6 +16,7 @@ export default function SolvedCases() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchField, setSearchField] = useState('name');
     const [filteredCases, setFilteredCases] = useState([]);
+    const [reloadKey, setReloadKey] = useState(0);
 
     useEffect(() => {
         async function fetchSolvedCases() {
@@ -31,7 +34,7 @@ export default function SolvedCases() {
         }
 
         fetchSolvedCases();
-    }, []);
+    }, [reloadKey]);
 
     useEffect(() => {
         if (!searchQuery) {
@@ -66,8 +69,11 @@ export default function SolvedCases() {
         setSelectedCaseId(caseId);
     };
 
+    // Coming back reloads the list, because a case may have moved on to Additional Compensation.
     const handleBackToCases = () => {
         setSelectedCaseId(null);
+        setLoading(true);
+        setReloadKey((n) => n + 1);
     };
 
     if (loading) {
@@ -95,6 +101,7 @@ export default function SolvedCases() {
                 >
                     ← Back to Solved Cases
                 </button>
+                <PostOutcomePanel docId={selectedCaseId} onStarted={handleBackToCases} />
                 <FullCase docId={selectedCaseId} />
             </div>
         );
@@ -222,10 +229,20 @@ export default function SolvedCases() {
                                     </p>
                                     <p className="text-slate-600">
                                         <span className="font-medium">Solved On:</span><br />
-                                        {formatDate(case_.solvedDate)}
+                                        {formatDate(solvedDateOf(case_))}
                                     </p>
                                 </div>
                             </div>
+
+                            {badgesFor(case_).length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                    {badgesFor(case_).map((badge) => (
+                                        <span key={badge.key} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                                            {badge.text}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
